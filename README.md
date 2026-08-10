@@ -1,6 +1,8 @@
 # modul
 
-<!-- logo: place brand mark above this line -->
+<p align="center">
+  <img src="logo.png" alt="modul" width="280">
+</p>
 
 **Vulkan API extender** for Rust — a structured library layer on [ash](https://crates.io/crates/ash).
 
