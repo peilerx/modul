@@ -1,6 +1,7 @@
-<p align="center">
-  <img src="logo.png" alt="modul" width="280">
-</p>
+<img src="logo.png" alt="modul" width="280" align="left">
+
+<br clear="all">
+
 
 **Vulkan API extender** for Rust — a structured library layer on [ash](https://crates.io/crates/ash).
 
