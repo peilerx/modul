@@ -1,5 +1,3 @@
-# modul
-
 <p align="center">
   <img src="logo.png" alt="modul" width="280">
 </p>
