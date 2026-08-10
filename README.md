@@ -4,160 +4,131 @@
 
 ---
 
+# modul
 
-**Vulkan API extender** for Rust — a structured library layer on [ash](https://crates.io/crates/ash).
+Rust library that structures [Vulkan](https://www.vulkan.org/) work on top of [ash](https://crates.io/crates/ash).
 
-Not a game engine. Not a full application framework.  
-**modul** organizes GPU work as **Modul Consistency Groups (MCG)**: closed factory units with explicit memory, conveyor (ports), and processing layers.
+Vulkan setup tends to scatter across large free functions and ad-hoc types. **modul** keeps each subsystem (swapchain, pipeline, frame pacing, display recording, mesh upload) as a separate unit with a fixed internal layout and a narrow public surface. The goal is readable ownership of GPU resources, not a game engine or an application framework.
 
-Current public cut: the **direct** product path used by the `cubes` etalon (instanced solid geometry, FIFO present, no Viewsor).
-
----
-
-## Features
-
-- Five live GPU MCGs: swapchain, pipeline, frame, display, mesh  
-- **PTP** (Protocol Transport Port) — external API of each MCG via ports (`import_*` / `export_*`)  
-- **Factory-Line** assembly: counted `import_for_asmN` slots, Auto | Handled ranks under `mem/asm_disasm/`  
-- Product shaders: `shader/cubes.vert` / `cubes.frag` (+ SPIR-V)  
-- Architecture enforceable by **modlin** presets in this crate’s `Cargo.toml`  
-- Rustdoc with full API comments and canon glossary (`modul::canon`)
+Author: [Daniil Vasilev](https://github.com/peilerx) · license: [Apache-2.0](LICENSE)
 
 ---
 
-## Workspace layout
+## What you get
+
+| Piece | Role |
+|-------|------|
+| `MODUL0_VK_SWAPCHAIN` | Instance, device, surface, swapchain, present mode |
+| `MODUL0_VK_PIPELINE` | Render pass, shader modules, graphics pipelines |
+| `MODUL0_VK_FRAME` | Frames-in-flight |
+| `MODUL0_VK_DISPLAY` | Command buffer recording |
+| `MODUL0_VK_MESH` | Mesh upload, instancing, push constants |
+| `range/cubes` | Reference app: large instanced cube field (FIFO present) |
+| `shader/cubes.*` | Product vertex/fragment shaders (+ SPIR-V) |
+
+Each `MODUL0_*` unit follows the same disk shape:
 
 ```text
-modul/
-  src/
-    canon/          # MCG, PTP, phases, letters (docs only)
-    common/         # ModulResult, SPIR-V, memory type, protocol re-exports
-    cpu/            # empty lane in this cut
-    gpu/
-      MODUL0_VK_SWAPCHAIN/
-      MODUL0_VK_PIPELINE/
-      MODUL0_VK_FRAME/
-      MODUL0_VK_DISPLAY/
-      MODUL0_VK_MESH/
-  shader/           # cubes.* only
-  range/cubes/      # etalon app (workspace package `cubes`)
-  docs/             # rustdoc header, glossary notes
-  README.md
+mem/    # bags, assembler ranks (setup / runtime / buffers)
+conv/   # ports — the only intended external entry (import_* / export_*)
+proc/   # domain logic (record, draw, free)
 ```
 
-| Module | Role |
-|--------|------|
-| `gpu::MODUL0_VK_SWAPCHAIN` | Instance, device, surface, swapchain, presentation |
-| `gpu::MODUL0_VK_PIPELINE` | Render pass, shader modules, graphics pipelines |
-| `gpu::MODUL0_VK_FRAME` | Frames-in-flight (begin / end) |
-| `gpu::MODUL0_VK_DISPLAY` | Record command buffers |
-| `gpu::MODUL0_VK_MESH` | Mesh upload, instancing, steel/cubes push constants |
-| `common` | Shared helpers and protocol peels |
-| `canon` | Architecture glossary (rustdoc) |
+The external surface of a unit is called a **PTP** (protocol transport port): peers and the app shell talk through ports, not by reaching into `mem/`. Shared helpers live under `common/`; short architecture notes live in rustdoc under `modul::canon` and in [docs/GLOSSARY.md](docs/GLOSSARY.md).
 
 ---
 
-## Quick start
+## Build and run the cubes demo
 
-From the Cargo workspace root (`modul-project/`):
+This repository is meant to sit in a Cargo workspace that also provides `ash`, `winit`, and the `cubes` package (see the monorepo `modul-project/` layout, or add a local workspace root that lists `modul` and `modul/range/cubes`).
 
 ```bash
-# etalon: 1_000_000 unit cubes, direct path, FIFO vsync
+# 1_000_000 cubes, release, FIFO vsync
 cargo run -p cubes --release
 
-# smaller lattice
+# smaller count
 CUBES_COUNT=1000 cargo run -p cubes --release
 ```
 
-Controls (cubes): LMB orbit · wheel zoom · Esc quit.
+Controls: left mouse — orbit · mouse wheel — zoom · Esc — quit.
 
-### Use as a library
+Default present mode is FIFO (`SrgbFifo`). Mesh path is the direct solid-instance path used by the cubes demo.
+
+---
+
+## Use as a library
 
 ```toml
 [dependencies]
 modul = { path = "path/to/modul" }
-# ash, winit, raw-window-handle as required by your shell
+# plus ash / window crates required by your shell
 ```
 
-Boot order (direct product):
+Typical product boot order (as in `range/cubes`):
 
-1. Swapchain MCG — surface + device + present (`SwapchainPrt::SrgbFifo` for vsync)  
-2. Pipeline MCG — render pass + cubes pipelines  
-3. Presentation  
-4. Frame MCG — FIF  
-5. Display MCG — record  
-6. Mesh MCG — solid instances + push constants  
+1. Swapchain — surface, device, present  
+2. Pipeline — render pass and cubes pipelines  
+3. Frame — frames-in-flight  
+4. Display — record  
+5. Mesh — instances and push constants  
 
-See `range/cubes` for a complete T.Hub (`assemble_tandem_session` · `run_tandem_pulse` · `free_tandem`).
-
----
-
-## Concepts (short)
-
-| Term | Meaning |
-|------|---------|
-| **MCG** | Modul Consistency Group — factory atom `MODUL0_{DOMAIN}` = M × C × P, closed boundary |
-| **PTP** | Protocol Transport Port — external API of an MCG (intents, ports, peels) |
-| **M / C / P** | Memory (`mem/`) · Conveyor (`conv/`) · Processing (`proc/`) |
-| **Factory-Line** | Port assembly workplace (`import_for_asmN`, `IMPORT_*_FACTORY_LINE_N`) |
-| **Stp / Rt / Prt / Bfr** | Setup · Runtime · Port intent · Buffer warehouse |
-| **asm_disasm** | Auto \| Handled assemble and disassemble ranks |
-
-Full glossary: rustdoc page **`modul::canon`**, or `docs/GLOSSARY.md`.
+Session helpers in the demo: `assemble_tandem_session` → `run_tandem_pulse` → `free_tandem`.
 
 ---
 
-## Documentation
+## Repository layout
 
-### Rustdoc (HTML)
+```text
+modul/
+  src/
+    canon/       # architecture glossary (docs only)
+    common/      # ModulResult, SPIR-V load, memory helpers
+    cpu/         # reserved lane
+    gpu/         # MODUL0_VK_* units
+  shader/        # cubes.vert / cubes.frag (+ .spv)
+  range/cubes/   # reference application
+  docs/          # rustdoc header, glossary
+  scripts/       # build-docs.sh, helpers
+```
+
+### API docs
 
 ```bash
-cd modul-project
-bash modul/scripts/build-docs.sh
+bash scripts/build-docs.sh
 # → target/doc/modul/index.html
 # glossary → target/doc/modul/canon/index.html
 ```
 
-Theme uses IBM Plex Sans (header: `docs/rustdoc-header.html`).
+### Architecture checks
 
-### Architecture lint
-
-Presets live under `[package.metadata.modlin.*]` in this `Cargo.toml`.
+Presets for [modlin](https://github.com/peilerx/modlin) are declared in this crate’s `Cargo.toml` under `[package.metadata.modlin.*]`. Example:
 
 ```bash
-# ship binary (from modlin)
-../modlin/modlin-bin/modlin report --path .
-# or in-tree copy after:
-#   bash ../modlin/modlin-bin/sync-modlin-binary.sh --install-modul
-./modlin report --path src
+# if modlin binary is available
+modlin report --path .
 ```
 
 ---
 
 ## Requirements
 
-- Rust (edition 2021)  
+- Rust 2021  
 - Vulkan-capable GPU and drivers  
-- Linux (primary); windowing via winit in etalon apps  
+- Linux is the primary target; the cubes demo uses winit  
 
 ---
 
-## License and names
+## License
 
-Licensed under the **Apache License, Version 2.0**.
+Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
-- [LICENSE](LICENSE) — full license text  
-- [NOTICE](NOTICE) — copyright and attribution  
-
-You may use, modify, and distribute the software under Apache-2.0, including commercially.
-
-The names **modul** and **modlin** are product identity and are **not** licensed for use as the name of a fork, crate, tool, or service. Use a different package and product name for derivatives. Attribution required where Apache-2.0 requires retention of notices.
+The names **modul** and **modlin** are product identity and are not licensed as the name of a fork, crate, or service. Derivatives should use a different product name. Attribution must retain Apache-2.0 notices.
 
 ---
 
 ## Related
 
-| Crate | Role |
-|-------|------|
-| [modlin](../modlin/) | Architectural AST/FS linter for modul (and universal smell mode) |
-| `cubes` | Direct Vulkan etalon app under `range/cubes` |
+| Project | Description |
+|---------|-------------|
+| [modlin](https://github.com/peilerx/modlin) | Architectural linter used to keep modul’s layout and naming consistent |
+| `cubes` | Reference Vulkan app under `range/cubes` |
