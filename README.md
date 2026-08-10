@@ -88,13 +88,15 @@ modul/
   shader/        # cubes.vert / cubes.frag (+ .spv)
   range/cubes/   # reference application
   docs/          # rustdoc header, glossary
-  scripts/       # build-docs.sh, helpers
 ```
 
 ### API docs
 
+From the Cargo workspace root that contains this crate:
+
 ```bash
-bash scripts/build-docs.sh
+RUSTDOCFLAGS="--html-in-header modul/docs/rustdoc-header.html" \
+  cargo doc -p modul --no-deps --document-private-items
 # → target/doc/modul/index.html
 # glossary → target/doc/modul/canon/index.html
 ```
