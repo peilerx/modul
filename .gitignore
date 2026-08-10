@@ -1,0 +1,37 @@
+# Rust
+/target
+**/target
+Cargo.lock
+*.pdb
+
+# Build artifacts
+*.o
+*.so
+*.dylib
+*.dll
+*.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+.directory
+
+# Logs / temp
+*.log
+**/__pycache__/
+*.pyc
+
+# Local modlin binary (launcher script `modlin` may be kept; not the ELF)
+modlin-native
+
+# Lint / audit dumps
+MODLIN_REPORT/
+MODLIN-REPORT/
+MODLIN_AUDIT/
+MODUL_AUDIT/
+SCENARIO_LOG/

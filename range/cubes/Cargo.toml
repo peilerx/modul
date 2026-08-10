@@ -1,0 +1,15 @@
+[package]
+name = "cubes"
+version.workspace = true
+edition.workspace = true
+description = "range etalon — Vulkan cubes direct demo on modul (T.Hub · Slot-Factory-Line)"
+
+[[bin]]
+name = "cubes"
+path = "src/main.rs"
+
+[dependencies]
+modul = { path = "../.." }
+ash.workspace = true
+winit.workspace = true
+raw-window-handle.workspace = true

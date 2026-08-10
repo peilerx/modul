@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# modul crate — native modlin (local modlin-native + MODLIN_REPORT)
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [[ -x "$ROOT/modlin-native" ]]; then
+  exec "$ROOT/modlin-native" "$@"
+fi
+if [[ -x "$ROOT/modlin" ]]; then
+  exec "$ROOT/modlin" "$@"
+fi
+
+echo "modlin: missing $ROOT/modlin-native — copy from modlin-bin/ or run sync-modlin-binary.sh" >&2
+exit 127

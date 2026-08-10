@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# modlin launcher — default subcommand: auto (config/classifier/MODLIN_REPORT).
+# Native release binary: modlin-native (same directory, rebuild via sync-modlin-binary.sh).
+#
+# Out of the box (fish):
+#   source /path/to/modul-machines/modlin-bin/env.fish
+#   cd <scan-root>   # any Rust tree
+#   modlin auto
+#   modlin           # same as modlin auto
+set -euo pipefail
+
+BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NATIVE="$BIN_DIR/modlin-native"
+
+if [[ ! -x "$NATIVE" ]]; then
+  echo "modlin: missing $NATIVE — run modlin-bin/sync-modlin-binary.sh" >&2
+  exit 127
+fi
+
+if [[ $# -eq 0 ]]; then
+  set -- auto
+elif [[ "$1" != "auto" && "$1" != "run" && "$1" != "report" && "$1" != "check" && \
+        "$1" != "--help" && "$1" != "-h" && "$1" != "--version" && "$1" != "-V" && \
+        "$1" != "help" ]]; then
+  # flags-only or unknown first token → inject auto (e.g. modlin --path src)
+  set -- auto "$@"
+fi
+
+# argv0 = modlin so clap Usage shows `modlin`, not `modlin-native`
+exec -a modlin "$NATIVE" "$@"

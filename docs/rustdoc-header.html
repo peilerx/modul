@@ -1,0 +1,116 @@
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* Force IBM Plex everywhere — no serif / Times fallbacks */
+  :root {
+    --main-font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI",
+      sans-serif !important;
+    --mono-font-family: "IBM Plex Mono", ui-monospace, "Cascadia Code",
+      "Source Code Pro", Menlo, Consolas, monospace !important;
+  }
+
+  html,
+  body,
+  .sidebar,
+  .sidebar-elems,
+  .content,
+  main,
+  .main-heading,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  li,
+  td,
+  th,
+  a,
+  span,
+  div,
+  button,
+  input,
+  label,
+  .item-table,
+  .item-name,
+  .docblock,
+  .stab,
+  .out-of-band,
+  .location,
+  .mobile-topbar,
+  .search-input,
+  .theme-picker,
+  details,
+  summary {
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI",
+      sans-serif !important;
+  }
+
+  code,
+  pre,
+  pre *,
+  .rust,
+  .code-header,
+  .example-wrap,
+  .docblock code,
+  .docblock pre,
+  kbd,
+  samp,
+  .src-line-numbers,
+  .sidebar .location {
+    font-family: "IBM Plex Mono", ui-monospace, "Cascadia Code", Menlo, Consolas,
+      monospace !important;
+  }
+
+  body {
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  /* Avoid browser default serif on unstyled nodes */
+  * {
+    font-synthesis: none;
+  }
+
+  /* Override rustdoc bundled Fira / Source Serif preloads completely */
+  body.rustdoc-page,
+  body.rustdoc,
+  .rustdoc,
+  .rustdoc * {
+    --main-font-family: "IBM Plex Sans", system-ui, sans-serif !important;
+    --mono-font-family: "IBM Plex Mono", ui-monospace, monospace !important;
+  }
+
+  .rustdoc,
+  .rustdoc body,
+  .rustdoc .sidebar,
+  .rustdoc .content,
+  .rustdoc h1,
+  .rustdoc h2,
+  .rustdoc h3,
+  .rustdoc .docblock,
+  .rustdoc .item-info,
+  .rustdoc .impl-items,
+  .rustdoc .methods,
+  .rustdoc .main-heading,
+  .rustdoc .sidebar-menu,
+  .rustdoc .search-results,
+  .rustdoc .setting-name {
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI",
+      sans-serif !important;
+  }
+
+  .rustdoc code,
+  .rustdoc pre,
+  .rustdoc pre.rust,
+  .rustdoc .code-header,
+  .rustdoc .example-wrap pre {
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace !important;
+  }
+</style>
+

@@ -1,0 +1,398 @@
+[package]
+name = "modul"
+version.workspace = true
+edition.workspace = true
+authors = ["Daniil Vasilev"]
+description = "Vulkan API extender — MCG-structured GPU factories (MODUL0_VK_*) on ash"
+license = "Apache-2.0"
+readme = "README.md"
+keywords = ["vulkan", "ash", "gpu", "mcg", "graphics"]
+categories = ["graphics", "rendering"]
+documentation = "https://docs.rs/modul"
+# Local HTML: cargo doc -p modul --no-deps --open
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+    "--cfg", "docsrs",
+    "--html-in-header", "docs/rustdoc-header.html",
+]
+
+[dependencies]
+ash.workspace = true
+ash-window.workspace = true
+raw-window-handle.workspace = true
+bytemuck.workspace = true
+
+# =============================================================================
+# modlin — PROTOCOL scopes for `cargo run -p modlin -- --path modul/src`
+# Paths are crate-relative (modul/). Globs use ** for MODUL0_* under cpu/ or gpu/.
+# =============================================================================
+
+# --- Global naming defaults (FIX-085/086/091/097/098) ---
+
+[package.metadata.modlin.naming]
+# Longest-first compound phase (PROTOCOL N · FIX-119/120/122)
+phase_suffix_order = [
+    "stp_pkg_op", "stp_op", "mx_crg", "rt_crg", "stp_crg",
+    "rt_pkg", "stp_pkg", "extrl", "bfr", "prt", "op", "rt", "stp",
+]
+phase_suffix_exempt = ["desc"]
+forbidden_suffixes = ["extd"]
+bag_type_order = ["subject", "strategy", "phase"]
+bag_phase_tokens = [
+    "StpPkgOp", "StpOp", "MxCrg", "RtCrg", "StpCrg",
+    "RtPkg", "StpPkg", "Bfr", "Prt", "Stp", "Rt",
+]
+bag_strategy_default = "Default"
+# Subject + Strategy + Phase (A1-BASE-NAME-CONSTRUCTOR / FIX-085)
+bag_min_words = 3
+field_scalar_suffix = "stp"
+field_vk_suffix = "op"
+field_semantic_op_suffix = "op"
+field_external_suffix = "extrl"
+field_runtime_suffix = "rt"
+field_exempt = ["desc"]
+knob_op_path_segment = "op"
+knob_op_file_suffix = "_stp_op"
+knob_op_type_suffix = "StpOp"
+check_params = true
+check_locals = false
+check_struct_fields = true
+require_file_stem_phase = true
+file_strategy_default_token = "default"
+# subject + strategy + phase snake tokens (e.g. entry_default_rt)
+file_bag_min_tokens = 3
+auto_method_prefix = "auto_"
+handled_method_prefix = "handled_"
+gen_forbidden_prefix = "gen_"
+require_ah_method_prefix = true
+
+# --- HW-top + layout perf (OnlySoA / SIMT std430; RADV/NVIDIA profiles) ---
+
+[package.metadata.modlin.hw_topology]
+cpu_dirs = ["cpu"]
+gpu_dirs = ["gpu"]
+tandem_dirs = []
+common_dirs = ["common"]
+base_setup_dir = "setup"
+base_runtime_dir = "runtime"
+prim_dir = "primitives"
+
+[package.metadata.modlin.layout_perf]
+gpu_profile = "radv"
+gpu_std = "std430"
+cpu_only_soa = true
+warn_gpu_vec3_padding = true
+warn_cpu_mixed_lane_types = true
+cpu_min_lane_fields = 2
+
+# --- Processor-only logic (B34/B63 unified; knob match exempt in gen) ---
+
+[package.metadata.modlin.proc_only_logic]
+allow_match_in_mem = true
+mem_match_scrutinee_suffixes = ["_op", "_prt", "_stp"]
+mem_match_fn_prefixes = ["auto_", "handled_"]
+# C orchestration + PTP PortMatch / session frame (PROTOCOL C · PTP · FIX-122)
+conv_io_fn_prefixes = [
+    "inscribe_", "interpret_", "from_",
+    "assemble_", "bootstrap_", "export_", "import_",
+    "run_frame", "record_frame", "materialize_", "prepare_",
+]
+forbidden_reactor_prefixes = ["react_", "rotate_", "tick_", "advance_"]
+
+# --- B52 mental-dept lexer (A5-MENTAL-DEPT; public API only) ---
+
+[package.metadata.modlin.mental_dept]
+max_chars = 56
+max_words = 6
+check_ui_strings = false
+check_locals = false
+check_params = false
+public_only = true
+
+# --- Crate-wide AST (A3/A7, B25/B27, B33, FIX-082) ---
+
+[package.metadata.modlin.preset.mcg-global]
+paths = ["src/gpu/**", "src/cpu/**", "src/common/**", "src/lib.rs"]
+rules = [
+    "mcg-static",
+    "lib-only",
+    "app-leak",
+    "no-duplicate",
+    "naming-vague-prefix",
+    "naming-vague-subject",
+    "naming-vague-trait",
+    "naming-token",
+    "naming-laconic",
+    "mental-dept-lexer",
+    "naming-recommend",
+    "mcg-resource-topology",
+    "no-vk-session-type",
+    "no-port-exportable-importable",
+]
+
+# --- FS topology (B17–B21, B29, B38–B44, B50, B53, B55) ---
+
+[package.metadata.modlin.preset.mcg-fs-hw-top]
+paths = ["src/**"]
+rules = ["fs-forbid-adjacent"]
+forbid_adjacent = [
+    ["src", "mem"],
+    ["src", "conv"],
+    ["src", "proc"],
+    ["cpu", "mem"],
+    ["cpu", "conv"],
+    ["cpu", "proc"],
+    ["gpu", "mem"],
+    ["gpu", "conv"],
+    ["gpu", "proc"],
+]
+violation = "MCG hw-top violated (B44): MODUL0_{DOMAIN} under modul/src/{cpu,gpu}/"
+fix = "use src/{cpu,gpu}/MODUL0_{DOMAIN}/{mem,conv,proc}/"
+
+[package.metadata.modlin.preset.mcg-fs-forbid-dl]
+paths = ["src/**"]
+rules = ["fs-forbid-segment"]
+forbid_segments = ["pure", "dirty"]
+
+[package.metadata.modlin.preset.mcg-fs-conv-no-dl]
+paths = ["src/**/MODUL0_*/conv/**"]
+rules = ["fs-forbid-segment"]
+forbid_segments = ["pure", "dirty"]
+violation = "conv layer forbids pure/ and dirty/ segments (B55)"
+fix = "conv orchestration only — no dl_branch meta dirs"
+
+[package.metadata.modlin.preset.mcg-fs-base-partition]
+paths = ["src/**/MODUL0_*/mem/base/**"]
+exclude_paths = ["**/setup/**", "**/runtime/**", "**/intent/**", "**/buffer/**", "**/mod.rs"]
+rules = ["fs-require-segment"]
+# PROTOCOL H: setup|runtime|intent|buffer (handoff legacy)
+require_any_segment = ["setup", "runtime", "intent", "buffer", "handoff", "embedded", "transport"]
+files_only = true
+
+[package.metadata.modlin.preset.mcg-fs-base-lifecycle]
+paths = ["src/**/MODUL0_*/mem/base/**"]
+rules = ["fs-forbid-dir-name"]
+forbid_dir_names = ["static", "dynamic"]
+dirs_only = true
+violation = "gen/base lifecycle dirs must be setup/ or runtime/ only (B21)"
+fix = "rename to setup/ or runtime/; bags live there (FIX-043/068)"
+
+# PROTOCOL v5.1 · FIX-120/129/130 — asm_disasm ranks: auto|handled under vk|vk_pkg|vk_crg
+# ¬ order/ free-fn theater · multi-resource pack = *Crg/*Pkg Auto|Handled traits
+[package.metadata.modlin.preset.mcg-fs-asm-disasm]
+paths = ["src/**/MODUL0_*/mem/asm_disasm/**"]
+exclude_paths = ["**/mod.rs"]
+rules = ["fs-require-segment", "fs-forbid-segment"]
+require_any_segment = ["auto", "handled"]
+forbid_segments = ["setup", "runtime", "static", "dynamic", "generator", "intent", "order"]
+files_only = true
+
+# Forbid legacy FS theater
+[package.metadata.modlin.preset.mcg-fs-forbid-legacy-v51]
+paths = ["src/**/MODUL0_*/**"]
+rules = ["fs-forbid-segment"]
+forbid_segments = ["generator"]
+violation = "legacy mem/generator forbidden — use mem/asm_disasm (FIX-129 · PROTOCOL v5.1)"
+fix = "rename mem/generator → mem/asm_disasm; Auto|Handled under vk|vk_pkg|vk_crg ranks"
+
+[package.metadata.modlin.preset.mcg-fs-forbid-order]
+paths = ["src/**/MODUL0_*/**"]
+rules = ["fs-forbid-segment"]
+forbid_segments = ["order"]
+violation = "order/ forbidden — multi-resource pack is Auto|Handled under vk|vk_pkg|vk_crg (FIX-120 · M.Assembler)"
+fix = "move free assemble_* into *Crg/*Pkg handled_create / auto_create; branchism → proc/"
+
+[package.metadata.modlin.preset.mcg-fs-forbid-conv-assemble]
+paths = ["src/**/MODUL0_*/conv/**"]
+rules = ["fs-forbid-segment"]
+forbid_segments = ["assemble"]
+violation = "conv/assemble forbidden — cargo assemble lives in mem/asm_disasm/{vk,vk_pkg,vk_crg}/{auto,handled} (FIX-120/130)"
+fix = "Auto|Handled traits under ranks; port is import/export free fns only"
+
+[package.metadata.modlin.preset.mcg-fs-forbid-intent]
+paths = ["src/**/MODUL0_*/**"]
+rules = ["fs-forbid-segment"]
+forbid_segments = ["intent"]
+violation = "intent/ folders forbidden — *Prt under transport/prt; imports under port/import (FIX-130)"
+fix = "transport/intent→transport/prt · port/intent→port/import|export"
+
+# Port = only import/ + export/ free functions · ¬ res · ¬ Exportable/Importable theater
+[package.metadata.modlin.preset.mcg-fs-port-only]
+paths = ["src/**/MODUL0_*/conv/port/**"]
+exclude_paths = ["**/mod.rs"]
+rules = ["fs-require-segment", "fs-forbid-segment"]
+require_any_segment = ["import", "export"]
+forbid_segments = ["res", "intent", "in", "out"]
+files_only = true
+violation = "port leaves only under import/ or export/ free functions (FIX-128/130 · ¬ res · ¬ pins-in-port)"
+fix = "delete port/res and *Exportable/*Importable; peels = free export_*; writes = free import_*_for_*"
+
+[package.metadata.modlin.preset.mcg-fs-proc-flat]
+paths = ["src/**/MODUL0_*/proc/**"]
+rules = ["fs-forbid-segment"]
+forbid_segments = ["pure", "dirty", "static", "dynamic"]
+
+[package.metadata.modlin.preset.mcg-fs-proc-processor-singular]
+paths = ["src/**/proc/**"]
+rules = ["fs-forbid-segment"]
+forbid_segments = ["processors"]
+violation = "proc branch must be processor/ singular (B50)"
+fix = "rename processors/ → processor/"
+
+[package.metadata.modlin.preset.mcg-fs-cpu-proc-processor]
+paths = ["src/cpu/**/proc/**"]
+exclude_paths = ["**/proc/mod.rs"]
+rules = ["fs-require-segment"]
+# PROTOCOL P.0: processor | display | refiner | reactor (not processor-only)
+require_any_segment = ["processor", "display", "refiner", "reactor"]
+violation = "cpu proc leaves belong under processor|display|refiner|reactor (P.0 · B45)"
+fix = "use src/cpu/MODUL0_*/proc/{processor,display,refiner,reactor}/"
+
+[package.metadata.modlin.preset.mcg-fs-sparse]
+paths = ["src/gpu/**", "src/cpu/**", "src/common/**"]
+rules = ["fs-sparse-dir", "fs-empty-dir"]
+
+[package.metadata.modlin.preset.mcg-fs-vague]
+paths = ["**"]
+rules = ["fs-forbid-contains"]
+forbid_contains = ["utils", "misc", "helper", "helpers", "build_"]
+
+# --- common/ (wire + shared helpers) ---
+
+[package.metadata.modlin.preset.mcg-common-protocol]
+paths = ["src/common/protocol/**"]
+rules = ["require-desc", "no-impl", "proc-only-logic"]
+
+# --- GEN base ---
+
+[package.metadata.modlin.preset.mcg-base-prim-gpu]
+hw = "gpu"
+paths = ["src/gpu/**/mem/base/setup/primitives/**"]
+rules = ["a1-gpu-prim", "a1-gpu-layout", "proc-only-logic"]
+
+[package.metadata.modlin.preset.mcg-base-prim-gpu.layout_perf]
+gpu_profile = "radv"
+gpu_std = "std430"
+
+[package.metadata.modlin.preset.mcg-base-prim-cpu]
+hw = "cpu"
+paths = ["src/cpu/**/mem/base/setup/primitives/**"]
+rules = ["a1-cpu", "a1-soa", "a1-cpu-soa-layout", "proc-only-logic"]
+
+[package.metadata.modlin.preset.mcg-base-gpu]
+hw = "gpu"
+paths = ["src/gpu/**/MODUL0_*/mem/base/setup/**", "src/gpu/**/MODUL0_*/mem/base/runtime/**"]
+exclude_paths = ["**/setup/primitives/**"]
+rules = [
+    "no-impl",
+    "require-desc",
+    "a1-gpu-dirty",
+    "proc-only-logic",
+    "naming-policy",
+    "base-name-constructor",
+    "base-phase-strict",
+    "naming-file-stem",
+]
+
+[package.metadata.modlin.preset.mcg-base-cpu]
+hw = "cpu"
+paths = ["src/cpu/**/MODUL0_*/mem/base/setup/**", "src/cpu/**/MODUL0_*/mem/base/runtime/**"]
+exclude_paths = ["**/setup/primitives/**"]
+rules = ["no-impl", "require-desc", "a1-cpu-soa-layout", "proc-only-logic", "naming-policy"]
+
+# --- GEN generator (FIX-078/083/087–095) ---
+
+[package.metadata.modlin.preset.mcg-generator-gpu-layout]
+hw = "gpu"
+paths = ["src/gpu/**/MODUL0_*/mem/generator/**"]
+rules = ["a1-gpu-layout"]
+
+[package.metadata.modlin.preset.mcg-generator-cpu-layout]
+hw = "cpu"
+paths = ["src/cpu/**/MODUL0_*/mem/generator/**"]
+rules = ["a1-cpu-soa-layout"]
+
+[package.metadata.modlin.preset.mcg-generator]
+# M.Assembler live path (FIX-129) — was mem/generator/**
+paths = ["src/**/MODUL0_*/mem/asm_disasm/**"]
+mode = "provision-allowed"
+rules = [
+    "no-struct",
+    "trait-fn-pair",
+    "gen-sem",
+    "gen-ah-method",
+    "gen-ah-intention",
+    "gen-ah-path-trait",
+    "gen-res-intsct-stem",
+    "trait-signature-only",
+    "prefix-gen",
+    "proc-only-logic",
+    "gen-protocol",
+    "gen-base-import-local",
+    "layer-primitive-external",
+    "naming-file-stem",
+]
+
+# --- CONV (orchestration; pins excluded — FIX-081 pending) ---
+
+[package.metadata.modlin.preset.mcg-conv]
+paths = ["src/**/MODUL0_*/conv/**"]
+exclude_paths = ["**/conv/pins/**"]
+rules = [
+    "no-struct",
+    "no-branches",
+    "prefix-conv",
+    "proc-only-logic",
+    "naming-phase-suffix",
+    "naming-file-stem",
+    "conv-base-closure",
+    "port-import-never-returns",
+    "no-port-exportable-importable",
+]
+
+[package.metadata.modlin.preset.mcg-conv.naming]
+# N.BIND strict on bags in mem; conv orchestration may use short lane names (FIX-122)
+check_struct_fields = false
+check_locals = false
+check_params = false
+
+# --- PROC (domain compute; display has dedicated preset) ---
+
+[package.metadata.modlin.preset.mcg-proc]
+paths = ["src/**/MODUL0_*/proc/**"]
+exclude_paths = ["**/proc/display/**", "**/proc/processor/**"]
+rules = [
+    "proc-runtime",
+    "no-vk-create",
+    "no-vk-default",
+    "no-proc-materialize",
+    "proc-no-catalog-assemble",
+    "prefix-proc",
+    "layer-primitive-external",
+]
+
+# GPU/CPU processor helpers — B11 update_* / §K ¬process_* (FIX-085 batch)
+[package.metadata.modlin.preset.mcg-proc-processor]
+paths = ["src/**/MODUL0_*/proc/processor/**"]
+rules = [
+    "no-vk-create",
+    "no-vk-default",
+    "no-proc-materialize",
+    "proc-no-catalog-assemble",
+    "prefix-proc",
+    "layer-primitive-external",
+]
+
+[package.metadata.modlin.preset.mcg-proc-access]
+paths = ["src/**/MODUL0_*/proc/**"]
+match_paths = ["**/*_access.rs", "**/access/**"]
+allowed_prefixes = ["renderer_"]
+rules = ["proc-access", "prefix-hint"]
+
+# --- PROC display (B35 marker traits + frame bridge) ---
+
+[package.metadata.modlin.preset.mcg-display]
+paths = ["src/**/MODUL0_*/proc/display/**"]
+rules = ["trait-only", "proc-resource-bag", "no-vk-create", "proc-no-catalog-assemble", "prefix-proc"]
