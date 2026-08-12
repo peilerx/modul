@@ -105,10 +105,19 @@ impl ApplicationHandler for App {
                 shutdown(self, event_loop);
             }
             WindowEvent::Resized(size) => {
-                // Ignore minimize / zero-size; full session rebuild keeps Bfr/PTP path honest.
-                if size.width > 0 && size.height > 0 && self.hub.is_some() {
-                    rebuild_session(self);
+                // Ignore minimize / zero-size. Skip rebuild when extent matches current
+                // swapchain (avoids double-assemble from request_inner_size on boot).
+                if size.width == 0 || size.height == 0 {
+                    return;
                 }
+                let Some(hub) = self.hub.as_ref() else {
+                    return;
+                };
+                let cur = hub.presentation_rt.swapchain_default_rt_pkg.extent_rt;
+                if size.width == cur.width && size.height == cur.height {
+                    return;
+                }
+                rebuild_session(self);
             }
             WindowEvent::RedrawRequested => {
                 if let Some(hub) = self.hub.as_mut() {

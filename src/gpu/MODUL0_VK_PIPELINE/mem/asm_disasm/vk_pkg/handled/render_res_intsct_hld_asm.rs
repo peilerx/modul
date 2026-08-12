@@ -37,9 +37,11 @@ trait ShadersTriangleModulesAuto {
 
 impl ShadersTriangleSpirvAuto for ShadersTriangleRtPkg {
     fn auto_assemble() -> (&'static [u8], &'static [u8]) {
+        // Hard-coded NDC triangle · no vertex attrs · no push constants
+        // (must match PipelineTriangleHandled empty input + empty layout).
         (
-            include_bytes!("../../../../../../../shader/cubes.vert.spv").as_slice(),
-            include_bytes!("../../../../../../../shader/cubes.frag.spv").as_slice(),
+            include_bytes!("../../../../../../../shader/triangle.vert.spv").as_slice(),
+            include_bytes!("../../../../../../../shader/triangle.frag.spv").as_slice(),
         )
     }
 }
@@ -783,8 +785,9 @@ pub trait ShadersCadLineAuto {
 
 impl ShadersCadLineAuto for ShadersTriangleRtPkg {
     fn auto_assemble(device_extrl: &Device) -> ModulResult<ShadersTriangleRtPkg> {
-        let vert_code = include_bytes!("../../../../../../../shader/cubes.vert.spv").as_slice();
-        let frag_code = include_bytes!("../../../../../../../shader/cubes.frag.spv").as_slice();
+        // CadLinePushRt = mat4 + vec4 (80 B) · vertex loc0 xyz only.
+        let vert_code = include_bytes!("../../../../../../../shader/line.vert.spv").as_slice();
+        let frag_code = include_bytes!("../../../../../../../shader/line.frag.spv").as_slice();
         let shader_modules_extrl =
             <Self as ShadersTriangleModulesAuto>::auto_assemble(
                 device_extrl,

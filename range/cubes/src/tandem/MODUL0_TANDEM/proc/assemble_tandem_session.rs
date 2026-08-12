@@ -66,7 +66,7 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
     let mut swapchain_bfr = SwapchainBfr::auto_assemble();
     SwapchainBfr::import_for_asm8(
         &mut swapchain_bfr,
-        SwapchainAssemblyPrt::GraphicsPresentNoValidation,
+        SwapchainAssemblyPrt::GraphicsPresentValidation,
         surface,
     )?;
     SwapchainBfr::import_present_for_asm1(
