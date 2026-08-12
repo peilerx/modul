@@ -54,7 +54,8 @@ pub struct LinePushRt {
 impl LinePushRt {
     /// `SIZE` — const (SIZE).
     /// Module path context: `gpu/MODUL0_VK_MESH/mem/base/transport/runtime`.
-    pub const SIZE: u32 = 80;
+    /// Must match GLSL `line.*` push block and pipeline layout range (`mat4`+`vec4`).
+    pub const SIZE: u32 = std::mem::size_of::<Self>() as u32;
 
     /// `from_mvp_color` — function (from mvp color).
     /// Conversion / mapping helper.

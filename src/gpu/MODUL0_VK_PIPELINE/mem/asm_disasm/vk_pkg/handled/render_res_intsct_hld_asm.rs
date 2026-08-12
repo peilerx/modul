@@ -14,6 +14,8 @@ use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::pipeline_layout_r
 };
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::render_pass_at_asm::RenderPassAuto;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::shader_spv_at_asm::ShaderSpvAuto;
+use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::line_gpu_default_rt_pkg::LinePushRt;
+use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshPushRt;
 use crate::ModulResult;
 
 // ========== SHADERS ==========
@@ -700,7 +702,7 @@ impl PipelineMeshSolidHandled for PipelineTriangleRtPkg {
             let push_range = vk::PushConstantRange::default()
                 .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
                 .offset(0)
-                .size(160);
+                .size(MeshPushRt::SIZE);
             let pipeline_layout_extrl =
                 <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
                     device_extrl,
@@ -785,7 +787,7 @@ pub trait ShadersLineAuto {
 
 impl ShadersLineAuto for ShadersTriangleRtPkg {
     fn auto_assemble(device_extrl: &Device) -> ModulResult<ShadersTriangleRtPkg> {
-        // LinePushRt = mat4 + vec4 (80 B) · vertex loc0 xyz only.
+        // LinePushRt · vertex loc0 xyz only (push size = LinePushRt::SIZE).
         let vert_code = include_bytes!("../../../../../../../shader/line.vert.spv").as_slice();
         let frag_code = include_bytes!("../../../../../../../shader/line.frag.spv").as_slice();
         let shader_modules_extrl =
@@ -801,7 +803,7 @@ impl ShadersLineAuto for ShadersTriangleRtPkg {
     }
 }
 
-/// `PipelineLineHandled` — trait (pipeline cad line handled).
+/// `PipelineLineHandled` — LINE_LIST pipeline (pos VBO · LinePushRt).
 ///
 /// Handled-assemble catalog trait: construction from imported knobs / peels (FIX-129 Handled rank).
 /// Belongs to: render-pass / graphics pipeline MCG.
@@ -875,7 +877,7 @@ impl PipelineLineHandled for PipelineTriangleRtPkg {
             let push_range = vk::PushConstantRange::default()
                 .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
                 .offset(0)
-                .size(80);
+                .size(LinePushRt::SIZE);
             let pipeline_layout_extrl =
                 <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
                     device_extrl,
@@ -971,7 +973,7 @@ impl PipelineLineTrisHandled for PipelineTriangleRtPkg {
             let push_range = vk::PushConstantRange::default()
                 .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
                 .offset(0)
-                .size(80);
+                .size(LinePushRt::SIZE);
             let pipeline_layout_extrl =
                 <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
                     device_extrl,

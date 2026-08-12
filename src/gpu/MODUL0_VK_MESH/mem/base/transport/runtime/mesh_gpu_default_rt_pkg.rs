@@ -135,8 +135,8 @@ pub struct MeshPushRt {
 }
 
 impl MeshPushRt {
-    /// Byte size of the push-constant block (must match pipeline layout).
-    pub const SIZE: u32 = 160;
+    /// Byte size of the push-constant block (must match GLSL `cubes.*` and pipeline layout).
+    pub const SIZE: u32 = std::mem::size_of::<Self>() as u32;
 
     /// `identity_steel` — function (identity steel).
     /// Public API entry for this module.
