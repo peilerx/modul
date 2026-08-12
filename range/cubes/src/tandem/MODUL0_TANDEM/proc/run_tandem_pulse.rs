@@ -66,7 +66,7 @@ pub fn run_tandem_pulse(hub: &mut TandemBfr) -> Result<(), String> {
         &hub.presentation_rt,
         &hub.renderer_rt,
         &slot,
-        &render_policy,
+        render_policy,
         true,
         Some(&hub.mesh_gpu_rt),
         Some(&hub.mesh_push_rt),

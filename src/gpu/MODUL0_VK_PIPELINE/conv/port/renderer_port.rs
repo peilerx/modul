@@ -222,7 +222,7 @@ impl RendererTransportable for RendererBfr {
 // ── PortMatch (in-port write only · swapchain calque · no import/ folder) ──
 
 /// PortMatch `RenderLanePrt` → write *Stp bags into slots (never returns a bag).
-fn port_match_render_lane(
+const fn port_match_render_lane(
     render_lane_prt: RenderLanePrt,
     extent_width_stp: u32,
     extent_height_stp: u32,
