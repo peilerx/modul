@@ -1,7 +1,7 @@
 //! Frame pass — proc owns branching (A2-PROC-COMPUTE).
 
 use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::display_res_intsct_rt_pkgs::DisplayDefaultRtCrg;
-use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::record_line_layers_rt::RecordLineLayersRt;
+use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::record_line_layers_rt::{RecordLineLayersRt, RECORD_LINE_LAYERS_EMPTY};
 use crate::gpu::MODUL0_VK_DISPLAY::proc::display::record_frame::record_display_frame;
 use crate::gpu::MODUL0_VK_FRAME::mem::base::transport::{FrameRenderDefaultRtPkg, FrameSlotDefaultRtPkg};
 use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::line_gpu_default_rt_pkg::LineGpuDefaultRtPkg;
@@ -34,7 +34,7 @@ pub fn record_display_frame_from_peels(
         bind_geometry_stp,
         None,
         None,
-        RecordLineLayersRt::empty(),
+        RECORD_LINE_LAYERS_EMPTY,
         image_index,
     )
 }

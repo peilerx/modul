@@ -1,6 +1,6 @@
 //! Pack SoA mesh → interleaved pos+nrm (flat face normals).
 
-use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::MeshSoaRtBfr;
+use crate::cpu::MODUL0_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::MeshSoaRtBfr;
 
 /// One vertex: pos.xyz + nrm.xyz (24 bytes).
 pub const STEEL_VERT_STRIDE: usize = 24;

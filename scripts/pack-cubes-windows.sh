@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build ship-ready cubes.exe for Telegram / multi-GPU testing (Windows x86_64 MSVC).
+# Build ship-ready cubes-auto.exe for Telegram / multi-GPU testing (Windows x86_64 MSVC).
 # Cross-compile from Linux via cargo-xwin. Same logging/recreate as Linux ship.
 # Digital hygiene: no host home / workspace paths in the binary or zip text files.
 set -euo pipefail
@@ -54,21 +54,21 @@ if [[ -f "$XWIN_CACHE/crt/lib/x86_64/libcmt.lib" && ! -f "$XWIN_CACHE/DONE" ]]; 
   echo "==> seeded xwin DONE marker (x86_64 CRT already present)"
 fi
 
-echo "==> cargo xwin build -p cubes --release --target ${TARGET} --xwin-arch x86_64"
-cargo xwin build -p cubes --release --target "${TARGET}" --xwin-arch x86_64
+echo "==> cargo xwin build -p cubes-auto --release --target ${TARGET} --xwin-arch x86_64"
+cargo xwin build -p cubes-auto --release --target "${TARGET}" --xwin-arch x86_64
 
-BIN="$ROOT/target/${TARGET}/release/cubes.exe"
+BIN="$ROOT/target/${TARGET}/release/cubes-auto-auto.exe"
 test -f "$BIN"
 
 rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
-cp -a "$BIN" "$OUT_DIR/cubes.exe"
+cp -a "$BIN" "$OUT_DIR/cubes-auto.exe"
 
 # Fail pack if personal host paths still appear.
 if command -v strings >/dev/null 2>&1; then
-  if strings "$OUT_DIR/cubes.exe" | grep -E -q "${HOME_R}|${ROOT_R}|/home/[^/]+/"; then
-    echo "ERROR: host path still present in cubes.exe (remap failed)" >&2
-    strings "$OUT_DIR/cubes.exe" | grep -E "${HOME_R}|${ROOT_R}|/home/[^/]+/" | head -20 >&2
+  if strings "$OUT_DIR/cubes-auto.exe" | grep -E -q "${HOME_R}|${ROOT_R}|/home/[^/]+/"; then
+    echo "ERROR: host path still present in cubes-auto.exe (remap failed)" >&2
+    strings "$OUT_DIR/cubes-auto.exe" | grep -E "${HOME_R}|${ROOT_R}|/home/[^/]+/" | head -20 >&2
     exit 1
   fi
 fi
@@ -89,11 +89,11 @@ INSTALL VULKAN
   • Check:  vulkaninfo (if SDK/tools installed)
 
 RUN
-  Double-click cubes.exe
+  Double-click cubes-auto.exe
   or in PowerShell / cmd:
-    .\cubes.exe
+    .\cubes-auto.exe
     set CUBES_COUNT=10000
-    .\cubes.exe
+    .\cubes-auto.exe
 
 CONTROLS
   LMB drag  — orbit
@@ -101,7 +101,7 @@ CONTROLS
   Esc       — quit
   Title bar shows FPS + process CPU%
 
-LOG FILES (created next to cubes.exe on every run)
+LOG FILES (created next to cubes-auto.exe on every run)
   cubes_session_log.txt   — GPU, path, FPS (~2/s), CPU process/system %, errors
   cubes_vk_validation.txt — Khronos validation (when Vulkan SDK layers installed)
 
@@ -126,7 +126,7 @@ EOF
     echo "host=cross-linux-xwin"
     echo
     echo "# file"
-    file -b ./cubes.exe 2>/dev/null || echo "PE32+ executable (Windows x86-64)"
+    file -b ./cubes-auto.exe 2>/dev/null || echo "PE32+ executable (Windows x86-64)"
   } > BUILD_INFO.txt
 )
 

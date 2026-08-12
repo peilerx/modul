@@ -6,7 +6,7 @@
 pub enum SwapchainAssemblyPrt {
     /// Graphics+present queues, validation layers on (etalon).
     #[default]
-    GraphicsPresentValidation,
+    GRAPHICS_PRESENT_VALIDATION,
     /// Same queues, no validation layers.
-    GraphicsPresentNoValidation,
+    GRAPHICS_PRESENT_NO_VALIDATION,
 }

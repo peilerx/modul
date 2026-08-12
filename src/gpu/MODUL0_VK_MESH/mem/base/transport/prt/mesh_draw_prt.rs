@@ -1,17 +1,17 @@
 //! # `MeshDrawPrt` — how mesh cargo is assembled for draw
 //!
-//! Links host mesh peels to the Vulkan solid/line lanes.
+//! Intent enum only · mode peel ∈ `asm_disasm`.
 
 /// Mesh draw session intent.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum MeshDrawPrt {
     /// Generic triangle list (no special material path).
     #[default]
-    TriangleList,
+    TRIANGLE_LIST,
     /// Solid shaded instanced mesh (`cubes` SPIR-V · pos+nrm + instance XYZ/LOD).
-    Solid,
+    SOLID,
     /// Wireframe edges (reserved).
-    Wireframe,
+    WIREFRAME,
     /// Skip GPU mesh bind.
-    Disabled,
+    DISABLED,
 }

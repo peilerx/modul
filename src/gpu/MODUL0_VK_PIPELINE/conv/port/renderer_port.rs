@@ -79,6 +79,13 @@ pub trait RendererTransportable {
         device_default_rt_pkg: &DeviceDefaultRtPkg,
     ) -> ModulResult<()>;
 
+    /// Handled factory-line · **8 atom + pack** · *Stp already on Bfr (no Auto Prt table).
+    /// Caller writes full `RenderPassTriangleStpPkg` + `PipelineTriangleStpPkg` with every op.
+    fn import_for_asm8_from_stp(
+        bfr: &mut Self,
+        device_default_rt_pkg: &DeviceDefaultRtPkg,
+    ) -> ModulResult<()>;
+
     fn export_asmed1(bfr: &Self) -> Option<&RendererDefaultRtCrg>;
 }
 
@@ -141,6 +148,10 @@ impl RendererTransportable for RendererBfr {
                 rp_stp.depth_layout_op,
                 rp_stp.present_layout_op,
                 rp_stp.initial_layout_op,
+                rp_stp.color_load_op,
+                rp_stp.color_store_op,
+                rp_stp.depth_load_op,
+                rp_stp.depth_store_op,
             )?,
         );
 
@@ -154,15 +165,7 @@ impl RendererTransportable for RendererBfr {
         bfr.pipeline_triangle_rt_pkg = Some(
             <PipelineTriangleRtPkg as PipelineTriangleHandled>::handled_assemble(
                 device_extrl,
-                pl_stp.sample_count_op,
-                pl_stp.topology_op,
-                pl_stp.polygon_mode_op,
-                pl_stp.cull_mode_op,
-                pl_stp.front_face_op,
-                pl_stp.depth_compare_op,
-                pl_stp.color_write_mask_op,
-                pl_stp.extent_width_stp,
-                pl_stp.extent_height_stp,
+                pl_stp,
                 rp_rt_pass,
                 vert,
                 frag,
@@ -228,6 +231,110 @@ impl RendererTransportable for RendererBfr {
         );
 
         // asm 9/9 · pack
+        let cargo_rt = RendererDefaultRtCrg::handled_assemble(bfr)?;
+        bfr.cargo_rt = Some(cargo_rt);
+        Ok(())
+    }
+
+    fn import_for_asm8_from_stp(
+        bfr: &mut Self,
+        device_default_rt_pkg: &DeviceDefaultRtPkg,
+    ) -> ModulResult<()> {
+        // Stp must already be written (handled knobs path) — no RenderLanePrt Auto table.
+        let _ = bfr.rp_stp()?;
+        let _ = bfr.pl_stp()?;
+        let device_extrl = &device_default_rt_pkg.device_extrl;
+
+        bfr.shaders_triangle_rt_pkg = Some(
+            <ShadersTriangleRtPkg as ShadersTriangleAuto>::auto_assemble(device_extrl)?,
+        );
+
+        let rp_stp = bfr.rp_stp()?;
+        bfr.render_pass_triangle_rt_pkg = Some(
+            <RenderPassTriangleRtPkg as RenderPassTriangleHandled>::handled_assemble(
+                device_extrl,
+                rp_stp.surface_format_op,
+                rp_stp.sample_count_op,
+                rp_stp.attachment_layout_op,
+                rp_stp.depth_format_op,
+                rp_stp.color_layout_op,
+                rp_stp.depth_layout_op,
+                rp_stp.present_layout_op,
+                rp_stp.initial_layout_op,
+                rp_stp.color_load_op,
+                rp_stp.color_store_op,
+                rp_stp.depth_load_op,
+                rp_stp.depth_store_op,
+            )?,
+        );
+
+        let pl_stp = *bfr.pl_stp()?;
+        let rp_rt_pass = bfr.rp_rt()?.render_pass_extrl;
+
+        let shaders = bfr.shaders_tri()?;
+        let (vert, frag) = extract_shader_pair(&shaders.shader_modules_extrl)?;
+        bfr.pipeline_triangle_rt_pkg = Some(
+            <PipelineTriangleRtPkg as PipelineTriangleHandled>::handled_assemble(
+                device_extrl,
+                pl_stp,
+                rp_rt_pass,
+                vert,
+                frag,
+            )?,
+        );
+
+        bfr.shaders_mesh_solid_rt_pkg = Some(
+            <ShadersTriangleRtPkg as ShadersMeshSolidAuto>::auto_assemble(device_extrl)?,
+        );
+
+        let steel = bfr.shaders_steel()?;
+        let (steel_vert, steel_frag) = extract_shader_pair(&steel.shader_modules_extrl)?;
+        bfr.pipeline_mesh_solid_rt_pkg = Some(
+            <PipelineTriangleRtPkg as PipelineMeshSolidHandled>::handled_assemble(
+                device_extrl,
+                pl_stp.sample_count_op,
+                pl_stp.topology_op,
+                pl_stp.polygon_mode_op,
+                vk::CullModeFlags::NONE,
+                pl_stp.front_face_op,
+                pl_stp.depth_compare_op,
+                pl_stp.color_write_mask_op,
+                rp_rt_pass,
+                steel_vert,
+                steel_frag,
+            )?,
+        );
+
+        bfr.shaders_line_rt_pkg = Some(
+            <ShadersTriangleRtPkg as ShadersLineAuto>::auto_assemble(device_extrl)?,
+        );
+
+        let line = bfr.shaders_line()?;
+        let (line_vert, line_frag) = extract_shader_pair(&line.shader_modules_extrl)?;
+        bfr.pipeline_line_rt_pkg = Some(
+            <PipelineTriangleRtPkg as PipelineLineHandled>::handled_assemble(
+                device_extrl,
+                pl_stp.sample_count_op,
+                pl_stp.depth_compare_op,
+                pl_stp.color_write_mask_op,
+                rp_rt_pass,
+                line_vert,
+                line_frag,
+            )?,
+        );
+
+        bfr.pipeline_line_tris_rt_pkg = Some(
+            <PipelineTriangleRtPkg as PipelineLineTrisHandled>::handled_assemble(
+                device_extrl,
+                pl_stp.sample_count_op,
+                pl_stp.depth_compare_op,
+                pl_stp.color_write_mask_op,
+                rp_rt_pass,
+                line_vert,
+                line_frag,
+            )?,
+        );
+
         let cargo_rt = RendererDefaultRtCrg::handled_assemble(bfr)?;
         bfr.cargo_rt = Some(cargo_rt);
         Ok(())

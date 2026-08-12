@@ -3,3 +3,5 @@
 //! Auto|Handled create/disassemble traits for Vulkan resources (FIX-129).
 
 pub mod frame_default_rt_crg_at_asm;
+
+pub mod frame_default_rt_crg_export;

@@ -26,10 +26,10 @@ impl SwapchainRtCrgHandled for SwapchainRtCrg {
         assembly_intent: SwapchainAssemblyPrt,
     ) -> ModulResult<SwapchainRtCrg> {
         let desc = match assembly_intent {
-            SwapchainAssemblyPrt::GraphicsPresentValidation => {
+            SwapchainAssemblyPrt::GRAPHICS_PRESENT_VALIDATION => {
                 "swapchain_rt_crg_graphics_present_validation"
             }
-            SwapchainAssemblyPrt::GraphicsPresentNoValidation => {
+            SwapchainAssemblyPrt::GRAPHICS_PRESENT_NO_VALIDATION => {
                 "swapchain_rt_crg_graphics_present_no_validation"
             }
         };

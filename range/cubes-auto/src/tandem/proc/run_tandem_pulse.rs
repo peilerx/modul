@@ -2,6 +2,8 @@
 
 use std::time::Instant;
 
+use modul::gpu::MODUL0_VK_FRAME::mem::asm_disasm::vk_crg::auto::frame_default_rt_crg_export::frame_export_asmed_render1;
+
 use modul::gpu::MODUL0_VK_DISPLAY::proc::display::display_frame::record_frame_with_serial;
 use modul::gpu::MODUL0_VK_FRAME::proc::processor::frame_tick::{begin_frame, end_frame};
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshPushRt;
@@ -50,7 +52,7 @@ pub fn run_tandem_pulse(bfr: &mut TandemBfr) -> Result<(), String> {
     let (slot, image_index) =
         begin_frame(device, &bfr.presentation_rt, loader, &bfr.frame_rt)?;
 
-    let render_policy = bfr.frame_rt.export_asmed_render1();
+    let render_policy = frame_export_asmed_render1(&bfr.frame_rt);
     record_frame_with_serial(
         device,
         &bfr.presentation_rt,

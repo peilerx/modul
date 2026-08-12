@@ -193,7 +193,7 @@
 //! | **Session** | Snapshot product state — not a long-lived type inside VK MCGs (FIX-127) |
 //! | **FIF** | Frames In Flight |
 //! | **Direct** | Product path without Viewsor / predictor (this published cut) |
-//! | **MSAA** | Multi-Sample Anti-Aliasing (e.g. `TriangleSolidDepthAa4`) |
+//! | **MSAA** | Multi-Sample Anti-Aliasing (e.g. `TRIANGLE_SOLID_DEPTH_AA4`) |
 //! | **FIFO / MAILBOX** | Vulkan present modes (vsync vs uncapped) |
 //!
 //! ---

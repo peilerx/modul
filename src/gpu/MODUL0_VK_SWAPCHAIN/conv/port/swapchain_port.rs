@@ -25,6 +25,7 @@ use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::boot_res_int
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::boot_res_intsct_rt_pkgs::SwapchainRtCrg;
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::present_res_intsct_rt_pkgs::SwapchainDefaultRtPkg;
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::setup::boot_res_intsct_stp_pkgs::SurfaceWindowStpPkg;
+use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::setup::present_res_intsct_stp_pkgs::SwapchainDefaultStpPkg;
 use crate::ModulResult;
 
 /// Boot `import_for_asm8`: **8** assemblies · 7 atom + 1 cargo pack.
@@ -46,12 +47,26 @@ pub trait SwapchainTransportable {
         surface_window_stp_pkg: SurfaceWindowStpPkg,
     ) -> ModulResult<()>;
 
-    /// Present factory-line · **1** = KHR product.
+    /// Handled boot · surface *Stp already on Bfr (`SwapchainBfrHandled`) · **7** atom + pack.
+    /// `validation_layers_stp` is the explicit knob (no Auto Prt table).
+    fn import_for_asm7_from_stp(
+        bfr: &mut Self,
+        validation_layers_stp: bool,
+        assembly_intent: SwapchainAssemblyPrt,
+    ) -> ModulResult<()>;
+
+    /// Present factory-line · **1** = KHR product (PortMatch from `SwapchainPrt`).
     fn import_present_for_asm1(
         bfr: &mut Self,
         present_intent: SwapchainPrt,
         extent_width_stp: u32,
         extent_height_stp: u32,
+    ) -> ModulResult<()>;
+
+    /// Present Handled · **1** = KHR from full `SwapchainDefaultStpPkg` (vk format + present mode).
+    fn import_present_for_asm1_from_stp(
+        bfr: &mut Self,
+        swapchain_default_stp_pkg: SwapchainDefaultStpPkg,
     ) -> ModulResult<()>;
 
     /// Export asmed boot cargo · **1** product.
@@ -72,21 +87,32 @@ impl SwapchainTransportable for SwapchainBfr {
         bfr.surface_window_stp_pkg = Some(surface_window_stp_pkg);
 
         let validation_layers_stp = match assembly_intent {
-            SwapchainAssemblyPrt::GraphicsPresentValidation => true,
-            SwapchainAssemblyPrt::GraphicsPresentNoValidation => false,
+            SwapchainAssemblyPrt::GRAPHICS_PRESENT_VALIDATION => true,
+            SwapchainAssemblyPrt::GRAPHICS_PRESENT_NO_VALIDATION => false,
         };
 
-        // asm 1/8 · atom · entry
+        Self::import_for_asm7_from_stp(bfr, validation_layers_stp, assembly_intent)
+    }
+
+    fn import_for_asm7_from_stp(
+        bfr: &mut Self,
+        validation_layers_stp: bool,
+        assembly_intent: SwapchainAssemblyPrt,
+    ) -> ModulResult<()> {
+        // Surface *Stp must already be written (Handled seed).
+        let _ = bfr.surface_window()?;
+
+        // asm 1 · atom · entry (Auto · no knobs)
         bfr.entry_default_rt = Some(EntryDefaultRt::auto_assemble()?);
 
-        // asm 2/8 · atom · instance
+        // asm 2 · atom · instance (Handled · validation knob)
         bfr.instance_default_rt = Some(InstanceDefaultRt::handled_assemble(
             bfr.entry()?,
             validation_layers_stp,
             bfr.surface_window()?.display_handle_extrl,
         )?);
 
-        // asm 3/8 · atom · surface package
+        // asm 3 · atom · surface package
         bfr.surface_default_rt_pkg = Some(SurfaceDefaultRtPkg::auto_assemble(
             bfr.entry()?,
             bfr.instance()?,
@@ -94,32 +120,32 @@ impl SwapchainTransportable for SwapchainBfr {
             bfr.surface_window()?.window_handle_extrl,
         )?);
 
-        // asm 4/8 · atom · physical device
+        // asm 4 · atom · physical device
         bfr.physical_device_default_rt_pkg = Some(PhysicalDeviceDefaultRtPkg::auto_assemble(
             bfr.instance()?,
             bfr.surface_pkg()?,
         )?);
 
-        // asm 5/8 · atom · logical device
+        // asm 5 · atom · logical device
         bfr.device_default_rt_pkg = Some(DeviceDefaultRtPkg::auto_assemble(
             bfr.physical_device()?,
             bfr.instance()?,
         )?);
 
-        // asm 6/8 · atom · command pool
+        // asm 6 · atom · command pool
         bfr.swapchain_command_pool_default_rt_pkg =
             Some(SwapchainCommandPoolDefaultRtPkg::auto_assemble(
                 bfr.device()?,
                 bfr.physical_device()?,
             )?);
 
-        // asm 7/8 · atom · swapchain loader
+        // asm 7 · atom · swapchain loader
         bfr.swapchain_loader_default_rt_pkg = Some(SwapchainLoaderDefaultRtPkg::auto_assemble(
             bfr.instance()?,
             bfr.device()?,
         ));
 
-        // asm 8/8 · pack cargo from bfr slots (takes inside handled · ¬ let theater in port)
+        // pack cargo from bfr slots (Handled)
         let cargo_rt = SwapchainRtCrg::handled_assemble(bfr, assembly_intent)?;
         bfr.cargo_rt = Some(cargo_rt);
 
@@ -136,7 +162,7 @@ impl SwapchainTransportable for SwapchainBfr {
 
         let cargo = bfr.cargo()?;
 
-        // asm 1/1 · KHR swapchain product
+        // asm 1/1 · KHR swapchain product (Prt → Stp knobs inside handled)
         bfr.swapchain_default_rt_pkg = Some(SwapchainDefaultRtPkg::handled_assemble(
             &cargo.surface_default_rt_pkg,
             &cargo.physical_device_default_rt_pkg,
@@ -144,6 +170,20 @@ impl SwapchainTransportable for SwapchainBfr {
             present_intent,
             extent_width_stp,
             extent_height_stp,
+        )?);
+        Ok(())
+    }
+
+    fn import_present_for_asm1_from_stp(
+        bfr: &mut Self,
+        swapchain_default_stp_pkg: SwapchainDefaultStpPkg,
+    ) -> ModulResult<()> {
+        let cargo = bfr.cargo()?;
+        bfr.swapchain_default_rt_pkg = Some(SwapchainDefaultRtPkg::handled_assemble_from_stp(
+            &cargo.surface_default_rt_pkg,
+            &cargo.physical_device_default_rt_pkg,
+            &cargo.swapchain_loader_default_rt_pkg,
+            &swapchain_default_stp_pkg,
         )?);
         Ok(())
     }

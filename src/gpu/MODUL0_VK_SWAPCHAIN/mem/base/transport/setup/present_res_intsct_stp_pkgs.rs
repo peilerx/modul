@@ -3,7 +3,7 @@
 
 use ash::vk;
 
-/// Swapchain recipe — setup knobs only (FIX-086/091/097).
+/// Swapchain recipe — setup knobs only (FIX-086/091/097 · P0 usage/alpha).
 pub struct SwapchainDefaultStpPkg {
     /// Setup phase field `extent_width_stp`.
     pub extent_width_stp: u32,
@@ -13,6 +13,10 @@ pub struct SwapchainDefaultStpPkg {
     pub surface_format_op: vk::Format,
     /// Operator / knob field `present_mode_op`.
     pub present_mode_op: vk::PresentModeKHR,
+    /// Swapchain image usage (color attachment · transfer · …).
+    pub image_usage_op: vk::ImageUsageFlags,
+    /// Composite alpha mode.
+    pub composite_alpha_op: vk::CompositeAlphaFlagsKHR,
     /// Human-readable bag descriptor (`&'static str` protocol tag).
     pub desc: &'static str,
 }

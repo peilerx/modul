@@ -1,12 +1,12 @@
 [package]
-name = "cubes"
+name = "cubes-auto"
 version.workspace = true
 edition.workspace = true
 license = "Apache-2.0"
-description = "range etalon — Vulkan cubes direct demo on modul (T.Hub · Slot-Factory-Line)"
+description = "range etalon — AUTO session (TandemSessionPrt aggregate) on modul"
 
 [[bin]]
-name = "cubes"
+name = "cubes-auto"
 path = "src/main.rs"
 
 [dependencies]
@@ -14,7 +14,6 @@ modul = { path = "../.." }
 ash.workspace = true
 winit.workspace = true
 raw-window-handle.workspace = true
-
 
 [lints.rust]
 unsafe_op_in_unsafe_fn = "warn"

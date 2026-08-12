@@ -14,7 +14,7 @@
 //!
 //! ## App usage
 //!
-//! `RendererBfr::import_for_asm9(RenderLanePrt::TriangleSolidDepthAa4, …)` then
+//! `RendererBfr::import_for_asm9(RenderLanePrt::TRIANGLE_SOLID_DEPTH_AA4, …)` then
 //! take `cargo_rt` for presentation + display.
 pub mod conv;
 /// Submodule `mem`.

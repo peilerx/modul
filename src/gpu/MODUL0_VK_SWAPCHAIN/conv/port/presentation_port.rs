@@ -41,6 +41,14 @@ pub trait PresentationTransportable {
         depth_format_op: vk::Format,
     ) -> ModulResult<()>;
 
+    /// Handled lane · presentation *Stp already on Bfr (`PresentationBfrHandled`).
+    fn import_for_asm5_from_stp(
+        bfr: &mut Self,
+        swapchain_rt_crg: &SwapchainRtCrg,
+        render_pass_triangle_rt_pkg: &RenderPassTriangleRtPkg,
+        swapchain_default_rt_pkg: SwapchainDefaultRtPkg,
+    ) -> ModulResult<()>;
+
     fn export_asmed1(bfr: &Self) -> Option<&PresentationDefaultRtCrg>;
 }
 
@@ -60,21 +68,36 @@ impl PresentationTransportable for PresentationBfr {
             depth_format_op,
             desc: "presentation_lane_stp",
         });
+        Self::import_for_asm5_from_stp(
+            bfr,
+            swapchain_rt_crg,
+            render_pass_triangle_rt_pkg,
+            swapchain_default_rt_pkg,
+        )
+    }
+
+    fn import_for_asm5_from_stp(
+        bfr: &mut Self,
+        swapchain_rt_crg: &SwapchainRtCrg,
+        render_pass_triangle_rt_pkg: &RenderPassTriangleRtPkg,
+        swapchain_default_rt_pkg: SwapchainDefaultRtPkg,
+    ) -> ModulResult<()> {
+        let _ = bfr.stp()?;
         bfr.swapchain_default_rt_pkg = Some(swapchain_default_rt_pkg);
 
-        // asm 1/6 · image views
+        // asm 1 · image views
         bfr.swapchain_image_views_default_rt_pkg =
             Some(SwapchainImageViewsDefaultRtPkg::auto_assemble(
                 &swapchain_rt_crg.device_default_rt_pkg,
                 bfr.khr()?,
             )?);
 
-        // asm 2/6 · sample count
+        // asm 2 · sample count (Handled · sample_count_op from Stp)
         bfr.sample_count_default_rt_pkg = Some(SampleCountDefaultRtPkg::handled_assemble(
             bfr.stp()?.sample_count_op,
         ));
 
-        // asm 3/6 · depth
+        // asm 3 · depth (Handled)
         bfr.depth_images_default_rt_pkg = Some(DepthImagesDefaultRtPkg::handled_assemble(
             &swapchain_rt_crg.instance_default_rt,
             &swapchain_rt_crg.physical_device_default_rt_pkg,
@@ -84,7 +107,7 @@ impl PresentationTransportable for PresentationBfr {
             bfr.stp()?.depth_format_op,
         )?);
 
-        // asm 4/6 · msaa color
+        // asm 4 · msaa color (Handled)
         bfr.msaa_color_default_rt_pkg = Some(MsaaColorDefaultRtPkg::handled_assemble(
             &swapchain_rt_crg.instance_default_rt,
             &swapchain_rt_crg.physical_device_default_rt_pkg,
@@ -94,7 +117,7 @@ impl PresentationTransportable for PresentationBfr {
             bfr.stp()?.sample_count_op,
         )?);
 
-        // asm 5/6 · framebuffer
+        // asm 5 · framebuffer (Handled)
         bfr.framebuffer_default_rt_pkg = Some(FramebufferDefaultRtPkg::handled_assemble(
             &swapchain_rt_crg.device_default_rt_pkg,
             bfr.khr()?,
@@ -105,7 +128,7 @@ impl PresentationTransportable for PresentationBfr {
             bfr.stp()?.sample_count_op,
         )?);
 
-        // asm 6/6 · pack
+        // pack (Handled)
         let cargo_rt = PresentationDefaultRtCrg::handled_assemble(bfr)?;
         bfr.cargo_rt = Some(cargo_rt);
         Ok(())

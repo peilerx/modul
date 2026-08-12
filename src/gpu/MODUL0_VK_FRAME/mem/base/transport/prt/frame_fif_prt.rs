@@ -1,15 +1,14 @@
 //! `IntentProtocol` — frame session FIF principle (W · FIX-115/117/118).
 //!
-//! **`IntentOwner`:** `MODUL0_VK_FRAME` · enum only · `PortMatch` ∈ `conv/port/intent`.
-//! Module picture · closed gestalt → full `FrameFifDefaultStpPkg` per arm.
+//! **`IntentOwner`:** `MODUL0_VK_FRAME` · enum only · data · PortMatch ∈ `asm_disasm`.
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum FrameFifPrt {
     /// Triple buffering (3 frames in flight).
     #[default]
-    TripleBuffered,
+    TRIPLE_BUFFERED,
     /// Double buffering (2 frames in flight).
-    DoubleBuffered,
+    DOUBLE_BUFFERED,
     /// Single frame in flight.
-    SingleBuffered,
+    SINGLE_BUFFERED,
 }

@@ -3,6 +3,7 @@
 //! Auto|Handled create/disassemble traits for Vulkan resources (FIX-129).
 
 pub mod command_pool_at_asm;
+pub mod swapchain_prt_at_asm;
 /// Submodule `debug_messenger_at_asm`.
 /// Part of `gpu/MODUL0_VK_SWAPCHAIN/mem/asm_disasm/vk_pkg/auto` under the mem/conv/proc MCG canon.
 pub mod debug_messenger_at_asm;

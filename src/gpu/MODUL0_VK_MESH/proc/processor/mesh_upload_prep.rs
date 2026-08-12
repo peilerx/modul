@@ -1,11 +1,12 @@
 //! Prepare steel mesh host bytes + mode (P · no vk create).
 
-use crate::gpu::MODUL0_VK_MESH::mem::base::transport::prt::mesh_draw_prt::MeshDrawPrt;
-use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::MeshSoaRtBfr;
-use crate::gpu::MODUL0_VK_MESH::proc::processor::pack_index_bytes::{
-    pack_u32_indices_to_bytes, mesh_solid_buffer_counts,
+use crate::cpu::MODUL0_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::MeshSoaRtBfr;
+use crate::cpu::MODUL0_MESH::proc::processor::pack_index_bytes::{
+    mesh_solid_buffer_counts, pack_u32_indices_to_bytes,
 };
-use crate::gpu::MODUL0_VK_MESH::proc::processor::pack_steel_interleaved::pack_steel_flat_from_mesh;
+use crate::cpu::MODUL0_MESH::proc::processor::pack_steel_interleaved::pack_steel_flat_from_mesh;
+use crate::gpu::MODUL0_VK_MESH::mem::asm_disasm::vk_pkg::auto::mesh_draw_prt_at_asm::mesh_draw_mode_stp;
+use crate::gpu::MODUL0_VK_MESH::mem::base::transport::prt::mesh_draw_prt::MeshDrawPrt;
 
 /// Host peels ready for catalog buffer create.
 pub struct MeshUploadPrep {
@@ -37,7 +38,7 @@ pub fn prepare_mesh_upload(
     mesh_soa_rt_bfr: &MeshSoaRtBfr,
     mesh_draw_prt: MeshDrawPrt,
 ) -> MeshUploadPrep {
-    if matches!(mesh_draw_prt, MeshDrawPrt::Disabled) || mesh_soa_rt_bfr.indices.len() < 3 {
+    if matches!(mesh_draw_prt, MeshDrawPrt::DISABLED) || mesh_soa_rt_bfr.indices.len() < 3 {
         return MeshUploadPrep {
             empty_stp: 1,
             mode_rt: 0,
@@ -52,12 +53,7 @@ pub fn prepare_mesh_upload(
     }
     let (vert_bytes_extrl, indices_extrl, bounds_min_rt, bounds_max_rt) =
         pack_steel_flat_from_mesh(mesh_soa_rt_bfr);
-    let mode_rt = match mesh_draw_prt {
-        MeshDrawPrt::Solid => 3,
-        MeshDrawPrt::TriangleList => 1,
-        MeshDrawPrt::Wireframe => 2,
-        MeshDrawPrt::Disabled => 0,
-    };
+    let mode_rt = mesh_draw_mode_stp(mesh_draw_prt);
     let idx_bytes_extrl = pack_u32_indices_to_bytes(&indices_extrl);
     let (vertex_count_rt, index_count_rt, triangle_count_rt) =
         mesh_solid_buffer_counts(vert_bytes_extrl.len(), indices_extrl.len());

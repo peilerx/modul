@@ -10,7 +10,7 @@ pub fn pick_sample_count(instance: &ash::Instance, phys: vk::PhysicalDevice) -> 
     pick_sample_count_prefer(
         instance,
         phys,
-        SampleCountPrefer::Prefer4Else1,
+        SampleCountPrefer::PREFER_4_ELSE_1,
     )
 }
 
@@ -18,9 +18,9 @@ pub fn pick_sample_count(instance: &ash::Instance, phys: vk::PhysicalDevice) -> 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SampleCountPrefer {
     #[default]
-    Prefer4Else1,
-    Force1,
-    Prefer8Else4Else1,
+    PREFER_4_ELSE_1,
+    FORCE_1,
+    PREFER_8_ELSE_4_ELSE_1,
 }
 
 /// Resolve sample count from device caps + preference.
@@ -34,15 +34,15 @@ pub fn pick_sample_count_prefer(
     let bits = props.limits.framebuffer_color_sample_counts
         & props.limits.framebuffer_depth_sample_counts;
     match prefer {
-        SampleCountPrefer::Force1 => vk::SampleCountFlags::TYPE_1,
-        SampleCountPrefer::Prefer4Else1 => {
+        SampleCountPrefer::FORCE_1 => vk::SampleCountFlags::TYPE_1,
+        SampleCountPrefer::PREFER_4_ELSE_1 => {
             if bits.contains(vk::SampleCountFlags::TYPE_4) {
                 vk::SampleCountFlags::TYPE_4
             } else {
                 vk::SampleCountFlags::TYPE_1
             }
         }
-        SampleCountPrefer::Prefer8Else4Else1 => {
+        SampleCountPrefer::PREFER_8_ELSE_4_ELSE_1 => {
             if bits.contains(vk::SampleCountFlags::TYPE_8) {
                 vk::SampleCountFlags::TYPE_8
             } else if bits.contains(vk::SampleCountFlags::TYPE_4) {

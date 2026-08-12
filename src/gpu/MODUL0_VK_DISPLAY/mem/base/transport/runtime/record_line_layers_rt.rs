@@ -13,16 +13,9 @@ pub struct RecordLineLayersRt<'a> {
     pub outline_line_gpu_default_rt_pkg: Option<&'a LineGpuDefaultRtPkg>,
 }
 
-impl RecordLineLayersRt<'_> {
-    /// `empty` — function (empty).
-    /// Public API entry for this module.
-    /// Belongs to: command-buffer record / display MCG.
-    #[must_use]
-    pub const fn empty() -> Self {
-        Self {
-            grid_line_gpu_default_rt_pkg: None,
-            sketch_line_gpu_default_rt_pkg: None,
-            outline_line_gpu_default_rt_pkg: None,
-        }
-    }
-}
+/// Empty optional line layers peel.
+pub const RECORD_LINE_LAYERS_EMPTY: RecordLineLayersRt<'static> = RecordLineLayersRt {
+    grid_line_gpu_default_rt_pkg: None,
+    sketch_line_gpu_default_rt_pkg: None,
+    outline_line_gpu_default_rt_pkg: None,
+};

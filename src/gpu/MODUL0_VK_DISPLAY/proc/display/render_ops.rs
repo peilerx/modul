@@ -1,6 +1,6 @@
 //! Display render ops — clear / geometry branches (P · `*_stp` levers).
 
-use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::record_line_layers_rt::RecordLineLayersRt;
+use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::record_line_layers_rt::RECORD_LINE_LAYERS_EMPTY;
 use crate::gpu::MODUL0_VK_DISPLAY::proc::display::record_frame::record_display_frame;
 use crate::gpu::MODUL0_VK_FRAME::mem::base::transport::{FrameRenderDefaultRtPkg, FrameSlotDefaultRtPkg};
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::RendererDefaultRtCrg;
@@ -25,7 +25,7 @@ pub fn record_clear(
         false,
         None,
         None,
-        RecordLineLayersRt::empty(),
+        RECORD_LINE_LAYERS_EMPTY,
         image_index,
     )
 }
@@ -48,7 +48,7 @@ pub fn record_triangle(
         true,
         None,
         None,
-        RecordLineLayersRt::empty(),
+        RECORD_LINE_LAYERS_EMPTY,
         image_index,
     )
 }

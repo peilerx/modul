@@ -14,8 +14,8 @@ use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::pipeline_layout_r
 };
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::render_pass_at_asm::RenderPassAuto;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::shader_spv_at_asm::ShaderSpvAuto;
-use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::line_gpu_default_rt_pkg::LinePushRt;
-use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshPushRt;
+use crate::gpu::MODUL0_VK_MESH::proc::processor::line_gpu_rt_at_asm::LINE_PUSH_RT_SIZE;
+use crate::gpu::MODUL0_VK_MESH::proc::processor::mesh_push_rt_at_asm::MESH_PUSH_RT_SIZE;
 use crate::ModulResult;
 
 // ========== SHADERS ==========
@@ -91,6 +91,10 @@ pub trait RenderPassTriangleHandled {
         depth_layout_op: vk::ImageLayout,
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
+        color_load_op: vk::AttachmentLoadOp,
+        color_store_op: vk::AttachmentStoreOp,
+        depth_load_op: vk::AttachmentLoadOp,
+        depth_store_op: vk::AttachmentStoreOp,
     ) -> ModulResult<RenderPassTriangleRtPkg>;
 }
 
@@ -100,6 +104,8 @@ trait RenderPassTriangleDepthAttachmentHandled {
         depth_format_op: vk::Format,
         depth_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
+        depth_load_op: vk::AttachmentLoadOp,
+        depth_store_op: vk::AttachmentStoreOp,
     ) -> vk::AttachmentDescription;
 }
 
@@ -108,6 +114,8 @@ trait RenderPassTriangleColorAttachmentSimpleHandled {
         surface_format_op: vk::Format,
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
+        color_load_op: vk::AttachmentLoadOp,
+        color_store_op: vk::AttachmentStoreOp,
     ) -> vk::AttachmentDescription;
 }
 
@@ -117,6 +125,8 @@ trait RenderPassTriangleColorAttachmentMsaaHandled {
         sample_count_op: vk::SampleCountFlags,
         color_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
+        color_load_op: vk::AttachmentLoadOp,
+        color_store_op: vk::AttachmentStoreOp,
     ) -> vk::AttachmentDescription;
 }
 
@@ -125,6 +135,7 @@ trait RenderPassTriangleResolveAttachmentHandled {
         surface_format_op: vk::Format,
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
+        color_store_op: vk::AttachmentStoreOp,
     ) -> vk::AttachmentDescription;
 }
 
@@ -138,6 +149,10 @@ trait RenderPassTriangleMsaaPathHandled {
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
         attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp,
+        color_load_op: vk::AttachmentLoadOp,
+        color_store_op: vk::AttachmentStoreOp,
+        depth_load_op: vk::AttachmentLoadOp,
+        depth_store_op: vk::AttachmentStoreOp,
     ) -> (Vec<vk::AttachmentDescription>, &'static str);
 }
 
@@ -149,6 +164,10 @@ trait RenderPassTriangleSimplePathHandled {
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
         attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp,
+        color_load_op: vk::AttachmentLoadOp,
+        color_store_op: vk::AttachmentStoreOp,
+        depth_load_op: vk::AttachmentLoadOp,
+        depth_store_op: vk::AttachmentStoreOp,
     ) -> (Vec<vk::AttachmentDescription>, &'static str);
 }
 
@@ -158,14 +177,16 @@ impl RenderPassTriangleDepthAttachmentHandled for RenderPassTriangleRtPkg {
         depth_format_op: vk::Format,
         depth_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
+        depth_load_op: vk::AttachmentLoadOp,
+        depth_store_op: vk::AttachmentStoreOp,
     ) -> vk::AttachmentDescription {
         vk::AttachmentDescription::default()
-        .format(depth_format_op)
-        .samples(sample_count_op)
-        .load_op(vk::AttachmentLoadOp::CLEAR)
-        .store_op(vk::AttachmentStoreOp::DONT_CARE)
-        .initial_layout(initial_layout_op)
-        .final_layout(depth_layout_op)
+            .format(depth_format_op)
+            .samples(sample_count_op)
+            .load_op(depth_load_op)
+            .store_op(depth_store_op)
+            .initial_layout(initial_layout_op)
+            .final_layout(depth_layout_op)
     }
 }
 
@@ -174,14 +195,16 @@ impl RenderPassTriangleColorAttachmentSimpleHandled for RenderPassTriangleRtPkg 
         surface_format_op: vk::Format,
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
+        color_load_op: vk::AttachmentLoadOp,
+        color_store_op: vk::AttachmentStoreOp,
     ) -> vk::AttachmentDescription {
         vk::AttachmentDescription::default()
-        .format(surface_format_op)
-        .samples(vk::SampleCountFlags::TYPE_1)
-        .load_op(vk::AttachmentLoadOp::CLEAR)
-        .store_op(vk::AttachmentStoreOp::STORE)
-        .initial_layout(initial_layout_op)
-        .final_layout(present_layout_op)
+            .format(surface_format_op)
+            .samples(vk::SampleCountFlags::TYPE_1)
+            .load_op(color_load_op)
+            .store_op(color_store_op)
+            .initial_layout(initial_layout_op)
+            .final_layout(present_layout_op)
     }
 }
 
@@ -191,14 +214,18 @@ impl RenderPassTriangleColorAttachmentMsaaHandled for RenderPassTriangleRtPkg {
         sample_count_op: vk::SampleCountFlags,
         color_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
+        color_load_op: vk::AttachmentLoadOp,
+        color_store_op: vk::AttachmentStoreOp,
     ) -> vk::AttachmentDescription {
+        // MSAA color is transient: store often DONT_CARE; knobs still from *Stp.
+        let _ = color_store_op;
         vk::AttachmentDescription::default()
-        .format(surface_format_op)
-        .samples(sample_count_op)
-        .load_op(vk::AttachmentLoadOp::CLEAR)
-        .store_op(vk::AttachmentStoreOp::DONT_CARE)
-        .initial_layout(initial_layout_op)
-        .final_layout(color_layout_op)
+            .format(surface_format_op)
+            .samples(sample_count_op)
+            .load_op(color_load_op)
+            .store_op(vk::AttachmentStoreOp::DONT_CARE)
+            .initial_layout(initial_layout_op)
+            .final_layout(color_layout_op)
     }
 }
 
@@ -207,14 +234,15 @@ impl RenderPassTriangleResolveAttachmentHandled for RenderPassTriangleRtPkg {
         surface_format_op: vk::Format,
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
+        color_store_op: vk::AttachmentStoreOp,
     ) -> vk::AttachmentDescription {
         vk::AttachmentDescription::default()
-        .format(surface_format_op)
-        .samples(vk::SampleCountFlags::TYPE_1)
-        .load_op(vk::AttachmentLoadOp::DONT_CARE)
-        .store_op(vk::AttachmentStoreOp::STORE)
-        .initial_layout(initial_layout_op)
-        .final_layout(present_layout_op)
+            .format(surface_format_op)
+            .samples(vk::SampleCountFlags::TYPE_1)
+            .load_op(vk::AttachmentLoadOp::DONT_CARE)
+            .store_op(color_store_op)
+            .initial_layout(initial_layout_op)
+            .final_layout(present_layout_op)
     }
 }
 
@@ -228,6 +256,10 @@ impl RenderPassTriangleMsaaPathHandled for RenderPassTriangleRtPkg {
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
         attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp,
+        color_load_op: vk::AttachmentLoadOp,
+        color_store_op: vk::AttachmentStoreOp,
+        depth_load_op: vk::AttachmentLoadOp,
+        depth_store_op: vk::AttachmentStoreOp,
     ) -> (Vec<vk::AttachmentDescription>, &'static str) {
         let attachments = vec![
             <Self as RenderPassTriangleColorAttachmentMsaaHandled>::handled_assemble(
@@ -235,17 +267,22 @@ impl RenderPassTriangleMsaaPathHandled for RenderPassTriangleRtPkg {
                 sample_count_op,
                 color_layout_op,
                 initial_layout_op,
+                color_load_op,
+                color_store_op,
             ),
             <Self as RenderPassTriangleDepthAttachmentHandled>::handled_assemble(
                 sample_count_op,
                 depth_format_op,
                 depth_layout_op,
                 initial_layout_op,
+                depth_load_op,
+                depth_store_op,
             ),
             <Self as RenderPassTriangleResolveAttachmentHandled>::handled_assemble(
                 surface_format_op,
                 present_layout_op,
                 initial_layout_op,
+                color_store_op,
             ),
         ];
         let desc = match attachment_layout_op {
@@ -264,18 +301,26 @@ impl RenderPassTriangleSimplePathHandled for RenderPassTriangleRtPkg {
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
         attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp,
+        color_load_op: vk::AttachmentLoadOp,
+        color_store_op: vk::AttachmentStoreOp,
+        depth_load_op: vk::AttachmentLoadOp,
+        depth_store_op: vk::AttachmentStoreOp,
     ) -> (Vec<vk::AttachmentDescription>, &'static str) {
         let attachments = vec![
             <Self as RenderPassTriangleColorAttachmentSimpleHandled>::handled_assemble(
                 surface_format_op,
                 present_layout_op,
                 initial_layout_op,
+                color_load_op,
+                color_store_op,
             ),
             <Self as RenderPassTriangleDepthAttachmentHandled>::handled_assemble(
                 vk::SampleCountFlags::TYPE_1,
                 depth_format_op,
                 depth_layout_op,
                 initial_layout_op,
+                depth_load_op,
+                depth_store_op,
             ),
         ];
         let desc = match attachment_layout_op {
@@ -297,6 +342,10 @@ impl RenderPassTriangleHandled for RenderPassTriangleRtPkg {
         depth_layout_op: vk::ImageLayout,
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
+        color_load_op: vk::AttachmentLoadOp,
+        color_store_op: vk::AttachmentStoreOp,
+        depth_load_op: vk::AttachmentLoadOp,
+        depth_store_op: vk::AttachmentStoreOp,
     ) -> ModulResult<RenderPassTriangleRtPkg> {
         let (attachments, desc) = match attachment_layout_op {
             RenderPassAttachmentLayoutStpPkgOp::MSAA => {
@@ -309,6 +358,10 @@ impl RenderPassTriangleHandled for RenderPassTriangleRtPkg {
                     present_layout_op,
                     initial_layout_op,
                     attachment_layout_op,
+                    color_load_op,
+                    color_store_op,
+                    depth_load_op,
+                    depth_store_op,
                 )
             }
             RenderPassAttachmentLayoutStpPkgOp::SIMPLE => {
@@ -319,6 +372,10 @@ impl RenderPassTriangleHandled for RenderPassTriangleRtPkg {
                     present_layout_op,
                     initial_layout_op,
                     attachment_layout_op,
+                    color_load_op,
+                    color_store_op,
+                    depth_load_op,
+                    depth_store_op,
                 )
             }
         };
@@ -390,17 +447,10 @@ fn handled_render_pass_triangle_build(
 
 /// Catalog — conv unpacks `PipelineTriangleStpPkg` → `_op` / `_stp` knobs (FIX-090/091/094/095/096/097).
 pub trait PipelineTriangleHandled {
+    /// Full *Stp knobs (P0 depth/blend/primitive) · no silent create-info defaults.
     fn handled_assemble(
         device_extrl: &Device,
-        sample_count_op: vk::SampleCountFlags,
-        topology_op: vk::PrimitiveTopology,
-        polygon_mode_op: vk::PolygonMode,
-        cull_mode_op: vk::CullModeFlags,
-        front_face_op: vk::FrontFace,
-        depth_compare_op: vk::CompareOp,
-        color_write_mask_op: vk::ColorComponentFlags,
-        extent_width_stp: u32,
-        extent_height_stp: u32,
+        pl_stp: crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::PipelineTriangleStpPkg,
         render_pass_extrl: vk::RenderPass,
         vert_module_extrl: vk::ShaderModule,
         frag_module_extrl: vk::ShaderModule,
@@ -410,6 +460,7 @@ pub trait PipelineTriangleHandled {
 trait PipelineTriangleInputAssemblyHandled {
     fn handled_assemble(
         topology_op: vk::PrimitiveTopology,
+        primitive_restart_enable_stp: bool,
     ) -> vk::PipelineInputAssemblyStateCreateInfo<'static>;
 }
 
@@ -418,6 +469,7 @@ trait PipelineTriangleRasterStateHandled {
         polygon_mode_op: vk::PolygonMode,
         cull_mode_op: vk::CullModeFlags,
         front_face_op: vk::FrontFace,
+        line_width_stp: f32,
     ) -> vk::PipelineRasterizationStateCreateInfo<'static>;
 }
 
@@ -430,11 +482,17 @@ trait PipelineTriangleMultisampleStateHandled {
 trait PipelineTriangleColorBlendAttachmentHandled {
     fn handled_assemble(
         color_write_mask_op: vk::ColorComponentFlags,
+        blend_enable_stp: bool,
+        src_color_blend_factor_op: vk::BlendFactor,
+        dst_color_blend_factor_op: vk::BlendFactor,
+        color_blend_op: vk::BlendOp,
     ) -> vk::PipelineColorBlendAttachmentState;
 }
 
 trait PipelineTriangleDepthStencilStateHandled {
     fn handled_assemble(
+        depth_test_enable_stp: bool,
+        depth_write_enable_stp: bool,
         depth_compare_op: vk::CompareOp,
     ) -> vk::PipelineDepthStencilStateCreateInfo<'static>;
 }
@@ -453,10 +511,11 @@ trait PipelineTriangleLayoutAuto {
 impl PipelineTriangleInputAssemblyHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
         topology_op: vk::PrimitiveTopology,
+        primitive_restart_enable_stp: bool,
     ) -> vk::PipelineInputAssemblyStateCreateInfo<'static> {
         vk::PipelineInputAssemblyStateCreateInfo::default()
-        .topology(topology_op)
-        .primitive_restart_enable(false)
+            .topology(topology_op)
+            .primitive_restart_enable(primitive_restart_enable_stp)
     }
 }
 
@@ -465,12 +524,13 @@ impl PipelineTriangleRasterStateHandled for PipelineTriangleRtPkg {
         polygon_mode_op: vk::PolygonMode,
         cull_mode_op: vk::CullModeFlags,
         front_face_op: vk::FrontFace,
+        line_width_stp: f32,
     ) -> vk::PipelineRasterizationStateCreateInfo<'static> {
         vk::PipelineRasterizationStateCreateInfo::default()
-        .polygon_mode(polygon_mode_op)
-        .cull_mode(cull_mode_op)
-        .front_face(front_face_op)
-        .line_width(1.0)
+            .polygon_mode(polygon_mode_op)
+            .cull_mode(cull_mode_op)
+            .front_face(front_face_op)
+            .line_width(line_width_stp)
     }
 }
 
@@ -478,28 +538,40 @@ impl PipelineTriangleMultisampleStateHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
         sample_count_op: vk::SampleCountFlags,
     ) -> vk::PipelineMultisampleStateCreateInfo<'static> {
-        vk::PipelineMultisampleStateCreateInfo::default()
-        .rasterization_samples(sample_count_op)
+        vk::PipelineMultisampleStateCreateInfo::default().rasterization_samples(sample_count_op)
     }
 }
 
 impl PipelineTriangleColorBlendAttachmentHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
         color_write_mask_op: vk::ColorComponentFlags,
+        blend_enable_stp: bool,
+        src_color_blend_factor_op: vk::BlendFactor,
+        dst_color_blend_factor_op: vk::BlendFactor,
+        color_blend_op: vk::BlendOp,
     ) -> vk::PipelineColorBlendAttachmentState {
         vk::PipelineColorBlendAttachmentState::default()
-        .color_write_mask(color_write_mask_op)
+            .color_write_mask(color_write_mask_op)
+            .blend_enable(blend_enable_stp)
+            .src_color_blend_factor(src_color_blend_factor_op)
+            .dst_color_blend_factor(dst_color_blend_factor_op)
+            .color_blend_op(color_blend_op)
+            .src_alpha_blend_factor(src_color_blend_factor_op)
+            .dst_alpha_blend_factor(dst_color_blend_factor_op)
+            .alpha_blend_op(color_blend_op)
     }
 }
 
 impl PipelineTriangleDepthStencilStateHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
+        depth_test_enable_stp: bool,
+        depth_write_enable_stp: bool,
         depth_compare_op: vk::CompareOp,
     ) -> vk::PipelineDepthStencilStateCreateInfo<'static> {
         vk::PipelineDepthStencilStateCreateInfo::default()
-        .depth_test_enable(true)
-        .depth_write_enable(true)
-        .depth_compare_op(depth_compare_op)
+            .depth_test_enable(depth_test_enable_stp)
+            .depth_write_enable(depth_write_enable_stp)
+            .depth_compare_op(depth_compare_op)
     }
 }
 
@@ -531,83 +603,76 @@ impl PipelineTriangleLayoutAuto for PipelineTriangleRtPkg {
 impl PipelineTriangleHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
         device_extrl: &Device,
-        sample_count_op: vk::SampleCountFlags,
-        topology_op: vk::PrimitiveTopology,
-        polygon_mode_op: vk::PolygonMode,
-        cull_mode_op: vk::CullModeFlags,
-        front_face_op: vk::FrontFace,
-        depth_compare_op: vk::CompareOp,
-        color_write_mask_op: vk::ColorComponentFlags,
-        extent_width_stp: u32,
-        extent_height_stp: u32,
+        pl_stp: crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::PipelineTriangleStpPkg,
         render_pass_extrl: vk::RenderPass,
         vert_module_extrl: vk::ShaderModule,
         frag_module_extrl: vk::ShaderModule,
     ) -> ModulResult<PipelineTriangleRtPkg> {
-        {
-            let _ = (extent_width_stp, extent_height_stp);
-            let input_assembly =
-                <Self as PipelineTriangleInputAssemblyHandled>::handled_assemble(
-                    topology_op,
-                );
-            let raster =
-                <Self as PipelineTriangleRasterStateHandled>::handled_assemble(
-                    polygon_mode_op,
-                    cull_mode_op,
-                    front_face_op,
-                );
-            let multisample =
-                <Self as PipelineTriangleMultisampleStateHandled>::handled_assemble(
-                    sample_count_op,
-                );
-            let color_blend_attachment =
-                <Self as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
-                    color_write_mask_op,
-                );
-            let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
-                .attachments(std::slice::from_ref(&color_blend_attachment));
-            let depth_stencil =
-                <Self as PipelineTriangleDepthStencilStateHandled>::handled_assemble(
-                    depth_compare_op,
-                );
-            let stages =
-                <Self as PipelineTriangleShaderStagesAuto>::auto_assemble(
-                    vert_module_extrl,
-                    frag_module_extrl,
-                );
-            let pipeline_layout_extrl =
-                <Self as PipelineTriangleLayoutAuto>::auto_assemble(device_extrl)?;
-            let vertex_input = vk::PipelineVertexInputStateCreateInfo::default();
-            let dynamic_states = [vk::DynamicState::VIEWPORT, vk::DynamicState::SCISSOR];
-            let dynamic_state =
-                vk::PipelineDynamicStateCreateInfo::default().dynamic_states(&dynamic_states);
-            let viewport_state = vk::PipelineViewportStateCreateInfo::default()
-                .viewport_count(1)
-                .scissor_count(1);
-            let pipeline_info = vk::GraphicsPipelineCreateInfo::default()
-                .stages(&stages)
-                .vertex_input_state(&vertex_input)
-                .input_assembly_state(&input_assembly)
-                .viewport_state(&viewport_state)
-                .rasterization_state(&raster)
-                .multisample_state(&multisample)
-                .color_blend_state(&color_blend)
-                .depth_stencil_state(&depth_stencil)
-                .dynamic_state(&dynamic_state)
-                .layout(pipeline_layout_extrl)
-                .render_pass(render_pass_extrl)
-                .subpass(0);
-            let pipeline_extrl = vk::Pipeline::auto_assemble(
-                device_extrl,
-                vk::PipelineCache::null(),
-                &pipeline_info,
-            )?;
-            Ok(PipelineTriangleRtPkg {
-                pipeline_extrl,
-                pipeline_layout_extrl,
-                desc: "pipeline_triangle",
-            })
-        }
+        let _ = (pl_stp.extent_width_stp, pl_stp.extent_height_stp);
+        let input_assembly = <Self as PipelineTriangleInputAssemblyHandled>::handled_assemble(
+            pl_stp.topology_op,
+            pl_stp.primitive_restart_enable_stp,
+        );
+        let raster = <Self as PipelineTriangleRasterStateHandled>::handled_assemble(
+            pl_stp.polygon_mode_op,
+            pl_stp.cull_mode_op,
+            pl_stp.front_face_op,
+            pl_stp.line_width_stp,
+        );
+        let multisample = <Self as PipelineTriangleMultisampleStateHandled>::handled_assemble(
+            pl_stp.sample_count_op,
+        );
+        let color_blend_attachment =
+            <Self as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
+                pl_stp.color_write_mask_op,
+                pl_stp.blend_enable_stp,
+                pl_stp.src_color_blend_factor_op,
+                pl_stp.dst_color_blend_factor_op,
+                pl_stp.color_blend_op,
+            );
+        let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
+            .attachments(std::slice::from_ref(&color_blend_attachment));
+        let depth_stencil = <Self as PipelineTriangleDepthStencilStateHandled>::handled_assemble(
+            pl_stp.depth_test_enable_stp,
+            pl_stp.depth_write_enable_stp,
+            pl_stp.depth_compare_op,
+        );
+        let stages = <Self as PipelineTriangleShaderStagesAuto>::auto_assemble(
+            vert_module_extrl,
+            frag_module_extrl,
+        );
+        let pipeline_layout_extrl =
+            <Self as PipelineTriangleLayoutAuto>::auto_assemble(device_extrl)?;
+        let vertex_input = vk::PipelineVertexInputStateCreateInfo::default();
+        let dynamic_states = [vk::DynamicState::VIEWPORT, vk::DynamicState::SCISSOR];
+        let dynamic_state =
+            vk::PipelineDynamicStateCreateInfo::default().dynamic_states(&dynamic_states);
+        let viewport_state = vk::PipelineViewportStateCreateInfo::default()
+            .viewport_count(1)
+            .scissor_count(1);
+        let pipeline_info = vk::GraphicsPipelineCreateInfo::default()
+            .stages(&stages)
+            .vertex_input_state(&vertex_input)
+            .input_assembly_state(&input_assembly)
+            .viewport_state(&viewport_state)
+            .rasterization_state(&raster)
+            .multisample_state(&multisample)
+            .color_blend_state(&color_blend)
+            .depth_stencil_state(&depth_stencil)
+            .dynamic_state(&dynamic_state)
+            .layout(pipeline_layout_extrl)
+            .render_pass(render_pass_extrl)
+            .subpass(0);
+        let pipeline_extrl = vk::Pipeline::auto_assemble(
+            device_extrl,
+            vk::PipelineCache::null(),
+            &pipeline_info,
+        )?;
+        Ok(PipelineTriangleRtPkg {
+            pipeline_extrl,
+            pipeline_layout_extrl,
+            desc: pl_stp.desc,
+        })
     }
 }
 
@@ -672,12 +737,14 @@ impl PipelineMeshSolidHandled for PipelineTriangleRtPkg {
             let input_assembly =
                 <Self as PipelineTriangleInputAssemblyHandled>::handled_assemble(
                     topology_op,
+                    false,
                 );
             let raster =
                 <Self as PipelineTriangleRasterStateHandled>::handled_assemble(
                     polygon_mode_op,
                     cull_mode_op,
                     front_face_op,
+                    1.0,
                 );
             let multisample =
                 <Self as PipelineTriangleMultisampleStateHandled>::handled_assemble(
@@ -686,11 +753,17 @@ impl PipelineMeshSolidHandled for PipelineTriangleRtPkg {
             let color_blend_attachment =
                 <Self as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
                     color_write_mask_op,
+                    false,
+                    vk::BlendFactor::ONE,
+                    vk::BlendFactor::ZERO,
+                    vk::BlendOp::ADD,
                 );
             let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
                 .attachments(std::slice::from_ref(&color_blend_attachment));
             let depth_stencil =
                 <Self as PipelineTriangleDepthStencilStateHandled>::handled_assemble(
+                    true,
+                    true,
                     depth_compare_op,
                 );
             let stages =
@@ -702,7 +775,7 @@ impl PipelineMeshSolidHandled for PipelineTriangleRtPkg {
             let push_range = vk::PushConstantRange::default()
                 .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
                 .offset(0)
-                .size(MeshPushRt::SIZE);
+                .size(MESH_PUSH_RT_SIZE);
             let pipeline_layout_extrl =
                 <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
                     device_extrl,
@@ -787,7 +860,7 @@ pub trait ShadersLineAuto {
 
 impl ShadersLineAuto for ShadersTriangleRtPkg {
     fn auto_assemble(device_extrl: &Device) -> ModulResult<ShadersTriangleRtPkg> {
-        // LinePushRt · vertex loc0 xyz only (push size = LinePushRt::SIZE).
+        // LinePushRt · vertex loc0 xyz only (push size = LINE_PUSH_RT_SIZE).
         let vert_code = include_bytes!("../../../../../../../shader/line.vert.spv").as_slice();
         let frag_code = include_bytes!("../../../../../../../shader/line.frag.spv").as_slice();
         let shader_modules_extrl =
@@ -848,12 +921,14 @@ impl PipelineLineHandled for PipelineTriangleRtPkg {
             let input_assembly =
                 <Self as PipelineTriangleInputAssemblyHandled>::handled_assemble(
                     topology_op,
+                    false,
                 );
             let raster =
                 <Self as PipelineTriangleRasterStateHandled>::handled_assemble(
                     vk::PolygonMode::FILL,
                     vk::CullModeFlags::NONE,
                     vk::FrontFace::COUNTER_CLOCKWISE,
+                    1.0,
                 );
             let multisample =
                 <Self as PipelineTriangleMultisampleStateHandled>::handled_assemble(
@@ -862,13 +937,19 @@ impl PipelineLineHandled for PipelineTriangleRtPkg {
             let color_blend_attachment =
                 <Self as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
                     color_write_mask_op,
+                    false,
+                    vk::BlendFactor::ONE,
+                    vk::BlendFactor::ZERO,
+                    vk::BlendOp::ADD,
                 );
             let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
                 .attachments(std::slice::from_ref(&color_blend_attachment));
-            let depth_stencil = vk::PipelineDepthStencilStateCreateInfo::default()
-                .depth_test_enable(true)
-                .depth_write_enable(false)
-                .depth_compare_op(depth_compare_op);
+            let depth_stencil =
+                <Self as PipelineTriangleDepthStencilStateHandled>::handled_assemble(
+                    true,
+                    false,
+                    depth_compare_op,
+                );
             let stages =
                 <Self as PipelineTriangleShaderStagesAuto>::auto_assemble(
                     vert_module_extrl,
@@ -877,7 +958,7 @@ impl PipelineLineHandled for PipelineTriangleRtPkg {
             let push_range = vk::PushConstantRange::default()
                 .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
                 .offset(0)
-                .size(LinePushRt::SIZE);
+                .size(LINE_PUSH_RT_SIZE);
             let pipeline_layout_extrl =
                 <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
                     device_extrl,
@@ -944,12 +1025,14 @@ impl PipelineLineTrisHandled for PipelineTriangleRtPkg {
             let input_assembly =
                 <Self as PipelineTriangleInputAssemblyHandled>::handled_assemble(
                     topology_op,
+                    false,
                 );
             let raster =
                 <Self as PipelineTriangleRasterStateHandled>::handled_assemble(
                     vk::PolygonMode::FILL,
                     vk::CullModeFlags::NONE,
                     vk::FrontFace::COUNTER_CLOCKWISE,
+                    1.0,
                 );
             let multisample =
                 <Self as PipelineTriangleMultisampleStateHandled>::handled_assemble(
@@ -958,13 +1041,19 @@ impl PipelineLineTrisHandled for PipelineTriangleRtPkg {
             let color_blend_attachment =
                 <Self as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
                     color_write_mask_op,
+                    false,
+                    vk::BlendFactor::ONE,
+                    vk::BlendFactor::ZERO,
+                    vk::BlendOp::ADD,
                 );
             let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
                 .attachments(std::slice::from_ref(&color_blend_attachment));
-            let depth_stencil = vk::PipelineDepthStencilStateCreateInfo::default()
-                .depth_test_enable(true)
-                .depth_write_enable(false)
-                .depth_compare_op(depth_compare_op);
+            let depth_stencil =
+                <Self as PipelineTriangleDepthStencilStateHandled>::handled_assemble(
+                    true,
+                    false,
+                    depth_compare_op,
+                );
             let stages =
                 <Self as PipelineTriangleShaderStagesAuto>::auto_assemble(
                     vert_module_extrl,
@@ -973,7 +1062,7 @@ impl PipelineLineTrisHandled for PipelineTriangleRtPkg {
             let push_range = vk::PushConstantRange::default()
                 .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
                 .offset(0)
-                .size(LinePushRt::SIZE);
+                .size(LINE_PUSH_RT_SIZE);
             let pipeline_layout_extrl =
                 <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
                     device_extrl,

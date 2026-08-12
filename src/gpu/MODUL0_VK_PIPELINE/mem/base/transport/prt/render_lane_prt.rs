@@ -13,36 +13,22 @@
 //! Custom/non-preset knobs would need a Handled *Stp path (explicit ops bag);
 //! product presets stay on Auto.
 
-use ash::vk;
-
 /// Named full-lane pictures of `MODUL0_VK_PIPELINE` (closed gestalt each arm).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum RenderLanePrt {
     /// Solid · fill · no cull · depth less · 1× samples.
     #[default]
-    TriangleSolidDepth,
+    TRIANGLE_SOLID_DEPTH,
     /// Solid · fill · back cull · depth less · 1×.
-    TriangleSolidDepthCullBack,
+    TRIANGLE_SOLID_DEPTH_CULL_BACK,
     /// Wire · no cull · depth less · 1×.
-    TriangleWireDepth,
+    TRIANGLE_WIRE_DEPTH,
     /// Solid · fill · no cull · depth less · **MSAA 4×** (cubes etalon).
-    TriangleSolidDepthAa4,
+    TRIANGLE_SOLID_DEPTH_AA4,
     /// Solid · fill · no cull · depth less · MSAA 8×.
-    TriangleSolidDepthAa8,
+    TRIANGLE_SOLID_DEPTH_AA8,
     /// Wire · no cull · depth less · MSAA 4×.
-    TriangleWireDepthAa4,
+    TRIANGLE_WIRE_DEPTH_AA4,
     /// Solid · depth always · 1× (debug overlay).
-    TriangleSolidDepthAlways,
-}
-
-impl RenderLanePrt {
-    /// Ship/default solid lane for a sample-count pick (4× → Aa4, else 1× solid depth).
-    #[must_use]
-    pub fn for_sample_count(samples: vk::SampleCountFlags) -> Self {
-        if samples == vk::SampleCountFlags::TYPE_4 {
-            Self::TriangleSolidDepthAa4
-        } else {
-            Self::TriangleSolidDepth
-        }
-    }
+    TRIANGLE_SOLID_DEPTH_ALWAYS,
 }

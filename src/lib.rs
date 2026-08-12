@@ -25,8 +25,8 @@
 //! | Area | Content |
 //! |------|---------|
 //! | **GPU MCGs** | `gpu::MODUL0_VK_*` — swapchain, pipeline, frame, display, mesh |
+//! | **CPU MCGs** | `cpu::MODUL0_MESH` — host SoA lattice + pack (no Vulkan) |
 //! | **Common** | [`ModulResult`], SPIR-V helper, memory type pick, tracing |
-//! | **CPU lane** | Empty placeholder (`cpu`) in this direct cut |
 //! | **Canon docs** | [`canon`] — MCG + every protocol abbreviation |
 //!
 //! ## Architecture (layers)
@@ -54,7 +54,8 @@
 //! 3. Presentation (swapchain presentation port)
 //! 4. `MODUL0_VK_FRAME` — FIF begin/end
 //! 5. `MODUL0_VK_DISPLAY` — record command buffers
-//! 6. `MODUL0_VK_MESH` — VBO/IBO instances + steel push constants
+//! 6. `cpu::MODUL0_MESH` — host SoA mesh + pack bytes
+//! 7. `MODUL0_VK_MESH` — VBO/IBO instances + steel push constants
 //!
 //! ## Shaders
 //!
@@ -77,6 +78,10 @@
     non_snake_case,
     reason = "MODUL0_{DOMAIN} CAPS segments per FIX-073 / Factory Mind"
 )]
+#![allow(
+    non_camel_case_types,
+    reason = "Prt intent variants use CAPS_SNAKE_CASE as product lever lists"
+)]
 #![allow(missing_docs)]
 
 /// Architecture canon: **MCG**, **PTP**, phase suffixes, protocol letters.
@@ -86,7 +91,7 @@ pub mod canon;
 
 /// Shared helpers (result type, SPIR-V, memory type, tracing, protocol re-exports).
 pub mod common;
-/// CPU hardware lane (empty in the published direct Vulkan cut).
+/// CPU hardware lane — host MCGs (`MODUL0_MESH` SoA / pack).
 pub mod cpu;
 /// GPU hardware lane — all live `MODUL0_VK_*` MCGs.
 pub mod gpu;

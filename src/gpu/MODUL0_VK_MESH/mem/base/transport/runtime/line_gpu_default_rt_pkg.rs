@@ -22,24 +22,6 @@ pub struct LineGpuDefaultRtPkg {
     pub desc: &'static str,
 }
 
-impl LineGpuDefaultRtPkg {
-    /// `empty` — function (empty).
-    /// Public API entry for this module.
-    /// Belongs to: mesh upload / solid draw MCG.
-    #[must_use]
-    pub const fn empty(desc: &'static str) -> Self {
-        Self {
-            vertex_buffer_extrl: vk::Buffer::null(),
-            vertex_memory_extrl: vk::DeviceMemory::null(),
-            vertex_count_rt: 0,
-            line_count_rt: 0,
-            color_rt: [0.55, 0.58, 0.62, 1.0],
-            as_tris_rt: false,
-            ready_rt: false,
-            desc,
-        }
-    }
-}
 
 /// `line` push constants (mat4 mvp + vec4 color = 80 bytes).
 #[repr(C)]
@@ -51,17 +33,3 @@ pub struct LinePushRt {
     pub color: [f32; 4],
 }
 
-impl LinePushRt {
-    /// `SIZE` — const (SIZE).
-    /// Module path context: `gpu/MODUL0_VK_MESH/mem/base/transport/runtime`.
-    /// Must match GLSL `line.*` push block and pipeline layout range (`mat4`+`vec4`).
-    pub const SIZE: u32 = std::mem::size_of::<Self>() as u32;
-
-    /// `from_mvp_color` — function (from mvp color).
-    /// Conversion / mapping helper.
-    /// Belongs to: mesh upload / solid draw MCG.
-    #[must_use]
-    pub const fn from_mvp_color(mvp: [f32; 16], color: [f32; 4]) -> Self {
-        Self { mvp, color }
-    }
-}

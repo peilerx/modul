@@ -10,7 +10,7 @@
 //! | `MODUL0_VK_PIPELINE` | Render pass, shader modules, graphics pipelines (`cubes` solid) |
 //! | `MODUL0_VK_FRAME` | Frames-in-flight: wait / acquire / submit / present fence cadence |
 //! | `MODUL0_VK_DISPLAY` | Record command buffers for a frame (draw solid / lines) |
-//! | `MODUL0_VK_MESH` | Host mesh peels → GPU VBO/IBO, instancing, steel push constants |
+//! | `MODUL0_VK_MESH` | GPU VBO/IBO upload + instancing + push (host mesh ∈ `cpu::MODUL0_MESH`) |
 //!
 //! ## Session
 //!

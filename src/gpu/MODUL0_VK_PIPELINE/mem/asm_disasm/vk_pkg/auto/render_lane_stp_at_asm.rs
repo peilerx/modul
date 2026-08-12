@@ -49,7 +49,7 @@ impl RenderPassTriangleStpAuto for RenderPassTriangleStpPkg {
         surface_format_op: vk::Format,
     ) -> Self {
         match render_lane_prt {
-            RenderLanePrt::TriangleSolidDepth => Self {
+            RenderLanePrt::TRIANGLE_SOLID_DEPTH => Self {
                 surface_format_op,
                 sample_count_op: vk::SampleCountFlags::TYPE_1,
                 attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::SIMPLE,
@@ -58,9 +58,13 @@ impl RenderPassTriangleStpAuto for RenderPassTriangleStpPkg {
                 depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                 present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
                 initial_layout_op: vk::ImageLayout::UNDEFINED,
+                color_load_op: vk::AttachmentLoadOp::CLEAR,
+                color_store_op: vk::AttachmentStoreOp::STORE,
+                depth_load_op: vk::AttachmentLoadOp::CLEAR,
+                depth_store_op: vk::AttachmentStoreOp::DONT_CARE,
                 desc: "render_pass_triangle_solid_depth",
             },
-            RenderLanePrt::TriangleSolidDepthCullBack => Self {
+            RenderLanePrt::TRIANGLE_SOLID_DEPTH_CULL_BACK => Self {
                 surface_format_op,
                 sample_count_op: vk::SampleCountFlags::TYPE_1,
                 attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::SIMPLE,
@@ -69,9 +73,13 @@ impl RenderPassTriangleStpAuto for RenderPassTriangleStpPkg {
                 depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                 present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
                 initial_layout_op: vk::ImageLayout::UNDEFINED,
+                color_load_op: vk::AttachmentLoadOp::CLEAR,
+                color_store_op: vk::AttachmentStoreOp::STORE,
+                depth_load_op: vk::AttachmentLoadOp::CLEAR,
+                depth_store_op: vk::AttachmentStoreOp::DONT_CARE,
                 desc: "render_pass_triangle_solid_depth_cull_back",
             },
-            RenderLanePrt::TriangleWireDepth => Self {
+            RenderLanePrt::TRIANGLE_WIRE_DEPTH => Self {
                 surface_format_op,
                 sample_count_op: vk::SampleCountFlags::TYPE_1,
                 attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::SIMPLE,
@@ -80,9 +88,13 @@ impl RenderPassTriangleStpAuto for RenderPassTriangleStpPkg {
                 depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                 present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
                 initial_layout_op: vk::ImageLayout::UNDEFINED,
+                color_load_op: vk::AttachmentLoadOp::CLEAR,
+                color_store_op: vk::AttachmentStoreOp::STORE,
+                depth_load_op: vk::AttachmentLoadOp::CLEAR,
+                depth_store_op: vk::AttachmentStoreOp::DONT_CARE,
                 desc: "render_pass_triangle_wire_depth",
             },
-            RenderLanePrt::TriangleSolidDepthAa4 => Self {
+            RenderLanePrt::TRIANGLE_SOLID_DEPTH_AA4 => Self {
                 surface_format_op,
                 sample_count_op: vk::SampleCountFlags::TYPE_4,
                 attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::MSAA,
@@ -91,9 +103,13 @@ impl RenderPassTriangleStpAuto for RenderPassTriangleStpPkg {
                 depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                 present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
                 initial_layout_op: vk::ImageLayout::UNDEFINED,
+                color_load_op: vk::AttachmentLoadOp::CLEAR,
+                color_store_op: vk::AttachmentStoreOp::STORE,
+                depth_load_op: vk::AttachmentLoadOp::CLEAR,
+                depth_store_op: vk::AttachmentStoreOp::DONT_CARE,
                 desc: "render_pass_triangle_solid_depth_aa4",
             },
-            RenderLanePrt::TriangleSolidDepthAa8 => Self {
+            RenderLanePrt::TRIANGLE_SOLID_DEPTH_AA8 => Self {
                 surface_format_op,
                 sample_count_op: vk::SampleCountFlags::TYPE_8,
                 attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::MSAA,
@@ -102,9 +118,13 @@ impl RenderPassTriangleStpAuto for RenderPassTriangleStpPkg {
                 depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                 present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
                 initial_layout_op: vk::ImageLayout::UNDEFINED,
+                color_load_op: vk::AttachmentLoadOp::CLEAR,
+                color_store_op: vk::AttachmentStoreOp::STORE,
+                depth_load_op: vk::AttachmentLoadOp::CLEAR,
+                depth_store_op: vk::AttachmentStoreOp::DONT_CARE,
                 desc: "render_pass_triangle_solid_depth_aa8",
             },
-            RenderLanePrt::TriangleWireDepthAa4 => Self {
+            RenderLanePrt::TRIANGLE_WIRE_DEPTH_AA4 => Self {
                 surface_format_op,
                 sample_count_op: vk::SampleCountFlags::TYPE_4,
                 attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::MSAA,
@@ -113,9 +133,13 @@ impl RenderPassTriangleStpAuto for RenderPassTriangleStpPkg {
                 depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                 present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
                 initial_layout_op: vk::ImageLayout::UNDEFINED,
+                color_load_op: vk::AttachmentLoadOp::CLEAR,
+                color_store_op: vk::AttachmentStoreOp::STORE,
+                depth_load_op: vk::AttachmentLoadOp::CLEAR,
+                depth_store_op: vk::AttachmentStoreOp::DONT_CARE,
                 desc: "render_pass_triangle_wire_depth_aa4",
             },
-            RenderLanePrt::TriangleSolidDepthAlways => Self {
+            RenderLanePrt::TRIANGLE_SOLID_DEPTH_ALWAYS => Self {
                 surface_format_op,
                 sample_count_op: vk::SampleCountFlags::TYPE_1,
                 attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::SIMPLE,
@@ -124,6 +148,10 @@ impl RenderPassTriangleStpAuto for RenderPassTriangleStpPkg {
                 depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                 present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
                 initial_layout_op: vk::ImageLayout::UNDEFINED,
+                color_load_op: vk::AttachmentLoadOp::CLEAR,
+                color_store_op: vk::AttachmentStoreOp::STORE,
+                depth_load_op: vk::AttachmentLoadOp::CLEAR,
+                depth_store_op: vk::AttachmentStoreOp::DONT_CARE,
                 desc: "render_pass_triangle_solid_depth_always",
             },
         }
@@ -137,86 +165,142 @@ impl PipelineTriangleStpAuto for PipelineTriangleStpPkg {
         extent_height_stp: u32,
     ) -> Self {
         match render_lane_prt {
-            RenderLanePrt::TriangleSolidDepth => Self {
+            RenderLanePrt::TRIANGLE_SOLID_DEPTH => Self {
                 sample_count_op: vk::SampleCountFlags::TYPE_1,
                 topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
                 polygon_mode_op: vk::PolygonMode::FILL,
                 cull_mode_op: vk::CullModeFlags::NONE,
                 front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
+                depth_test_enable_stp: true,
+                depth_write_enable_stp: true,
                 depth_compare_op: vk::CompareOp::LESS,
                 color_write_mask_op: vk::ColorComponentFlags::RGBA,
+                blend_enable_stp: false,
+                src_color_blend_factor_op: vk::BlendFactor::ONE,
+                dst_color_blend_factor_op: vk::BlendFactor::ZERO,
+                color_blend_op: vk::BlendOp::ADD,
+                primitive_restart_enable_stp: false,
+                line_width_stp: 1.0,
                 extent_width_stp,
                 extent_height_stp,
                 desc: "pipeline_triangle_solid_depth",
             },
-            RenderLanePrt::TriangleSolidDepthCullBack => Self {
+            RenderLanePrt::TRIANGLE_SOLID_DEPTH_CULL_BACK => Self {
                 sample_count_op: vk::SampleCountFlags::TYPE_1,
                 topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
                 polygon_mode_op: vk::PolygonMode::FILL,
                 cull_mode_op: vk::CullModeFlags::BACK,
                 front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
+                depth_test_enable_stp: true,
+                depth_write_enable_stp: true,
                 depth_compare_op: vk::CompareOp::LESS,
                 color_write_mask_op: vk::ColorComponentFlags::RGBA,
+                blend_enable_stp: false,
+                src_color_blend_factor_op: vk::BlendFactor::ONE,
+                dst_color_blend_factor_op: vk::BlendFactor::ZERO,
+                color_blend_op: vk::BlendOp::ADD,
+                primitive_restart_enable_stp: false,
+                line_width_stp: 1.0,
                 extent_width_stp,
                 extent_height_stp,
                 desc: "pipeline_triangle_solid_depth_cull_back",
             },
-            RenderLanePrt::TriangleWireDepth => Self {
+            RenderLanePrt::TRIANGLE_WIRE_DEPTH => Self {
                 sample_count_op: vk::SampleCountFlags::TYPE_1,
                 topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
                 polygon_mode_op: vk::PolygonMode::LINE,
                 cull_mode_op: vk::CullModeFlags::NONE,
                 front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
+                depth_test_enable_stp: true,
+                depth_write_enable_stp: true,
                 depth_compare_op: vk::CompareOp::LESS,
                 color_write_mask_op: vk::ColorComponentFlags::RGBA,
+                blend_enable_stp: false,
+                src_color_blend_factor_op: vk::BlendFactor::ONE,
+                dst_color_blend_factor_op: vk::BlendFactor::ZERO,
+                color_blend_op: vk::BlendOp::ADD,
+                primitive_restart_enable_stp: false,
+                line_width_stp: 1.0,
                 extent_width_stp,
                 extent_height_stp,
                 desc: "pipeline_triangle_wire_depth",
             },
-            RenderLanePrt::TriangleSolidDepthAa4 => Self {
+            RenderLanePrt::TRIANGLE_SOLID_DEPTH_AA4 => Self {
                 sample_count_op: vk::SampleCountFlags::TYPE_4,
                 topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
                 polygon_mode_op: vk::PolygonMode::FILL,
                 cull_mode_op: vk::CullModeFlags::NONE,
                 front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
+                depth_test_enable_stp: true,
+                depth_write_enable_stp: true,
                 depth_compare_op: vk::CompareOp::LESS,
                 color_write_mask_op: vk::ColorComponentFlags::RGBA,
+                blend_enable_stp: false,
+                src_color_blend_factor_op: vk::BlendFactor::ONE,
+                dst_color_blend_factor_op: vk::BlendFactor::ZERO,
+                color_blend_op: vk::BlendOp::ADD,
+                primitive_restart_enable_stp: false,
+                line_width_stp: 1.0,
                 extent_width_stp,
                 extent_height_stp,
                 desc: "pipeline_triangle_solid_depth_aa4",
             },
-            RenderLanePrt::TriangleSolidDepthAa8 => Self {
+            RenderLanePrt::TRIANGLE_SOLID_DEPTH_AA8 => Self {
                 sample_count_op: vk::SampleCountFlags::TYPE_8,
                 topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
                 polygon_mode_op: vk::PolygonMode::FILL,
                 cull_mode_op: vk::CullModeFlags::NONE,
                 front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
+                depth_test_enable_stp: true,
+                depth_write_enable_stp: true,
                 depth_compare_op: vk::CompareOp::LESS,
                 color_write_mask_op: vk::ColorComponentFlags::RGBA,
+                blend_enable_stp: false,
+                src_color_blend_factor_op: vk::BlendFactor::ONE,
+                dst_color_blend_factor_op: vk::BlendFactor::ZERO,
+                color_blend_op: vk::BlendOp::ADD,
+                primitive_restart_enable_stp: false,
+                line_width_stp: 1.0,
                 extent_width_stp,
                 extent_height_stp,
                 desc: "pipeline_triangle_solid_depth_aa8",
             },
-            RenderLanePrt::TriangleWireDepthAa4 => Self {
+            RenderLanePrt::TRIANGLE_WIRE_DEPTH_AA4 => Self {
                 sample_count_op: vk::SampleCountFlags::TYPE_4,
                 topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
                 polygon_mode_op: vk::PolygonMode::LINE,
                 cull_mode_op: vk::CullModeFlags::NONE,
                 front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
+                depth_test_enable_stp: true,
+                depth_write_enable_stp: true,
                 depth_compare_op: vk::CompareOp::LESS,
                 color_write_mask_op: vk::ColorComponentFlags::RGBA,
+                blend_enable_stp: false,
+                src_color_blend_factor_op: vk::BlendFactor::ONE,
+                dst_color_blend_factor_op: vk::BlendFactor::ZERO,
+                color_blend_op: vk::BlendOp::ADD,
+                primitive_restart_enable_stp: false,
+                line_width_stp: 1.0,
                 extent_width_stp,
                 extent_height_stp,
                 desc: "pipeline_triangle_wire_depth_aa4",
             },
-            RenderLanePrt::TriangleSolidDepthAlways => Self {
+            RenderLanePrt::TRIANGLE_SOLID_DEPTH_ALWAYS => Self {
                 sample_count_op: vk::SampleCountFlags::TYPE_1,
                 topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
                 polygon_mode_op: vk::PolygonMode::FILL,
                 cull_mode_op: vk::CullModeFlags::NONE,
                 front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
+                depth_test_enable_stp: true,
+                depth_write_enable_stp: true,
                 depth_compare_op: vk::CompareOp::ALWAYS,
                 color_write_mask_op: vk::ColorComponentFlags::RGBA,
+                blend_enable_stp: false,
+                src_color_blend_factor_op: vk::BlendFactor::ONE,
+                dst_color_blend_factor_op: vk::BlendFactor::ZERO,
+                color_blend_op: vk::BlendOp::ADD,
+                primitive_restart_enable_stp: false,
+                line_width_stp: 1.0,
                 extent_width_stp,
                 extent_height_stp,
                 desc: "pipeline_triangle_solid_depth_always",
@@ -243,5 +327,18 @@ impl RenderLaneStpResIntsctAuto for RenderLaneStpResIntsct {
                 extent_height_stp,
             ),
         )
+    }
+}
+
+
+/// Ship/default solid lane for a sample-count pick (4× → Aa4, else 1× solid depth).
+#[must_use]
+pub fn render_lane_prt_for_sample_count(samples: vk::SampleCountFlags) -> RenderLanePrt {
+    if samples == vk::SampleCountFlags::TYPE_8 {
+        RenderLanePrt::TRIANGLE_SOLID_DEPTH_AA8
+    } else if samples == vk::SampleCountFlags::TYPE_4 {
+        RenderLanePrt::TRIANGLE_SOLID_DEPTH_AA4
+    } else {
+        RenderLanePrt::TRIANGLE_SOLID_DEPTH
     }
 }

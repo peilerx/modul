@@ -7,9 +7,9 @@
 pub enum PresentationPrt {
     /// Color + depth, sample count 1 (etalon).
     #[default]
-    SimpleDepth,
+    SIMPLE_DEPTH,
     /// Color + depth + 4× MSAA.
-    DepthMsaa4,
+    DEPTH_MSAA_4,
     /// Color + depth + 8× MSAA.
-    DepthMsaa8,
+    DEPTH_MSAA_8,
 }

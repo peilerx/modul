@@ -8,7 +8,7 @@
 //! - **Surface** from a window handle (winit)
 //! - **Swapchain** images, image views, depth/MSAA attachments as needed
 //! - Present mode selection ([`SwapchainPrt`](crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::prt::SwapchainPrt):
-//!   e.g. `SrgbFifo` for vsync, `SrgbMailbox` for uncapped)
+//!   e.g. `SRGB_FIFO` for vsync, `SRGB_MAILBOX` for uncapped)
 //!
 //! ## Layers
 //!

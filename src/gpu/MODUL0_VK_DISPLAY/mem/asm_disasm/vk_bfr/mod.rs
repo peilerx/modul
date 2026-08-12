@@ -3,4 +3,6 @@
 //! Auto|Handled create/disassemble traits for Vulkan resources (FIX-129).
 
 pub mod auto;
+pub mod handled;
 pub use crate::gpu::MODUL0_VK_DISPLAY::mem::base::embedded::buffer::DisplayBfr;
+pub use handled::DisplayBfrHandled;

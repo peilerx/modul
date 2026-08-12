@@ -16,3 +16,6 @@ pub use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::embedded::buffer::{
 };
 pub use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::asm_disasm::vk_bfr::auto::presentation_bfr_at_asm::PresentationBfrAuto;
 pub use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::asm_disasm::vk_bfr::auto::swapchain_bfr_at_asm::SwapchainBfrAuto;
+pub use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::asm_disasm::vk_bfr::handled::{
+    PresentationBfrHandled, SwapchainBfrHandled,
+};

@@ -1,8 +1,8 @@
-//! **modul/range/cubes** — ship-friendly Vulkan etalon (1M instanced cubes).
+//! **modul/range/cubes-auto** — AUTO session etalon (`TandemSessionPrt` presets).
 //!
 //! ```bash
-//! cargo run -p cubes --release
-//! # pack for Telegram:
+//! cargo run -p cubes-auto --release
+//! # ship pack:
 //! bash modul/scripts/pack-cubes-linux.sh
 //! ```
 
@@ -17,8 +17,9 @@ fn main() {
     use tandem::proc::session_log;
 
     let dir = session_log::init();
-    session_log::log("modul/range/cubes · ship · 1_000_000 cubes default (CUBES_COUNT overrides)");
+    session_log::log("modul/range/cubes-auto · AUTO · TandemSessionPrt::SHIP_MAILBOX_AA4_NO_VALIDATION");
     session_log::log("Controls: LMB orbit · wheel zoom · Esc quit · FPS in window title");
+    session_log::log("Env: CUBES_COUNT · CUBES_VALIDATION=1");
     session_log::log(&format!(
         "session log: {}",
         session_log::session_path().display()
@@ -34,5 +35,5 @@ fn main() {
     );
 
     tandem::run_shell();
-    session_log::log("cubes: exit");
+    session_log::log("cubes-auto: exit");
 }

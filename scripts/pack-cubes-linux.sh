@@ -29,10 +29,10 @@ REMAP_FLAGS=(
 )
 export RUSTFLAGS="${REMAP_FLAGS[*]}${RUSTFLAGS:+ ${RUSTFLAGS}}"
 
-echo "==> cargo build -p cubes --release (path-remapped)"
-cargo build -p cubes --release
+echo "==> cargo build -p cubes-auto --release (path-remapped)"
+cargo build -p cubes-auto --release
 
-BIN="$ROOT/target/release/cubes"
+BIN="$ROOT/target/release/cubes-auto"
 test -x "$BIN"
 
 rm -rf "$OUT_DIR"

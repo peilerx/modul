@@ -11,7 +11,7 @@ use crate::gpu::MODUL0_VK_MESH::proc::processor::line_gpu_counts::{
     line_gpu_counts, line_gpu_min_floats,
 };
 use crate::gpu::MODUL0_VK_MESH::proc::processor::line_gpu_destroy::destroy_line_gpu_buffers;
-use crate::gpu::MODUL0_VK_MESH::proc::processor::pack_line_lists::f32_pos_to_bytes;
+use crate::cpu::MODUL0_MESH::proc::processor::pack_line_lists::f32_pos_to_bytes;
 use crate::ModulResult;
 
 /// Catalog — host-visible line VBO (`LINE_LIST`).

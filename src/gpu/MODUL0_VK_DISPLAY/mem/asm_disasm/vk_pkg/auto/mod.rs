@@ -3,3 +3,4 @@
 //! Auto|Handled create/disassemble traits for Vulkan resources (FIX-129).
 
 pub mod display_input_at_asm;
+pub mod display_present_prt_at_asm;

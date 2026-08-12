@@ -15,24 +15,25 @@ use crate::tandem::proc::sys_stats::CpuSampler;
 use crate::tandem::proc::{
     assemble_tandem_session, free_tandem, recreate_presentation_extent, run_tandem_pulse,
 };
-use modul::tandem::MODUL0_TANDEM::TandemBfr;
+use modul::tandem::MODUL0_TANDEM::{TandemBfr, TandemSessionStpPkg};
 
-const TITLE: &str = "modul cubes · ship";
+const TITLE: &str = "modul cubes · handled";
 pub const VIEW_W: u32 = 1280;
 pub const VIEW_H: u32 = 720;
 
 struct App {
+    /// Boundary: winit requires shared window ownership (`Arc` stays here only).
     window: Option<Arc<Window>>,
     hub: Option<TandemBfr>,
-    /// Consecutive presentation recreate failures (stop thrashing after N).
+    /// Taken once into Handled assemble (no clone).
+    session_stp: Option<TandemSessionStpPkg>,
     recreate_fails: u32,
-    /// Coalesce resize storms: apply last size once per redraw.
     pending_extent: Option<(u32, u32)>,
-    /// Process + system CPU% (sampled with FPS).
     cpu: CpuSampler,
 }
 
-pub fn run() {
+/// Handled path: *Stp knobs → assemble_tandem_session (mem/*_hld_asm).
+pub fn run_shell_handled(session_stp: TandemSessionStpPkg) {
     let Ok(event_loop) = EventLoop::new() else {
         session_log::log_error(
             "failed to create event loop (display server / Wayland / X11 missing?)",
@@ -43,6 +44,7 @@ pub fn run() {
     let mut app = App {
         window: None,
         hub: None,
+        session_stp: Some(session_stp),
         recreate_fails: 0,
         pending_extent: None,
         cpu: CpuSampler::new(),
@@ -129,11 +131,16 @@ impl ApplicationHandler for App {
             "window created · requested {VIEW_W}x{VIEW_H} · actual {}x{}",
             size.width, size.height
         ));
-        match assemble_tandem_session(&window) {
+        let Some(session_stp) = self.session_stp.take() else {
+            session_log::log_error("session_stp already consumed");
+            event_loop.exit();
+            return;
+        };
+        match assemble_tandem_session(&window, session_stp) {
             Ok(hub) => {
                 session_log::log(&format!(
-                    "session ready · {} cubes · fps+cpu in title + cubes_session_log.txt",
-                    hub.mesh_gpu_rt.instance_count_rt
+                    "session ready · HANDLED knobs · {} cubes · {}",
+                    hub.mesh_gpu_rt.instance_count_rt, hub.session_stp.desc
                 ));
                 self.hub = Some(hub);
                 self.window = Some(window);

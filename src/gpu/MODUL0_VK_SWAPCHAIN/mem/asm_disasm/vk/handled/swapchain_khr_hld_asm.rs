@@ -20,6 +20,8 @@ pub trait SwapchainKhrHandled {
         extent_height_stp: u32,
         surface_format_op: vk::Format,
         present_mode_op: vk::PresentModeKHR,
+        image_usage_op: vk::ImageUsageFlags,
+        composite_alpha_op: vk::CompositeAlphaFlagsKHR,
     ) -> ModulResult<Self>
     where
         Self: Sized;
@@ -42,6 +44,8 @@ impl SwapchainKhrHandled
         extent_height_stp: u32,
         surface_format_op: vk::Format,
         present_mode_op: vk::PresentModeKHR,
+        image_usage_op: vk::ImageUsageFlags,
+        composite_alpha_op: vk::CompositeAlphaFlagsKHR,
     ) -> ModulResult<Self> {
         let surface_capabilities_extrl = map_vk(unsafe {
             surface_loader_extrl.get_physical_device_surface_capabilities(
@@ -83,10 +87,10 @@ impl SwapchainKhrHandled
             .image_color_space(surface_format_op.color_space)
             .image_extent(extent_rt)
             .image_array_layers(1)
-            .image_usage(vk::ImageUsageFlags::COLOR_ATTACHMENT)
+            .image_usage(image_usage_op)
             .pre_transform(surface_capabilities_extrl.current_transform)
             .image_sharing_mode(vk::SharingMode::EXCLUSIVE)
-            .composite_alpha(vk::CompositeAlphaFlagsKHR::OPAQUE)
+            .composite_alpha(composite_alpha_op)
             .present_mode(present_mode_op)
             .clipped(true);
 
