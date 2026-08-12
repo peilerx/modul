@@ -71,7 +71,7 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
     )?;
     SwapchainBfr::import_present_for_asm1(
         &mut swapchain_bfr,
-        SwapchainPrt::SrgbFifo,
+        SwapchainPrt::SrgbMailbox,
         w,
         h,
     )?;
