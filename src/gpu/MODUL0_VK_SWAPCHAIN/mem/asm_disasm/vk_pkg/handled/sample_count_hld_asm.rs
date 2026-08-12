@@ -9,11 +9,9 @@ pub trait SampleCountDefaultHandled {
 
 impl SampleCountDefaultHandled for SampleCountDefaultRtPkg {
     fn handled_assemble(sample_count_op: vk::SampleCountFlags) -> SampleCountDefaultRtPkg {
-        match sample_count_op {
-            sample_count_op => SampleCountDefaultRtPkg {
-                sample_count_op,
-                desc: "sample_count",
-            },
+        Self {
+            sample_count_op,
+            desc: "sample_count",
         }
     }
 }

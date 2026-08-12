@@ -12,6 +12,7 @@ use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::setup::present_res_in
 use crate::ModulResult;
 
 /// `PresentationBfrAuto` — trait (presentation bfr auto).
+///
 /// Auto-assemble catalog trait: pure construction without external peels (FIX-129 Auto rank).
 /// Belongs to: swapchain / device bootstrap MCG.
 /// Module path context: `gpu/MODUL0_VK_SWAPCHAIN/mem/asm_disasm/vk_bfr/auto`.

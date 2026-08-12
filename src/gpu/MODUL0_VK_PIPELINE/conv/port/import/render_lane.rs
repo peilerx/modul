@@ -1,4 +1,4 @@
-//! Intent in-port — PortMatch `RenderLanePrt` → *StpPkg only (closed gestalt).
+//! Intent in-port — `PortMatch` `RenderLanePrt` → *`StpPkg` only (closed gestalt).
 //! Assemble execution ∈ `mem/asm_disasm/order/render_lane`.
 
 use ash::vk;
@@ -7,12 +7,12 @@ use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::op::RenderPassA
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::render_res_intsct_stp_pkgs::PipelineTriangleStpPkg;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::render_res_intsct_stp_pkgs::RenderPassTriangleStpPkg;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::RenderLanePrt;
-/// PortMatch module picture → Internal setup bags.
+/// `PortMatch` module picture → Internal setup bags.
 ///
 /// `extent_*` + `surface_format_op` = **external** peer/window facts (not module intent).
 /// All other levers = **closed** in each arm (full gestalt of that picture).
-/// PortMatch → write setup bags · never returns (FIX-128 · v5.1).
-pub fn import_render_lane_for_asm(
+/// `PortMatch` → write setup bags · never returns (FIX-128 · v5.1).
+pub const fn import_render_lane_for_asm(
     render_lane_prt: RenderLanePrt,
     extent_width_stp: u32,
     extent_height_stp: u32,

@@ -30,10 +30,11 @@ use crate::ModulResult;
 /// Boot `import_for_asm8`: **8** assemblies · 7 atom + 1 cargo pack.
 pub const IMPORT_FOR_ASM_FACTORY_LINE_N: u8 = 8;
 
-/// Present `import_present_for_asm1`: **1** assembly · KHR *RtPkg.
+/// Present `import_present_for_asm1`: **1** assembly · KHR *`RtPkg`.
 pub const IMPORT_PRESENT_FOR_ASM_FACTORY_LINE_N: u8 = 1;
 
 /// `SwapchainTransportable` — trait (swapchain transportable).
+///
 /// Transportable surface: import/export peels for PTP slot-factory-line wiring.
 /// Belongs to: swapchain / device bootstrap MCG.
 /// Module path context: `gpu/MODUL0_VK_SWAPCHAIN/conv/port`.

@@ -5,6 +5,7 @@ use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_
 use crate::ModulResult;
 
 /// `MeshGpuBfrAuto` — trait (mesh gpu bfr auto).
+///
 /// Auto-assemble catalog trait: pure construction without external peels (FIX-129 Auto rank).
 /// Belongs to: mesh upload / solid draw MCG.
 /// Module path context: `gpu/MODUL0_VK_MESH/mem/asm_disasm/vk_bfr/auto`.

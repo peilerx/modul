@@ -38,7 +38,7 @@ impl SurfaceDefaultAuto for SurfaceDefaultRtPkg {
             &entry_default_rt.entry_extrl,
             &instance_default_rt.instance_extrl,
         );
-        Ok(SurfaceDefaultRtPkg {
+        Ok(Self {
             surface_extrl,
             surface_loader_extrl,
             desc: "vulkan_surface",

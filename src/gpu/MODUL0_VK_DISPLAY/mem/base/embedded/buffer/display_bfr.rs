@@ -8,6 +8,7 @@ use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::display_res_in
 use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::setup::display_present_default_stp_pkg::DisplayPresentDefaultStpPkg;
 
 /// `DisplayBfr` — buffer / warehouse bag (display bfr).
+///
 /// Memory-layer bag: owned fields, no product control flow.
 /// Belongs to: command-buffer record / display MCG.
 /// Module path context: `gpu/MODUL0_VK_DISPLAY/mem/base/embedded/buffer`.

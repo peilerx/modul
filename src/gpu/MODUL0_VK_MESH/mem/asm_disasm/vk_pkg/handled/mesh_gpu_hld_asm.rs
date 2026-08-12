@@ -95,7 +95,7 @@ impl MeshGpuDefaultHandled for MeshGpuDefaultRtPkg {
                         prep.mode_rt
                     ),
                 );
-                Ok(MeshGpuDefaultRtPkg {
+                Ok(Self {
                     vertex_buffer_extrl,
                     index_buffer_extrl,
                     vertex_memory_extrl,
@@ -117,7 +117,7 @@ impl MeshGpuDefaultHandled for MeshGpuDefaultRtPkg {
                     desc: "mesh_gpu_steel_solid",
                 })
             }
-            _ => Ok(MeshGpuDefaultRtPkg::empty()),
+            _ => Ok(Self::empty()),
         }
     }
 

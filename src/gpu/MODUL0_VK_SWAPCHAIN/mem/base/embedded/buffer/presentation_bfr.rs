@@ -10,6 +10,7 @@ use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::present_res_
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::setup::present_res_intsct_stp_pkgs::PresentationDefaultStpPkg;
 
 /// `PresentationBfr` — buffer / warehouse bag (presentation bfr).
+///
 /// Memory-layer bag: owned fields, no product control flow.
 /// Belongs to: swapchain / device bootstrap MCG.
 /// Module path context: `gpu/MODUL0_VK_SWAPCHAIN/mem/base/embedded/buffer`.

@@ -6,6 +6,7 @@ use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::present_res_
 use crate::ModulResult;
 
 /// `PresentationDefaultRtCrgHandled` — trait (presentation default rt crg handled).
+///
 /// Handled-assemble catalog trait: construction from imported knobs / peels (FIX-129 Handled rank).
 /// Belongs to: swapchain / device bootstrap MCG.
 /// Module path context: `gpu/MODUL0_VK_SWAPCHAIN/mem/asm_disasm/vk_crg/handled`.
@@ -15,7 +16,7 @@ pub trait PresentationDefaultRtCrgHandled {
 
 impl PresentationDefaultRtCrgHandled for PresentationDefaultRtCrg {
     fn handled_assemble(bfr: &mut PresentationBfr) -> ModulResult<PresentationDefaultRtCrg> {
-        Ok(PresentationDefaultRtCrg {
+        Ok(Self {
             swapchain_default_rt_pkg: <PresentationBfr as PresentationBfrAuto>::slot_take(
                 &mut bfr.swapchain_default_rt_pkg,
                 "swapchain_default_rt_pkg",

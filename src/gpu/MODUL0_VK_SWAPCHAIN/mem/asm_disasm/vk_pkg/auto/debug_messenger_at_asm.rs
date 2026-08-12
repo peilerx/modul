@@ -12,6 +12,7 @@ use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::asm_disasm::vk::auto::debug_msg_res_in
 use crate::ModulResult;
 
 /// `DebugMessengerDefaultAuto` — trait (debug messenger default auto).
+///
 /// Auto-assemble catalog trait: pure construction without external peels (FIX-129 Auto rank).
 /// Belongs to: swapchain / device bootstrap MCG.
 /// Module path context: `gpu/MODUL0_VK_SWAPCHAIN/mem/asm_disasm/vk_pkg/auto`.
@@ -32,7 +33,7 @@ impl DebugMessengerDefaultAuto for DebugMessengerDefaultRt {
             &instance_default_rt.instance_extrl,
         );
         let messenger_extrl = vk::DebugUtilsMessengerEXT::auto_assemble(&debug_utils_extrl)?;
-        Ok(DebugMessengerDefaultRt {
+        Ok(Self {
             debug_utils_extrl,
             messenger_extrl,
             desc: "vulkan_debug_messenger",

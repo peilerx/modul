@@ -1,4 +1,4 @@
-//! Presentation subject port — swapchain calque · **import_for_asm6**.
+//! Presentation subject port — swapchain calque · **`import_for_asm6`**.
 
 use ash::vk;
 
@@ -26,6 +26,7 @@ use crate::ModulResult;
 pub const IMPORT_FOR_ASM_FACTORY_LINE_N: u8 = 6;
 
 /// `PresentationTransportable` — trait (presentation transportable).
+///
 /// Transportable surface: import/export peels for PTP slot-factory-line wiring.
 /// Belongs to: swapchain / device bootstrap MCG.
 /// Module path context: `gpu/MODUL0_VK_SWAPCHAIN/conv/port`.

@@ -1,4 +1,4 @@
-//! Display subject port · **import_for_asm5** (swapchain calque).
+//! Display subject port · **`import_for_asm5`** (swapchain calque).
 
 use crate::gpu::MODUL0_VK_DISPLAY::mem::asm_disasm::vk_bfr::auto::display_bfr_at_asm::DisplayBfrAuto;
 use crate::gpu::MODUL0_VK_DISPLAY::mem::asm_disasm::vk_crg::handled::display_default_rt_crg_hld_asm::DisplayDefaultRtCrgHandled;
@@ -18,11 +18,12 @@ use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::boot_res_int
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::boot_res_intsct_rt_pkgs::SwapchainCommandPoolDefaultRtPkg;
 use crate::ModulResult;
 
-/// `IMPORT_FOR_ASM_FACTORY_LINE_N` — const (IMPORT_FOR_ASM_FACTORY_LINE_N).
+/// `IMPORT_FOR_ASM_FACTORY_LINE_N` — const (`IMPORT_FOR_ASM_FACTORY_LINE_N`).
 /// Module path context: `gpu/MODUL0_VK_DISPLAY/conv/port`.
 pub const IMPORT_FOR_ASM_FACTORY_LINE_N: u8 = 5;
 
 /// `DisplayTransportable` — trait (display transportable).
+///
 /// Transportable surface: import/export peels for PTP slot-factory-line wiring.
 /// Belongs to: command-buffer record / display MCG.
 /// Module path context: `gpu/MODUL0_VK_DISPLAY/conv/port`.

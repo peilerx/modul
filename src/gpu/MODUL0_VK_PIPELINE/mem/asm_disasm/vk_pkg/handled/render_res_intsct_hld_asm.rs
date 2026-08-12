@@ -1,4 +1,4 @@
-//! MCU **render_res_intsct** — shaders · render_pass · pipeline (N.RES_INTSCT · FIX-120).
+//! MCU **`render_res_intsct`** — shaders · `render_pass` · pipeline (`N.RES_INTSCT` · FIX-120).
 //! Co-created triangle render resources · one file · local chains.
 
 use ash::vk;
@@ -59,9 +59,9 @@ impl ShadersTriangleModulesAuto for ShadersTriangleRtPkg {
 impl ShadersTriangleAuto for ShadersTriangleRtPkg {
     fn auto_assemble(device_extrl: &Device) -> ModulResult<ShadersTriangleRtPkg> {
         let (vert_code_extrl, frag_code_extrl) =
-            <ShadersTriangleRtPkg as ShadersTriangleSpirvAuto>::auto_assemble();
+            <Self as ShadersTriangleSpirvAuto>::auto_assemble();
         let shader_modules_extrl =
-            <ShadersTriangleRtPkg as ShadersTriangleModulesAuto>::auto_assemble(
+            <Self as ShadersTriangleModulesAuto>::auto_assemble(
                 device_extrl,
                 vert_code_extrl,
                 frag_code_extrl,
@@ -155,15 +155,13 @@ impl RenderPassTriangleDepthAttachmentHandled for RenderPassTriangleRtPkg {
         depth_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
     ) -> vk::AttachmentDescription {
-        match sample_count_op {
-            sample_count_op => vk::AttachmentDescription::default()
-                .format(depth_format_op)
-                .samples(sample_count_op)
-                .load_op(vk::AttachmentLoadOp::CLEAR)
-                .store_op(vk::AttachmentStoreOp::DONT_CARE)
-                .initial_layout(initial_layout_op)
-                .final_layout(depth_layout_op),
-        }
+        vk::AttachmentDescription::default()
+        .format(depth_format_op)
+        .samples(sample_count_op)
+        .load_op(vk::AttachmentLoadOp::CLEAR)
+        .store_op(vk::AttachmentStoreOp::DONT_CARE)
+        .initial_layout(initial_layout_op)
+        .final_layout(depth_layout_op)
     }
 }
 
@@ -173,15 +171,13 @@ impl RenderPassTriangleColorAttachmentSimpleHandled for RenderPassTriangleRtPkg 
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
     ) -> vk::AttachmentDescription {
-        match surface_format_op {
-            surface_format_op => vk::AttachmentDescription::default()
-                .format(surface_format_op)
-                .samples(vk::SampleCountFlags::TYPE_1)
-                .load_op(vk::AttachmentLoadOp::CLEAR)
-                .store_op(vk::AttachmentStoreOp::STORE)
-                .initial_layout(initial_layout_op)
-                .final_layout(present_layout_op),
-        }
+        vk::AttachmentDescription::default()
+        .format(surface_format_op)
+        .samples(vk::SampleCountFlags::TYPE_1)
+        .load_op(vk::AttachmentLoadOp::CLEAR)
+        .store_op(vk::AttachmentStoreOp::STORE)
+        .initial_layout(initial_layout_op)
+        .final_layout(present_layout_op)
     }
 }
 
@@ -192,15 +188,13 @@ impl RenderPassTriangleColorAttachmentMsaaHandled for RenderPassTriangleRtPkg {
         color_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
     ) -> vk::AttachmentDescription {
-        match sample_count_op {
-            sample_count_op => vk::AttachmentDescription::default()
-                .format(surface_format_op)
-                .samples(sample_count_op)
-                .load_op(vk::AttachmentLoadOp::CLEAR)
-                .store_op(vk::AttachmentStoreOp::DONT_CARE)
-                .initial_layout(initial_layout_op)
-                .final_layout(color_layout_op),
-        }
+        vk::AttachmentDescription::default()
+        .format(surface_format_op)
+        .samples(sample_count_op)
+        .load_op(vk::AttachmentLoadOp::CLEAR)
+        .store_op(vk::AttachmentStoreOp::DONT_CARE)
+        .initial_layout(initial_layout_op)
+        .final_layout(color_layout_op)
     }
 }
 
@@ -210,15 +204,13 @@ impl RenderPassTriangleResolveAttachmentHandled for RenderPassTriangleRtPkg {
         present_layout_op: vk::ImageLayout,
         initial_layout_op: vk::ImageLayout,
     ) -> vk::AttachmentDescription {
-        match surface_format_op {
-            surface_format_op => vk::AttachmentDescription::default()
-                .format(surface_format_op)
-                .samples(vk::SampleCountFlags::TYPE_1)
-                .load_op(vk::AttachmentLoadOp::DONT_CARE)
-                .store_op(vk::AttachmentStoreOp::STORE)
-                .initial_layout(initial_layout_op)
-                .final_layout(present_layout_op),
-        }
+        vk::AttachmentDescription::default()
+        .format(surface_format_op)
+        .samples(vk::SampleCountFlags::TYPE_1)
+        .load_op(vk::AttachmentLoadOp::DONT_CARE)
+        .store_op(vk::AttachmentStoreOp::STORE)
+        .initial_layout(initial_layout_op)
+        .final_layout(present_layout_op)
     }
 }
 
@@ -234,19 +226,19 @@ impl RenderPassTriangleMsaaPathHandled for RenderPassTriangleRtPkg {
         attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp,
     ) -> (Vec<vk::AttachmentDescription>, &'static str) {
         let attachments = vec![
-            <RenderPassTriangleRtPkg as RenderPassTriangleColorAttachmentMsaaHandled>::handled_assemble(
+            <Self as RenderPassTriangleColorAttachmentMsaaHandled>::handled_assemble(
                 surface_format_op,
                 sample_count_op,
                 color_layout_op,
                 initial_layout_op,
             ),
-            <RenderPassTriangleRtPkg as RenderPassTriangleDepthAttachmentHandled>::handled_assemble(
+            <Self as RenderPassTriangleDepthAttachmentHandled>::handled_assemble(
                 sample_count_op,
                 depth_format_op,
                 depth_layout_op,
                 initial_layout_op,
             ),
-            <RenderPassTriangleRtPkg as RenderPassTriangleResolveAttachmentHandled>::handled_assemble(
+            <Self as RenderPassTriangleResolveAttachmentHandled>::handled_assemble(
                 surface_format_op,
                 present_layout_op,
                 initial_layout_op,
@@ -270,12 +262,12 @@ impl RenderPassTriangleSimplePathHandled for RenderPassTriangleRtPkg {
         attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp,
     ) -> (Vec<vk::AttachmentDescription>, &'static str) {
         let attachments = vec![
-            <RenderPassTriangleRtPkg as RenderPassTriangleColorAttachmentSimpleHandled>::handled_assemble(
+            <Self as RenderPassTriangleColorAttachmentSimpleHandled>::handled_assemble(
                 surface_format_op,
                 present_layout_op,
                 initial_layout_op,
             ),
-            <RenderPassTriangleRtPkg as RenderPassTriangleDepthAttachmentHandled>::handled_assemble(
+            <Self as RenderPassTriangleDepthAttachmentHandled>::handled_assemble(
                 vk::SampleCountFlags::TYPE_1,
                 depth_format_op,
                 depth_layout_op,
@@ -304,7 +296,7 @@ impl RenderPassTriangleHandled for RenderPassTriangleRtPkg {
     ) -> ModulResult<RenderPassTriangleRtPkg> {
         let (attachments, desc) = match attachment_layout_op {
             RenderPassAttachmentLayoutStpPkgOp::MSAA => {
-                <RenderPassTriangleRtPkg as RenderPassTriangleMsaaPathHandled>::handled_assemble(
+                <Self as RenderPassTriangleMsaaPathHandled>::handled_assemble(
                     surface_format_op,
                     sample_count_op,
                     depth_format_op,
@@ -316,7 +308,7 @@ impl RenderPassTriangleHandled for RenderPassTriangleRtPkg {
                 )
             }
             RenderPassAttachmentLayoutStpPkgOp::SIMPLE => {
-                <RenderPassTriangleRtPkg as RenderPassTriangleSimplePathHandled>::handled_assemble(
+                <Self as RenderPassTriangleSimplePathHandled>::handled_assemble(
                     surface_format_op,
                     depth_format_op,
                     depth_layout_op,
@@ -458,11 +450,9 @@ impl PipelineTriangleInputAssemblyHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
         topology_op: vk::PrimitiveTopology,
     ) -> vk::PipelineInputAssemblyStateCreateInfo<'static> {
-        match topology_op {
-            topology_op => vk::PipelineInputAssemblyStateCreateInfo::default()
-                .topology(topology_op)
-                .primitive_restart_enable(false),
-        }
+        vk::PipelineInputAssemblyStateCreateInfo::default()
+        .topology(topology_op)
+        .primitive_restart_enable(false)
     }
 }
 
@@ -472,13 +462,11 @@ impl PipelineTriangleRasterStateHandled for PipelineTriangleRtPkg {
         cull_mode_op: vk::CullModeFlags,
         front_face_op: vk::FrontFace,
     ) -> vk::PipelineRasterizationStateCreateInfo<'static> {
-        match polygon_mode_op {
-            polygon_mode_op => vk::PipelineRasterizationStateCreateInfo::default()
-                .polygon_mode(polygon_mode_op)
-                .cull_mode(cull_mode_op)
-                .front_face(front_face_op)
-                .line_width(1.0),
-        }
+        vk::PipelineRasterizationStateCreateInfo::default()
+        .polygon_mode(polygon_mode_op)
+        .cull_mode(cull_mode_op)
+        .front_face(front_face_op)
+        .line_width(1.0)
     }
 }
 
@@ -486,10 +474,8 @@ impl PipelineTriangleMultisampleStateHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
         sample_count_op: vk::SampleCountFlags,
     ) -> vk::PipelineMultisampleStateCreateInfo<'static> {
-        match sample_count_op {
-            sample_count_op => vk::PipelineMultisampleStateCreateInfo::default()
-                .rasterization_samples(sample_count_op),
-        }
+        vk::PipelineMultisampleStateCreateInfo::default()
+        .rasterization_samples(sample_count_op)
     }
 }
 
@@ -497,10 +483,8 @@ impl PipelineTriangleColorBlendAttachmentHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
         color_write_mask_op: vk::ColorComponentFlags,
     ) -> vk::PipelineColorBlendAttachmentState {
-        match color_write_mask_op {
-            color_write_mask_op => vk::PipelineColorBlendAttachmentState::default()
-                .color_write_mask(color_write_mask_op),
-        }
+        vk::PipelineColorBlendAttachmentState::default()
+        .color_write_mask(color_write_mask_op)
     }
 }
 
@@ -508,12 +492,10 @@ impl PipelineTriangleDepthStencilStateHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
         depth_compare_op: vk::CompareOp,
     ) -> vk::PipelineDepthStencilStateCreateInfo<'static> {
-        match depth_compare_op {
-            depth_compare_op => vk::PipelineDepthStencilStateCreateInfo::default()
-                .depth_test_enable(true)
-                .depth_write_enable(true)
-                .depth_compare_op(depth_compare_op),
-        }
+        vk::PipelineDepthStencilStateCreateInfo::default()
+        .depth_test_enable(true)
+        .depth_write_enable(true)
+        .depth_compare_op(depth_compare_op)
     }
 }
 
@@ -558,78 +540,76 @@ impl PipelineTriangleHandled for PipelineTriangleRtPkg {
         vert_module_extrl: vk::ShaderModule,
         frag_module_extrl: vk::ShaderModule,
     ) -> ModulResult<PipelineTriangleRtPkg> {
-        match topology_op {
-            topology_op => {
-                let _ = (extent_width_stp, extent_height_stp);
-                let input_assembly =
-                    <PipelineTriangleRtPkg as PipelineTriangleInputAssemblyHandled>::handled_assemble(
-                        topology_op,
-                    );
-                let raster =
-                    <PipelineTriangleRtPkg as PipelineTriangleRasterStateHandled>::handled_assemble(
-                        polygon_mode_op,
-                        cull_mode_op,
-                        front_face_op,
-                    );
-                let multisample =
-                    <PipelineTriangleRtPkg as PipelineTriangleMultisampleStateHandled>::handled_assemble(
-                        sample_count_op,
-                    );
-                let color_blend_attachment =
-                    <PipelineTriangleRtPkg as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
-                        color_write_mask_op,
-                    );
-                let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
-                    .attachments(std::slice::from_ref(&color_blend_attachment));
-                let depth_stencil =
-                    <PipelineTriangleRtPkg as PipelineTriangleDepthStencilStateHandled>::handled_assemble(
-                        depth_compare_op,
-                    );
-                let stages =
-                    <PipelineTriangleRtPkg as PipelineTriangleShaderStagesAuto>::auto_assemble(
-                        vert_module_extrl,
-                        frag_module_extrl,
-                    );
-                let pipeline_layout_extrl =
-                    <PipelineTriangleRtPkg as PipelineTriangleLayoutAuto>::auto_assemble(device_extrl)?;
-                let vertex_input = vk::PipelineVertexInputStateCreateInfo::default();
-                let dynamic_states = [vk::DynamicState::VIEWPORT, vk::DynamicState::SCISSOR];
-                let dynamic_state =
-                    vk::PipelineDynamicStateCreateInfo::default().dynamic_states(&dynamic_states);
-                let viewport_state = vk::PipelineViewportStateCreateInfo::default()
-                    .viewport_count(1)
-                    .scissor_count(1);
-                let pipeline_info = vk::GraphicsPipelineCreateInfo::default()
-                    .stages(&stages)
-                    .vertex_input_state(&vertex_input)
-                    .input_assembly_state(&input_assembly)
-                    .viewport_state(&viewport_state)
-                    .rasterization_state(&raster)
-                    .multisample_state(&multisample)
-                    .color_blend_state(&color_blend)
-                    .depth_stencil_state(&depth_stencil)
-                    .dynamic_state(&dynamic_state)
-                    .layout(pipeline_layout_extrl)
-                    .render_pass(render_pass_extrl)
-                    .subpass(0);
-                let pipeline_extrl = vk::Pipeline::auto_assemble(
-                    device_extrl,
-                    vk::PipelineCache::null(),
-                    &pipeline_info,
-                )?;
-                Ok(PipelineTriangleRtPkg {
-                    pipeline_extrl,
-                    pipeline_layout_extrl,
-                    desc: "pipeline_triangle",
-                })
-            }
+        {
+            let _ = (extent_width_stp, extent_height_stp);
+            let input_assembly =
+                <Self as PipelineTriangleInputAssemblyHandled>::handled_assemble(
+                    topology_op,
+                );
+            let raster =
+                <Self as PipelineTriangleRasterStateHandled>::handled_assemble(
+                    polygon_mode_op,
+                    cull_mode_op,
+                    front_face_op,
+                );
+            let multisample =
+                <Self as PipelineTriangleMultisampleStateHandled>::handled_assemble(
+                    sample_count_op,
+                );
+            let color_blend_attachment =
+                <Self as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
+                    color_write_mask_op,
+                );
+            let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
+                .attachments(std::slice::from_ref(&color_blend_attachment));
+            let depth_stencil =
+                <Self as PipelineTriangleDepthStencilStateHandled>::handled_assemble(
+                    depth_compare_op,
+                );
+            let stages =
+                <Self as PipelineTriangleShaderStagesAuto>::auto_assemble(
+                    vert_module_extrl,
+                    frag_module_extrl,
+                );
+            let pipeline_layout_extrl =
+                <Self as PipelineTriangleLayoutAuto>::auto_assemble(device_extrl)?;
+            let vertex_input = vk::PipelineVertexInputStateCreateInfo::default();
+            let dynamic_states = [vk::DynamicState::VIEWPORT, vk::DynamicState::SCISSOR];
+            let dynamic_state =
+                vk::PipelineDynamicStateCreateInfo::default().dynamic_states(&dynamic_states);
+            let viewport_state = vk::PipelineViewportStateCreateInfo::default()
+                .viewport_count(1)
+                .scissor_count(1);
+            let pipeline_info = vk::GraphicsPipelineCreateInfo::default()
+                .stages(&stages)
+                .vertex_input_state(&vertex_input)
+                .input_assembly_state(&input_assembly)
+                .viewport_state(&viewport_state)
+                .rasterization_state(&raster)
+                .multisample_state(&multisample)
+                .color_blend_state(&color_blend)
+                .depth_stencil_state(&depth_stencil)
+                .dynamic_state(&dynamic_state)
+                .layout(pipeline_layout_extrl)
+                .render_pass(render_pass_extrl)
+                .subpass(0);
+            let pipeline_extrl = vk::Pipeline::auto_assemble(
+                device_extrl,
+                vk::PipelineCache::null(),
+                &pipeline_info,
+            )?;
+            Ok(PipelineTriangleRtPkg {
+                pipeline_extrl,
+                pipeline_layout_extrl,
+                desc: "pipeline_triangle",
+            })
         }
     }
 }
 
 // ========== CAD STEEL (product solid) ==========
 
-/// Catalog — cad_steel SPIR-V (pos+nrm solid).
+/// Catalog — `cad_steel` SPIR-V (pos+nrm solid).
 pub trait ShadersCadSteelAuto {
     fn auto_assemble(device_extrl: &Device) -> ModulResult<ShadersTriangleRtPkg>;
 }
@@ -641,7 +621,7 @@ impl ShadersCadSteelAuto for ShadersTriangleRtPkg {
         let frag_code =
             include_bytes!("../../../../../../../shader/cubes.frag.spv").as_slice();
         let shader_modules_extrl =
-            <ShadersTriangleRtPkg as ShadersTriangleModulesAuto>::auto_assemble(
+            <Self as ShadersTriangleModulesAuto>::auto_assemble(
                 device_extrl,
                 vert_code,
                 frag_code,
@@ -653,7 +633,7 @@ impl ShadersCadSteelAuto for ShadersTriangleRtPkg {
     }
 }
 
-/// Catalog — graphics pipeline for cad_steel (vertex input + push constants).
+/// Catalog — graphics pipeline for `cad_steel` (vertex input + push constants).
 pub trait PipelineCadSteelHandled {
     fn handled_assemble(
         device_extrl: &Device,
@@ -684,110 +664,108 @@ impl PipelineCadSteelHandled for PipelineTriangleRtPkg {
         vert_module_extrl: vk::ShaderModule,
         frag_module_extrl: vk::ShaderModule,
     ) -> ModulResult<PipelineTriangleRtPkg> {
-        match sample_count_op {
-            sample_count_op => {
-                let input_assembly =
-                    <PipelineTriangleRtPkg as PipelineTriangleInputAssemblyHandled>::handled_assemble(
-                        topology_op,
-                    );
-                let raster =
-                    <PipelineTriangleRtPkg as PipelineTriangleRasterStateHandled>::handled_assemble(
-                        polygon_mode_op,
-                        cull_mode_op,
-                        front_face_op,
-                    );
-                let multisample =
-                    <PipelineTriangleRtPkg as PipelineTriangleMultisampleStateHandled>::handled_assemble(
-                        sample_count_op,
-                    );
-                let color_blend_attachment =
-                    <PipelineTriangleRtPkg as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
-                        color_write_mask_op,
-                    );
-                let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
-                    .attachments(std::slice::from_ref(&color_blend_attachment));
-                let depth_stencil =
-                    <PipelineTriangleRtPkg as PipelineTriangleDepthStencilStateHandled>::handled_assemble(
-                        depth_compare_op,
-                    );
-                let stages =
-                    <PipelineTriangleRtPkg as PipelineTriangleShaderStagesAuto>::auto_assemble(
-                        vert_module_extrl,
-                        frag_module_extrl,
-                    );
-                // Push: mat4 + 6×vec4 = 160 bytes (cad_steel · 3D View look knobs).
-                let push_range = vk::PushConstantRange::default()
-                    .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
-                    .offset(0)
-                    .size(160);
-                let pipeline_layout_extrl =
-                    <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
-                        device_extrl,
-                        &[],
-                        std::slice::from_ref(&push_range),
-                    )?;
-                // binding 0 VERTEX: stride 24 · loc0 pos · loc1 nrm
-                // binding 1 INSTANCE: stride 16 · loc2 instance xyzw
-                let bindings = [
-                    vk::VertexInputBindingDescription::default()
-                        .binding(0)
-                        .stride(24)
-                        .input_rate(vk::VertexInputRate::VERTEX),
-                    vk::VertexInputBindingDescription::default()
-                        .binding(1)
-                        .stride(16)
-                        .input_rate(vk::VertexInputRate::INSTANCE),
-                ];
-                let attrs = [
-                    vk::VertexInputAttributeDescription::default()
-                        .location(0)
-                        .binding(0)
-                        .format(vk::Format::R32G32B32_SFLOAT)
-                        .offset(0),
-                    vk::VertexInputAttributeDescription::default()
-                        .location(1)
-                        .binding(0)
-                        .format(vk::Format::R32G32B32_SFLOAT)
-                        .offset(12),
-                    vk::VertexInputAttributeDescription::default()
-                        .location(2)
-                        .binding(1)
-                        .format(vk::Format::R32G32B32A32_SFLOAT)
-                        .offset(0),
-                ];
-                let vertex_input = vk::PipelineVertexInputStateCreateInfo::default()
-                    .vertex_binding_descriptions(&bindings)
-                    .vertex_attribute_descriptions(&attrs);
-                let dynamic_states = [vk::DynamicState::VIEWPORT, vk::DynamicState::SCISSOR];
-                let dynamic_state =
-                    vk::PipelineDynamicStateCreateInfo::default().dynamic_states(&dynamic_states);
-                let viewport_state = vk::PipelineViewportStateCreateInfo::default()
-                    .viewport_count(1)
-                    .scissor_count(1);
-                let pipeline_info = vk::GraphicsPipelineCreateInfo::default()
-                    .stages(&stages)
-                    .vertex_input_state(&vertex_input)
-                    .input_assembly_state(&input_assembly)
-                    .viewport_state(&viewport_state)
-                    .rasterization_state(&raster)
-                    .multisample_state(&multisample)
-                    .color_blend_state(&color_blend)
-                    .depth_stencil_state(&depth_stencil)
-                    .dynamic_state(&dynamic_state)
-                    .layout(pipeline_layout_extrl)
-                    .render_pass(render_pass_extrl)
-                    .subpass(0);
-                let pipeline_extrl = vk::Pipeline::auto_assemble(
+        {
+            let input_assembly =
+                <Self as PipelineTriangleInputAssemblyHandled>::handled_assemble(
+                    topology_op,
+                );
+            let raster =
+                <Self as PipelineTriangleRasterStateHandled>::handled_assemble(
+                    polygon_mode_op,
+                    cull_mode_op,
+                    front_face_op,
+                );
+            let multisample =
+                <Self as PipelineTriangleMultisampleStateHandled>::handled_assemble(
+                    sample_count_op,
+                );
+            let color_blend_attachment =
+                <Self as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
+                    color_write_mask_op,
+                );
+            let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
+                .attachments(std::slice::from_ref(&color_blend_attachment));
+            let depth_stencil =
+                <Self as PipelineTriangleDepthStencilStateHandled>::handled_assemble(
+                    depth_compare_op,
+                );
+            let stages =
+                <Self as PipelineTriangleShaderStagesAuto>::auto_assemble(
+                    vert_module_extrl,
+                    frag_module_extrl,
+                );
+            // Push: mat4 + 6×vec4 = 160 bytes (cad_steel · 3D View look knobs).
+            let push_range = vk::PushConstantRange::default()
+                .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
+                .offset(0)
+                .size(160);
+            let pipeline_layout_extrl =
+                <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
                     device_extrl,
-                    vk::PipelineCache::null(),
-                    &pipeline_info,
+                    &[],
+                    std::slice::from_ref(&push_range),
                 )?;
-                Ok(PipelineTriangleRtPkg {
-                    pipeline_extrl,
-                    pipeline_layout_extrl,
-                    desc: "pipeline_cubes",
-                })
-            }
+            // binding 0 VERTEX: stride 24 · loc0 pos · loc1 nrm
+            // binding 1 INSTANCE: stride 16 · loc2 instance xyzw
+            let bindings = [
+                vk::VertexInputBindingDescription::default()
+                    .binding(0)
+                    .stride(24)
+                    .input_rate(vk::VertexInputRate::VERTEX),
+                vk::VertexInputBindingDescription::default()
+                    .binding(1)
+                    .stride(16)
+                    .input_rate(vk::VertexInputRate::INSTANCE),
+            ];
+            let attrs = [
+                vk::VertexInputAttributeDescription::default()
+                    .location(0)
+                    .binding(0)
+                    .format(vk::Format::R32G32B32_SFLOAT)
+                    .offset(0),
+                vk::VertexInputAttributeDescription::default()
+                    .location(1)
+                    .binding(0)
+                    .format(vk::Format::R32G32B32_SFLOAT)
+                    .offset(12),
+                vk::VertexInputAttributeDescription::default()
+                    .location(2)
+                    .binding(1)
+                    .format(vk::Format::R32G32B32A32_SFLOAT)
+                    .offset(0),
+            ];
+            let vertex_input = vk::PipelineVertexInputStateCreateInfo::default()
+                .vertex_binding_descriptions(&bindings)
+                .vertex_attribute_descriptions(&attrs);
+            let dynamic_states = [vk::DynamicState::VIEWPORT, vk::DynamicState::SCISSOR];
+            let dynamic_state =
+                vk::PipelineDynamicStateCreateInfo::default().dynamic_states(&dynamic_states);
+            let viewport_state = vk::PipelineViewportStateCreateInfo::default()
+                .viewport_count(1)
+                .scissor_count(1);
+            let pipeline_info = vk::GraphicsPipelineCreateInfo::default()
+                .stages(&stages)
+                .vertex_input_state(&vertex_input)
+                .input_assembly_state(&input_assembly)
+                .viewport_state(&viewport_state)
+                .rasterization_state(&raster)
+                .multisample_state(&multisample)
+                .color_blend_state(&color_blend)
+                .depth_stencil_state(&depth_stencil)
+                .dynamic_state(&dynamic_state)
+                .layout(pipeline_layout_extrl)
+                .render_pass(render_pass_extrl)
+                .subpass(0);
+            let pipeline_extrl = vk::Pipeline::auto_assemble(
+                device_extrl,
+                vk::PipelineCache::null(),
+                &pipeline_info,
+            )?;
+            Ok(PipelineTriangleRtPkg {
+                pipeline_extrl,
+                pipeline_layout_extrl,
+                desc: "pipeline_cubes",
+            })
         }
     }
 }
@@ -795,6 +773,7 @@ impl PipelineCadSteelHandled for PipelineTriangleRtPkg {
 // ========== CAD LINE (grid · sketch · outline) ==========
 
 /// `ShadersCadLineAuto` — trait (shaders cad line auto).
+///
 /// Auto-assemble catalog trait: pure construction without external peels (FIX-129 Auto rank).
 /// Belongs to: render-pass / graphics pipeline MCG.
 /// Module path context: `gpu/MODUL0_VK_PIPELINE/mem/asm_disasm/vk_pkg/handled`.
@@ -807,7 +786,7 @@ impl ShadersCadLineAuto for ShadersTriangleRtPkg {
         let vert_code = include_bytes!("../../../../../../../shader/cubes.vert.spv").as_slice();
         let frag_code = include_bytes!("../../../../../../../shader/cubes.frag.spv").as_slice();
         let shader_modules_extrl =
-            <ShadersTriangleRtPkg as ShadersTriangleModulesAuto>::auto_assemble(
+            <Self as ShadersTriangleModulesAuto>::auto_assemble(
                 device_extrl,
                 vert_code,
                 frag_code,
@@ -820,6 +799,7 @@ impl ShadersCadLineAuto for ShadersTriangleRtPkg {
 }
 
 /// `PipelineCadLineHandled` — trait (pipeline cad line handled).
+///
 /// Handled-assemble catalog trait: construction from imported knobs / peels (FIX-129 Handled rank).
 /// Belongs to: render-pass / graphics pipeline MCG.
 /// Module path context: `gpu/MODUL0_VK_PIPELINE/mem/asm_disasm/vk_pkg/handled`.
@@ -835,7 +815,7 @@ pub trait PipelineCadLineHandled {
     ) -> ModulResult<PipelineTriangleRtPkg>;
 }
 
-/// Catalog — CAD line ribbons as TRIANGLE_LIST.
+/// Catalog — CAD line ribbons as `TRIANGLE_LIST`.
 pub trait PipelineCadLineTrisHandled {
     fn handled_assemble(
         device_extrl: &Device,
@@ -858,90 +838,88 @@ impl PipelineCadLineHandled for PipelineTriangleRtPkg {
         vert_module_extrl: vk::ShaderModule,
         frag_module_extrl: vk::ShaderModule,
     ) -> ModulResult<PipelineTriangleRtPkg> {
-        match sample_count_op {
-            sample_count_op => {
-                let topology_op = vk::PrimitiveTopology::LINE_LIST;
-                let input_assembly =
-                    <PipelineTriangleRtPkg as PipelineTriangleInputAssemblyHandled>::handled_assemble(
-                        topology_op,
-                    );
-                let raster =
-                    <PipelineTriangleRtPkg as PipelineTriangleRasterStateHandled>::handled_assemble(
-                        vk::PolygonMode::FILL,
-                        vk::CullModeFlags::NONE,
-                        vk::FrontFace::COUNTER_CLOCKWISE,
-                    );
-                let multisample =
-                    <PipelineTriangleRtPkg as PipelineTriangleMultisampleStateHandled>::handled_assemble(
-                        sample_count_op,
-                    );
-                let color_blend_attachment =
-                    <PipelineTriangleRtPkg as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
-                        color_write_mask_op,
-                    );
-                let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
-                    .attachments(std::slice::from_ref(&color_blend_attachment));
-                let depth_stencil = vk::PipelineDepthStencilStateCreateInfo::default()
-                    .depth_test_enable(true)
-                    .depth_write_enable(false)
-                    .depth_compare_op(depth_compare_op);
-                let stages =
-                    <PipelineTriangleRtPkg as PipelineTriangleShaderStagesAuto>::auto_assemble(
-                        vert_module_extrl,
-                        frag_module_extrl,
-                    );
-                let push_range = vk::PushConstantRange::default()
-                    .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
-                    .offset(0)
-                    .size(80);
-                let pipeline_layout_extrl =
-                    <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
-                        device_extrl,
-                        &[],
-                        std::slice::from_ref(&push_range),
-                    )?;
-                let binding = vk::VertexInputBindingDescription::default()
-                    .binding(0)
-                    .stride(12)
-                    .input_rate(vk::VertexInputRate::VERTEX);
-                let attrs = [vk::VertexInputAttributeDescription::default()
-                    .location(0)
-                    .binding(0)
-                    .format(vk::Format::R32G32B32_SFLOAT)
-                    .offset(0)];
-                let vertex_input = vk::PipelineVertexInputStateCreateInfo::default()
-                    .vertex_binding_descriptions(std::slice::from_ref(&binding))
-                    .vertex_attribute_descriptions(&attrs);
-                let dynamic_states = [vk::DynamicState::VIEWPORT, vk::DynamicState::SCISSOR];
-                let dynamic_state =
-                    vk::PipelineDynamicStateCreateInfo::default().dynamic_states(&dynamic_states);
-                let viewport_state = vk::PipelineViewportStateCreateInfo::default()
-                    .viewport_count(1)
-                    .scissor_count(1);
-                let pipeline_info = vk::GraphicsPipelineCreateInfo::default()
-                    .stages(&stages)
-                    .vertex_input_state(&vertex_input)
-                    .input_assembly_state(&input_assembly)
-                    .viewport_state(&viewport_state)
-                    .rasterization_state(&raster)
-                    .multisample_state(&multisample)
-                    .color_blend_state(&color_blend)
-                    .depth_stencil_state(&depth_stencil)
-                    .dynamic_state(&dynamic_state)
-                    .layout(pipeline_layout_extrl)
-                    .render_pass(render_pass_extrl)
-                    .subpass(0);
-                let pipeline_extrl = vk::Pipeline::auto_assemble(
+        {
+            let topology_op = vk::PrimitiveTopology::LINE_LIST;
+            let input_assembly =
+                <Self as PipelineTriangleInputAssemblyHandled>::handled_assemble(
+                    topology_op,
+                );
+            let raster =
+                <Self as PipelineTriangleRasterStateHandled>::handled_assemble(
+                    vk::PolygonMode::FILL,
+                    vk::CullModeFlags::NONE,
+                    vk::FrontFace::COUNTER_CLOCKWISE,
+                );
+            let multisample =
+                <Self as PipelineTriangleMultisampleStateHandled>::handled_assemble(
+                    sample_count_op,
+                );
+            let color_blend_attachment =
+                <Self as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
+                    color_write_mask_op,
+                );
+            let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
+                .attachments(std::slice::from_ref(&color_blend_attachment));
+            let depth_stencil = vk::PipelineDepthStencilStateCreateInfo::default()
+                .depth_test_enable(true)
+                .depth_write_enable(false)
+                .depth_compare_op(depth_compare_op);
+            let stages =
+                <Self as PipelineTriangleShaderStagesAuto>::auto_assemble(
+                    vert_module_extrl,
+                    frag_module_extrl,
+                );
+            let push_range = vk::PushConstantRange::default()
+                .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
+                .offset(0)
+                .size(80);
+            let pipeline_layout_extrl =
+                <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
                     device_extrl,
-                    vk::PipelineCache::null(),
-                    &pipeline_info,
+                    &[],
+                    std::slice::from_ref(&push_range),
                 )?;
-                Ok(PipelineTriangleRtPkg {
-                    pipeline_extrl,
-                    pipeline_layout_extrl,
-                    desc: "pipeline_cad_line",
-                })
-            }
+            let binding = vk::VertexInputBindingDescription::default()
+                .binding(0)
+                .stride(12)
+                .input_rate(vk::VertexInputRate::VERTEX);
+            let attrs = [vk::VertexInputAttributeDescription::default()
+                .location(0)
+                .binding(0)
+                .format(vk::Format::R32G32B32_SFLOAT)
+                .offset(0)];
+            let vertex_input = vk::PipelineVertexInputStateCreateInfo::default()
+                .vertex_binding_descriptions(std::slice::from_ref(&binding))
+                .vertex_attribute_descriptions(&attrs);
+            let dynamic_states = [vk::DynamicState::VIEWPORT, vk::DynamicState::SCISSOR];
+            let dynamic_state =
+                vk::PipelineDynamicStateCreateInfo::default().dynamic_states(&dynamic_states);
+            let viewport_state = vk::PipelineViewportStateCreateInfo::default()
+                .viewport_count(1)
+                .scissor_count(1);
+            let pipeline_info = vk::GraphicsPipelineCreateInfo::default()
+                .stages(&stages)
+                .vertex_input_state(&vertex_input)
+                .input_assembly_state(&input_assembly)
+                .viewport_state(&viewport_state)
+                .rasterization_state(&raster)
+                .multisample_state(&multisample)
+                .color_blend_state(&color_blend)
+                .depth_stencil_state(&depth_stencil)
+                .dynamic_state(&dynamic_state)
+                .layout(pipeline_layout_extrl)
+                .render_pass(render_pass_extrl)
+                .subpass(0);
+            let pipeline_extrl = vk::Pipeline::auto_assemble(
+                device_extrl,
+                vk::PipelineCache::null(),
+                &pipeline_info,
+            )?;
+            Ok(PipelineTriangleRtPkg {
+                pipeline_extrl,
+                pipeline_layout_extrl,
+                desc: "pipeline_cad_line",
+            })
         }
     }
 }
@@ -956,90 +934,88 @@ impl PipelineCadLineTrisHandled for PipelineTriangleRtPkg {
         vert_module_extrl: vk::ShaderModule,
         frag_module_extrl: vk::ShaderModule,
     ) -> ModulResult<PipelineTriangleRtPkg> {
-        match sample_count_op {
-            sample_count_op => {
-                let topology_op = vk::PrimitiveTopology::TRIANGLE_LIST;
-                let input_assembly =
-                    <PipelineTriangleRtPkg as PipelineTriangleInputAssemblyHandled>::handled_assemble(
-                        topology_op,
-                    );
-                let raster =
-                    <PipelineTriangleRtPkg as PipelineTriangleRasterStateHandled>::handled_assemble(
-                        vk::PolygonMode::FILL,
-                        vk::CullModeFlags::NONE,
-                        vk::FrontFace::COUNTER_CLOCKWISE,
-                    );
-                let multisample =
-                    <PipelineTriangleRtPkg as PipelineTriangleMultisampleStateHandled>::handled_assemble(
-                        sample_count_op,
-                    );
-                let color_blend_attachment =
-                    <PipelineTriangleRtPkg as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
-                        color_write_mask_op,
-                    );
-                let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
-                    .attachments(std::slice::from_ref(&color_blend_attachment));
-                let depth_stencil = vk::PipelineDepthStencilStateCreateInfo::default()
-                    .depth_test_enable(true)
-                    .depth_write_enable(false)
-                    .depth_compare_op(depth_compare_op);
-                let stages =
-                    <PipelineTriangleRtPkg as PipelineTriangleShaderStagesAuto>::auto_assemble(
-                        vert_module_extrl,
-                        frag_module_extrl,
-                    );
-                let push_range = vk::PushConstantRange::default()
-                    .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
-                    .offset(0)
-                    .size(80);
-                let pipeline_layout_extrl =
-                    <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
-                        device_extrl,
-                        &[],
-                        std::slice::from_ref(&push_range),
-                    )?;
-                let binding = vk::VertexInputBindingDescription::default()
-                    .binding(0)
-                    .stride(12)
-                    .input_rate(vk::VertexInputRate::VERTEX);
-                let attrs = [vk::VertexInputAttributeDescription::default()
-                    .location(0)
-                    .binding(0)
-                    .format(vk::Format::R32G32B32_SFLOAT)
-                    .offset(0)];
-                let vertex_input = vk::PipelineVertexInputStateCreateInfo::default()
-                    .vertex_binding_descriptions(std::slice::from_ref(&binding))
-                    .vertex_attribute_descriptions(&attrs);
-                let dynamic_states = [vk::DynamicState::VIEWPORT, vk::DynamicState::SCISSOR];
-                let dynamic_state =
-                    vk::PipelineDynamicStateCreateInfo::default().dynamic_states(&dynamic_states);
-                let viewport_state = vk::PipelineViewportStateCreateInfo::default()
-                    .viewport_count(1)
-                    .scissor_count(1);
-                let pipeline_info = vk::GraphicsPipelineCreateInfo::default()
-                    .stages(&stages)
-                    .vertex_input_state(&vertex_input)
-                    .input_assembly_state(&input_assembly)
-                    .viewport_state(&viewport_state)
-                    .rasterization_state(&raster)
-                    .multisample_state(&multisample)
-                    .color_blend_state(&color_blend)
-                    .depth_stencil_state(&depth_stencil)
-                    .dynamic_state(&dynamic_state)
-                    .layout(pipeline_layout_extrl)
-                    .render_pass(render_pass_extrl)
-                    .subpass(0);
-                let pipeline_extrl = vk::Pipeline::auto_assemble(
+        {
+            let topology_op = vk::PrimitiveTopology::TRIANGLE_LIST;
+            let input_assembly =
+                <Self as PipelineTriangleInputAssemblyHandled>::handled_assemble(
+                    topology_op,
+                );
+            let raster =
+                <Self as PipelineTriangleRasterStateHandled>::handled_assemble(
+                    vk::PolygonMode::FILL,
+                    vk::CullModeFlags::NONE,
+                    vk::FrontFace::COUNTER_CLOCKWISE,
+                );
+            let multisample =
+                <Self as PipelineTriangleMultisampleStateHandled>::handled_assemble(
+                    sample_count_op,
+                );
+            let color_blend_attachment =
+                <Self as PipelineTriangleColorBlendAttachmentHandled>::handled_assemble(
+                    color_write_mask_op,
+                );
+            let color_blend = vk::PipelineColorBlendStateCreateInfo::default()
+                .attachments(std::slice::from_ref(&color_blend_attachment));
+            let depth_stencil = vk::PipelineDepthStencilStateCreateInfo::default()
+                .depth_test_enable(true)
+                .depth_write_enable(false)
+                .depth_compare_op(depth_compare_op);
+            let stages =
+                <Self as PipelineTriangleShaderStagesAuto>::auto_assemble(
+                    vert_module_extrl,
+                    frag_module_extrl,
+                );
+            let push_range = vk::PushConstantRange::default()
+                .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
+                .offset(0)
+                .size(80);
+            let pipeline_layout_extrl =
+                <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
                     device_extrl,
-                    vk::PipelineCache::null(),
-                    &pipeline_info,
+                    &[],
+                    std::slice::from_ref(&push_range),
                 )?;
-                Ok(PipelineTriangleRtPkg {
-                    pipeline_extrl,
-                    pipeline_layout_extrl,
-                    desc: "pipeline_cad_line_tris",
-                })
-            }
+            let binding = vk::VertexInputBindingDescription::default()
+                .binding(0)
+                .stride(12)
+                .input_rate(vk::VertexInputRate::VERTEX);
+            let attrs = [vk::VertexInputAttributeDescription::default()
+                .location(0)
+                .binding(0)
+                .format(vk::Format::R32G32B32_SFLOAT)
+                .offset(0)];
+            let vertex_input = vk::PipelineVertexInputStateCreateInfo::default()
+                .vertex_binding_descriptions(std::slice::from_ref(&binding))
+                .vertex_attribute_descriptions(&attrs);
+            let dynamic_states = [vk::DynamicState::VIEWPORT, vk::DynamicState::SCISSOR];
+            let dynamic_state =
+                vk::PipelineDynamicStateCreateInfo::default().dynamic_states(&dynamic_states);
+            let viewport_state = vk::PipelineViewportStateCreateInfo::default()
+                .viewport_count(1)
+                .scissor_count(1);
+            let pipeline_info = vk::GraphicsPipelineCreateInfo::default()
+                .stages(&stages)
+                .vertex_input_state(&vertex_input)
+                .input_assembly_state(&input_assembly)
+                .viewport_state(&viewport_state)
+                .rasterization_state(&raster)
+                .multisample_state(&multisample)
+                .color_blend_state(&color_blend)
+                .depth_stencil_state(&depth_stencil)
+                .dynamic_state(&dynamic_state)
+                .layout(pipeline_layout_extrl)
+                .render_pass(render_pass_extrl)
+                .subpass(0);
+            let pipeline_extrl = vk::Pipeline::auto_assemble(
+                device_extrl,
+                vk::PipelineCache::null(),
+                &pipeline_info,
+            )?;
+            Ok(PipelineTriangleRtPkg {
+                pipeline_extrl,
+                pipeline_layout_extrl,
+                desc: "pipeline_cad_line_tris",
+            })
         }
     }
 }

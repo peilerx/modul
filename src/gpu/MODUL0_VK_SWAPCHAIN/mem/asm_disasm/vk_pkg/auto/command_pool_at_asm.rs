@@ -22,7 +22,7 @@ impl CommandPoolDefaultAuto for SwapchainCommandPoolDefaultRtPkg {
             &device_default_rt_pkg.device_extrl,
             physical_device_default_rt_pkg.queue_family_index_rt,
         )?;
-        Ok(SwapchainCommandPoolDefaultRtPkg {
+        Ok(Self {
             command_pool_extrl,
             desc: "vulkan_command_pool",
         })

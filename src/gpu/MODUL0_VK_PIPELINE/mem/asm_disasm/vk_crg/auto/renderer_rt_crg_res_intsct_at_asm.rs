@@ -1,4 +1,4 @@
-//! vk_crg — pack RendererDefaultRtCrg (FIX-120).
+//! `vk_crg` — pack `RendererDefaultRtCrg` (FIX-120).
 //! One catalog assemble per trait (FIX-083/129).
 
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::runtime::render_res_intsct_rt_pkgs::{
@@ -46,7 +46,7 @@ impl RendererDefaultRtCrgAuto for RendererDefaultRtCrg {
         render_pass_triangle_rt_pkg: RenderPassDefaultRtPkg,
         pipeline_triangle_rt_pkg: GraphicsPipelineDefaultRtPkg,
     ) -> RendererDefaultRtCrg {
-        RendererDefaultRtCrg {
+        Self {
             shaders_triangle_rt_pkg,
             render_pass_triangle_rt_pkg,
             pipeline_triangle_rt_pkg,
@@ -73,7 +73,7 @@ impl RendererSteelRtCrgAuto for RendererDefaultRtCrg {
         shaders_steel_rt_pkg: ShaderModulesDefaultRtPkg,
         pipeline_steel_rt_pkg: GraphicsPipelineDefaultRtPkg,
     ) -> RendererDefaultRtCrg {
-        RendererDefaultRtCrg {
+        Self {
             shaders_triangle_rt_pkg,
             render_pass_triangle_rt_pkg,
             pipeline_triangle_rt_pkg,
@@ -103,7 +103,7 @@ impl RendererProductRtCrgAuto for RendererDefaultRtCrg {
         pipeline_line_rt_pkg: GraphicsPipelineDefaultRtPkg,
         pipeline_line_tris_rt_pkg: GraphicsPipelineDefaultRtPkg,
     ) -> RendererDefaultRtCrg {
-        RendererDefaultRtCrg {
+        Self {
             shaders_triangle_rt_pkg,
             render_pass_triangle_rt_pkg,
             pipeline_triangle_rt_pkg,

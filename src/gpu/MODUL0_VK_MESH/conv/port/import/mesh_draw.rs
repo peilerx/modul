@@ -1,10 +1,10 @@
-//! Intent in-port — PortMatch `MeshDrawPrt` → write setup bag (FIX-128 · v5.1).
+//! Intent in-port — `PortMatch` `MeshDrawPrt` → write setup bag (FIX-128 · v5.1).
 
 use crate::gpu::MODUL0_VK_MESH::mem::base::transport::prt::mesh_draw_prt::MeshDrawPrt;
 use crate::gpu::MODUL0_VK_MESH::mem::base::transport::setup::mesh_draw_default_stp_pkg::MeshDrawDefaultStpPkg;
 
-/// PortMatch mesh draw picture → write setup bag · never returns.
-pub fn import_mesh_draw_for_asm(
+/// `PortMatch` mesh draw picture → write setup bag · never returns.
+pub const fn import_mesh_draw_for_asm(
     mesh_draw_prt: MeshDrawPrt,
     vertex_count_stp: u32,
     index_count_stp: u32,

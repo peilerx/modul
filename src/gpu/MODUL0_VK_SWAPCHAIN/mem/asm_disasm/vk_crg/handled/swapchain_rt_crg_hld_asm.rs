@@ -1,4 +1,4 @@
-//! vk_crg **handled** — pack cargo from **bfr slots** (takes inside · ¬ port let theater).
+//! `vk_crg` **handled** — pack cargo from **bfr slots** (takes inside · ¬ port let theater).
 //! ¬ create entry/device inside this method.
 
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::asm_disasm::vk_bfr::auto::swapchain_bfr_at_asm::SwapchainBfrAuto;
@@ -8,6 +8,7 @@ use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::boot_res_int
 use crate::ModulResult;
 
 /// `SwapchainRtCrgHandled` — trait (swapchain rt crg handled).
+///
 /// Handled-assemble catalog trait: construction from imported knobs / peels (FIX-129 Handled rank).
 /// Belongs to: swapchain / device bootstrap MCG.
 /// Module path context: `gpu/MODUL0_VK_SWAPCHAIN/mem/asm_disasm/vk_crg/handled`.
@@ -36,7 +37,7 @@ impl SwapchainRtCrgHandled for SwapchainRtCrg {
         // surface stays on bfr (not taken) · atoms move into cargo
         let _surface = bfr.surface_window()?;
 
-        Ok(SwapchainRtCrg {
+        Ok(Self {
             entry_default_rt: <SwapchainBfr as SwapchainBfrAuto>::slot_take(
                 &mut bfr.entry_default_rt,
                 "entry_default_rt",

@@ -10,11 +10,12 @@ use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_
 use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::MeshSoaRtBfr;
 use crate::ModulResult;
 
-/// `IMPORT_FOR_ASM_FACTORY_LINE_N` — const (IMPORT_FOR_ASM_FACTORY_LINE_N).
+/// `IMPORT_FOR_ASM_FACTORY_LINE_N` — const (`IMPORT_FOR_ASM_FACTORY_LINE_N`).
 /// Module path context: `gpu/MODUL0_VK_MESH/conv/port`.
 pub const IMPORT_FOR_ASM_FACTORY_LINE_N: u8 = 1;
 
 /// `MeshGpuTransportable` — trait (mesh gpu transportable).
+///
 /// Transportable surface: import/export peels for PTP slot-factory-line wiring.
 /// Belongs to: mesh upload / solid draw MCG.
 /// Module path context: `gpu/MODUL0_VK_MESH/conv/port`.

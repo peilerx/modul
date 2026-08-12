@@ -12,13 +12,14 @@
 //! Deep mode (`trace_deep`): extra samples (paint_diag, scorecard hooks).
 //! UI checkbox turns deep on with TRACE.
 
+use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 static ENABLED: AtomicBool = AtomicBool::new(false);
-/// Deep mode: paint_diag + zbuffer void flood + frame samples (UI checkbox = deep).
+/// Deep mode: `paint_diag` + zbuffer void flood + frame samples (UI checkbox = deep).
 static DEEP: AtomicBool = AtomicBool::new(false);
 static SEQ: AtomicU64 = AtomicU64::new(0);
 static INIT: AtomicBool = AtomicBool::new(false);
@@ -32,11 +33,9 @@ pub fn trace_init_from_env() {
     }
     let on = std::env::var("MODULCAD_TRACE")
         .or_else(|_| std::env::var("MODUL_TRACE"))
-        .map(|v| v != "0" && !v.is_empty())
-        .unwrap_or(false);
+        .is_ok_and(|v| v != "0" && !v.is_empty());
     let deep = std::env::var("MODULCAD_TRACE_DEEP")
-        .map(|v| v != "0" && !v.is_empty())
-        .unwrap_or(on); // env TRACE implies deep unless TRACE_DEEP=0
+        .map_or(on, |v| v != "0" && !v.is_empty()); // env TRACE implies deep unless TRACE_DEEP=0
     ENABLED.store(on, Ordering::SeqCst);
     DEEP.store(on && deep, Ordering::SeqCst);
     if on {
@@ -47,7 +46,7 @@ pub fn trace_init_from_env() {
         trace_emit(
             "COMMON",
             "trace_init",
-            &format!("enabled=1 deep={} diag=BUG_flags", deep as u8),
+            &format!("enabled=1 deep={} diag=BUG_flags", u8::from(deep)),
         );
     }
 }
@@ -117,26 +116,27 @@ pub fn trace_set_enabled(on: bool) {
     }
 }
 
+static TRACE_THROTTLE_LAST: [AtomicU64; 8] = [
+    AtomicU64::new(0),
+    AtomicU64::new(0),
+    AtomicU64::new(0),
+    AtomicU64::new(0),
+    AtomicU64::new(0),
+    AtomicU64::new(0),
+    AtomicU64::new(0),
+    AtomicU64::new(0),
+];
+
 /// Throttled sample helper (ms since last). Returns true if should emit.
 pub fn trace_throttle(slot: u32, min_ms: u64) -> bool {
     if !trace_enabled() {
         return false;
     }
-    static LAST: [AtomicU64; 8] = [
-        AtomicU64::new(0),
-        AtomicU64::new(0),
-        AtomicU64::new(0),
-        AtomicU64::new(0),
-        AtomicU64::new(0),
-        AtomicU64::new(0),
-        AtomicU64::new(0),
-        AtomicU64::new(0),
-    ];
     let i = (slot as usize) % 8;
     let now = now_ms() as u64;
-    let prev = LAST[i].load(Ordering::Relaxed);
+    let prev = TRACE_THROTTLE_LAST[i].load(Ordering::Relaxed);
     if now.saturating_sub(prev) >= min_ms {
-        LAST[i].store(now, Ordering::Relaxed);
+        TRACE_THROTTLE_LAST[i].store(now, Ordering::Relaxed);
         true
     } else {
         false
@@ -146,8 +146,7 @@ pub fn trace_throttle(slot: u32, min_ms: u64) -> bool {
 fn now_ms() -> u128 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_millis())
-        .unwrap_or(0)
+        .map_or(0, |d| d.as_millis())
 }
 
 fn trace_log_path() -> String {
@@ -194,24 +193,23 @@ pub fn trace_sketch_loop(xs: &[f64], ys: &[f64], fronts: &[u32], backs: &[u32]) 
     let mut area2 = 0.0;
     for i in 0..n {
         let j = (i + 1) % n;
-        area2 += xs[i] * ys[j] - xs[j] * ys[i];
+        area2 += xs[j].mul_add(-ys[i], xs[i] * ys[j]);
     }
     let area = area2 * 0.5;
     // segment count vs pts
     let segs = fronts.len().min(backs.len());
-    let mut min_edge = f64::MAX;
+    let mut min_edge: Option<f64> = None;
     for i in 0..segs {
         let a = fronts[i] as usize;
         let b = backs[i] as usize;
         if a < n && b < n {
             let dx = xs[b] - xs[a];
             let dy = ys[b] - ys[a];
-            min_edge = min_edge.min((dx * dx + dy * dy).sqrt());
+            let d = dx.hypot(dy);
+            min_edge = Some(min_edge.map_or(d, |m| m.min(d)));
         }
     }
-    if min_edge == f64::MAX {
-        min_edge = 0.0;
-    }
+    let min_edge = min_edge.unwrap_or(0.0);
     // simple concave test: any internal angle turn flips relative to area sign
     let mut reflex = 0u32;
     if n >= 3 {
@@ -224,7 +222,7 @@ pub fn trace_sketch_loop(xs: &[f64], ys: &[f64], fronts: &[u32], backs: &[u32]) 
             let e1y = ys[i1] - ys[i0];
             let e2x = xs[i2] - xs[i1];
             let e2y = ys[i2] - ys[i1];
-            let cross = e1x * e2y - e1y * e2x;
+            let cross = e1y.mul_add(-e2x, e1x * e2y);
             if cross * sign < -1e-12 {
                 reflex += 1;
             }
@@ -280,7 +278,7 @@ pub fn trace_mesh_stats(
     let mut zero_area = 0u32;
     let mut bad_idx = 0u32;
     let mut outward = 0i32;
-    let mut min_a2 = f32::MAX;
+    let mut min_a2: Option<f32> = None;
     let mut max_a2 = 0.0f32;
     let mut cx = 0.0f32;
     let mut cy = 0.0f32;
@@ -297,7 +295,6 @@ pub fn trace_mesh_stats(
         cz *= inv;
     }
     // open edge count (edges with count != 2)
-    use std::collections::HashMap;
     let mut edge_use: HashMap<(u32, u32), u32> = HashMap::new();
     let mut i = 0;
     while i + 2 < indices.len() {
@@ -323,11 +320,11 @@ pub fn trace_mesh_stats(
         let e2x = pos_xs[ic] - pos_xs[ia];
         let e2y = pos_ys[ic] - pos_ys[ia];
         let e2z = pos_zs[ic] - pos_zs[ia];
-        let nx = e1y * e2z - e1z * e2y;
-        let ny = e1z * e2x - e1x * e2z;
-        let nz = e1x * e2y - e1y * e2x;
-        let a2 = nx * nx + ny * ny + nz * nz;
-        min_a2 = min_a2.min(a2);
+        let nx = e1z.mul_add(-e2y, e1y * e2z);
+        let ny = e1x.mul_add(-e2z, e1z * e2x);
+        let nz = e1y.mul_add(-e2x, e1x * e2y);
+        let a2 = nz.mul_add(nz, ny.mul_add(ny, nx * nx));
+        min_a2 = Some(min_a2.map_or(a2, |m| m.min(a2)));
         max_a2 = max_a2.max(a2);
         if a2 < 1e-16 {
             zero_area += 1;
@@ -335,7 +332,7 @@ pub fn trace_mesh_stats(
             let mx = (pos_xs[ia] + pos_xs[ib] + pos_xs[ic]) / 3.0 - cx;
             let my = (pos_ys[ia] + pos_ys[ib] + pos_ys[ic]) / 3.0 - cy;
             let mz = (pos_zs[ia] + pos_zs[ib] + pos_zs[ic]) / 3.0 - cz;
-            if nx * mx + ny * my + nz * mz > 0.0 {
+            if nz.mul_add(mz, ny.mul_add(my, nx * mx)) > 0.0 {
                 outward += 1;
             } else {
                 outward -= 1;
@@ -353,9 +350,7 @@ pub fn trace_mesh_stats(
             nonmanifold += 1;
         }
     }
-    if min_a2 == f32::MAX {
-        min_a2 = 0.0;
-    }
+    let min_a2 = min_a2.unwrap_or(0.0);
     trace_emit(
         mcg,
         event,
@@ -443,8 +438,7 @@ pub fn trace_paint_diag(
             "CAD_VIEW",
             "WARN/heavy_backface_cull",
             &format!(
-                "cull_back={culled_back}/{} — possible inverted faces or voids",
-                mesh_tris
+                "cull_back={culled_back}/{mesh_tris} — possible inverted faces or voids"
             ),
         );
     }

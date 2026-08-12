@@ -23,7 +23,7 @@ impl PhysicalDeviceDefaultAuto for PhysicalDeviceDefaultRtPkg {
                 &surface_default_rt_pkg.surface_loader_extrl,
                 surface_default_rt_pkg.surface_extrl,
             )?;
-        Ok(PhysicalDeviceDefaultRtPkg {
+        Ok(Self {
             physical_device_extrl,
             queue_family_index_rt: queue_family_index_stp,
             desc: "vulkan_physical_device",

@@ -1,4 +1,4 @@
-//! vk_pkg **auto** — LineGpuDefaultRtPkg list + tris (N.RES_INTSCT).
+//! `vk_pkg` **auto** — `LineGpuDefaultRtPkg` list + tris (`N.RES_INTSCT`).
 
 use ash::vk;
 use ash::{Device, Instance};
@@ -14,7 +14,7 @@ use crate::gpu::MODUL0_VK_MESH::proc::processor::line_gpu_destroy::destroy_line_
 use crate::gpu::MODUL0_VK_MESH::proc::processor::pack_line_lists::f32_pos_to_bytes;
 use crate::ModulResult;
 
-/// Catalog — host-visible line VBO (LINE_LIST).
+/// Catalog — host-visible line VBO (`LINE_LIST`).
 pub trait LineGpuDefaultAuto {
     fn auto_assemble(
         device_extrl: &Device,
@@ -27,7 +27,7 @@ pub trait LineGpuDefaultAuto {
     fn auto_disassemble(device_extrl: &Device, line_gpu_default_rt_pkg: &mut LineGpuDefaultRtPkg);
 }
 
-/// Catalog — host-visible thick-outline ribbons (TRIANGLE_LIST).
+/// Catalog — host-visible thick-outline ribbons (`TRIANGLE_LIST`).
 pub trait LineGpuTrisDefaultAuto {
     fn auto_assemble(
         device_extrl: &Device,
@@ -51,7 +51,7 @@ impl LineGpuDefaultAuto for LineGpuDefaultRtPkg {
         let positions_len_stp = positions_extrl.len();
         match positions_len_stp {
             positions_len_stp if positions_len_stp < min_stp => {
-                Ok(LineGpuDefaultRtPkg::empty("line_gpu_list"))
+                Ok(Self::empty("line_gpu_list"))
             }
             positions_len_stp => {
                 let bytes_extrl = f32_pos_to_bytes(positions_extrl);
@@ -67,7 +67,7 @@ impl LineGpuDefaultAuto for LineGpuDefaultRtPkg {
                 handled_upload_host_visible(device_extrl, vertex_memory_extrl, &bytes_extrl)?;
                 let (vertex_count_rt, line_count_rt) =
                     line_gpu_counts(positions_len_stp, as_tris_rt);
-                Ok(LineGpuDefaultRtPkg {
+                Ok(Self {
                     vertex_buffer_extrl,
                     vertex_memory_extrl,
                     vertex_count_rt,
@@ -99,7 +99,7 @@ impl LineGpuTrisDefaultAuto for LineGpuDefaultRtPkg {
         let positions_len_stp = positions_extrl.len();
         match positions_len_stp {
             positions_len_stp if positions_len_stp < min_stp => {
-                Ok(LineGpuDefaultRtPkg::empty("line_gpu_tris"))
+                Ok(Self::empty("line_gpu_tris"))
             }
             positions_len_stp => {
                 let bytes_extrl = f32_pos_to_bytes(positions_extrl);
@@ -115,7 +115,7 @@ impl LineGpuTrisDefaultAuto for LineGpuDefaultRtPkg {
                 handled_upload_host_visible(device_extrl, vertex_memory_extrl, &bytes_extrl)?;
                 let (vertex_count_rt, line_count_rt) =
                     line_gpu_counts(positions_len_stp, as_tris_rt);
-                Ok(LineGpuDefaultRtPkg {
+                Ok(Self {
                     vertex_buffer_extrl,
                     vertex_memory_extrl,
                     vertex_count_rt,

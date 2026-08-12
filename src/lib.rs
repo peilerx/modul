@@ -16,7 +16,7 @@
 //! | **PTP** | Protocol Transport Port — **external** API of an MCG (intents + ports + peels) |
 //! | **M / C / P** | Memory `mem/` · Conveyor `conv/` · Processing `proc/` |
 //! | **Stp / Rt / Prt / Bfr** | Setup · Runtime · Port intent · Buffer warehouse |
-//! | **asm_disasm** | Auto\|Handled assemble/disassemble ranks (not legacy `generator`) |
+//! | **`asm_disasm`** | Auto\|Handled assemble/disassemble ranks (not legacy `generator`) |
 //!
 //! **PTP** replaces the former name **PRA** (*Protocol Resource Assembly*).
 //!
@@ -62,7 +62,7 @@
 //!
 //! ## Linting
 //!
-//! Presets: this crate’s `Cargo.toml` `[package.metadata.modlin.*]`.  
+//! Presets: this crate’s `Cargo.toml` `[package.metadata.modlin.*]`.\
 //! Binary: `modlin/modlin-bin/`.
 //!
 //! ## Crate map

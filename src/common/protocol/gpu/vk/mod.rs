@@ -1,4 +1,4 @@
-//! K re-export W. Atoms *RtPkg/*StpPkg · cargo *RtCrg/*StpCrg/*MxCrg.
+//! K re-export W. Atoms *`RtPkg`/*`StpPkg` · cargo *`RtCrg`/*`StpCrg`/*`MxCrg`.
 
 pub use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::{
     DisplayInputDefaultRtPkg, DisplayDefaultRtCrg, DisplayPresentPrt,

@@ -26,7 +26,7 @@ impl InstanceDefaultHandled for InstanceDefaultRt {
             validation_layers_stp,
             display_handle_extrl,
         )?;
-        Ok(InstanceDefaultRt {
+        Ok(Self {
             instance_extrl,
             desc: "vulkan_instance",
         })

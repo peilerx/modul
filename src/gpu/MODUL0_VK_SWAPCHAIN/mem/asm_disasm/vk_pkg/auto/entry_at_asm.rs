@@ -8,7 +8,7 @@ pub trait EntryDefaultAuto {
 
 impl EntryDefaultAuto for EntryDefaultRt {
     fn auto_assemble() -> crate::ModulResult<EntryDefaultRt> {
-        Ok(EntryDefaultRt {
+        Ok(Self {
             entry_extrl: ash::Entry::auto_assemble(),
             desc: "vulkan_entry",
         })

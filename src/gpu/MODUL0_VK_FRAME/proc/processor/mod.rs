@@ -1,5 +1,5 @@
 //! FRAME processor — loops / domain control flow only (B34).
-//! vk CreateInfo + create_* live in gen (A1-GEN-MATERIALIZE).
+//! vk `CreateInfo` + create_* live in gen (A1-GEN-MATERIALIZE).
 
 pub mod frame_sync;
 /// Submodule `frame_tick`.

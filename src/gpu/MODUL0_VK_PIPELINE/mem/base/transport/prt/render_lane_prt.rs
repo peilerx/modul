@@ -1,7 +1,7 @@
 //! # `RenderLanePrt` — full renderer lane picture
 //!
 //! One intent family for this MCG — not a 1:1 Vulkan enum dump.
-//! PortMatch sets cull/topology/MSAA/depth knobs when assembling the renderer.
+//! `PortMatch` sets cull/topology/MSAA/depth knobs when assembling the renderer.
 
 /// Named full-lane pictures of `MODUL0_VK_PIPELINE`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]

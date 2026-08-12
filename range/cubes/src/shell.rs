@@ -118,9 +118,8 @@ impl ApplicationHandler for App {
                 if let Some(hub) = self.hub.as_mut() {
                     if hub.dragging {
                         if let Some((lx, ly)) = hub.last_cursor {
-                            hub.orbit_yaw += (position.x - lx) as f32 * 0.005;
-                            hub.orbit_pitch = (hub.orbit_pitch
-                                + (position.y - ly) as f32 * 0.005)
+                            hub.orbit_yaw = ((position.x - lx) as f32).mul_add(0.005, hub.orbit_yaw);
+                            hub.orbit_pitch = ((position.y - ly) as f32).mul_add(0.005, hub.orbit_pitch)
                                 .clamp(-1.4, 1.4);
                         }
                         hub.last_cursor = Some((position.x, position.y));

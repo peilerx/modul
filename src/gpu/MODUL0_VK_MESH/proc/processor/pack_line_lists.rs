@@ -1,6 +1,7 @@
 //! Pack world-space line lists (grid only after CAD strip).
 
-/// Interleaved f32 pos.xyz for LINE_LIST.
+/// Interleaved f32 pos.xyz for `LINE_LIST`.
+#[must_use]
 pub fn pack_grid_lines(half: f32, step: f32) -> Vec<f32> {
     let mut v = Vec::new();
     let n = ((half / step).ceil() as i32).max(1);
@@ -17,6 +18,7 @@ pub fn pack_grid_lines(half: f32, step: f32) -> Vec<f32> {
 /// `f32_pos_to_bytes` — function (f 32 pos to bytes).
 /// Public API entry for this module.
 /// Belongs to: mesh upload / solid draw MCG.
+#[must_use]
 pub fn f32_pos_to_bytes(v: &[f32]) -> Vec<u8> {
     let mut out = Vec::with_capacity(std::mem::size_of_val(v));
     for f in v {

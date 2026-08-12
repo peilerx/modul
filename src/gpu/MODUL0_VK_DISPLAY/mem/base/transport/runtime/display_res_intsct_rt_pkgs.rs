@@ -1,4 +1,4 @@
-//! Base **display** resource intersection (M.BASE_RES_INTSCT · FIX-120).
+//! Base **display** resource intersection (`M.BASE_RES_INTSCT` · FIX-120).
 //! Transport + former embedded display RTs that field the session crg — **one file**.
 
 /// Default display input snapshot (runtime).

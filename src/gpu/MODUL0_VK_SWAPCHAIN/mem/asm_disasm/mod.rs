@@ -4,6 +4,7 @@
 
 pub mod vk;
 /// Submodule `vk_bfr`.
+///
 /// Part of `gpu/MODUL0_VK_SWAPCHAIN/mem/asm_disasm` under the mem/conv/proc MCG canon.
 pub mod vk_bfr;
 /// Submodule `vk_crg`.

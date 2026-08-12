@@ -32,7 +32,7 @@ impl SwapchainRtCrgAuto for SwapchainRtCrg {
         swapchain_command_pool_default_rt_pkg: SwapchainCommandPoolDefaultRtPkg,
         swapchain_loader_default_rt_pkg: SwapchainLoaderDefaultRtPkg,
     ) -> SwapchainRtCrg {
-        SwapchainRtCrg {
+        Self {
             entry_default_rt,
             instance_default_rt,
             surface_default_rt_pkg,

@@ -56,15 +56,13 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         &mut swapchain_bfr,
         SwapchainAssemblyPrt::GraphicsPresentNoValidation,
         surface,
-    )
-    .map_err(|e| e.to_string())?;
+    )?;
     SwapchainBfr::import_present_for_asm1(
         &mut swapchain_bfr,
         SwapchainPrt::SrgbFifo,
         w,
         h,
-    )
-    .map_err(|e| e.to_string())?;
+    )?;
     let swapchain_default_rt_pkg = swapchain_bfr
         .swapchain_default_rt_pkg
         .take()
@@ -80,8 +78,7 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         h,
         vk::Format::B8G8R8A8_SRGB,
         &boot.device_default_rt_pkg,
-    )
-    .map_err(|e| e.to_string())?;
+    )?;
     let renderer_rt = renderer_bfr
         .cargo_rt
         .take()
@@ -95,8 +92,7 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         swapchain_default_rt_pkg,
         vk::SampleCountFlags::TYPE_4,
         vk::Format::D32_SFLOAT,
-    )
-    .map_err(|e| e.to_string())?;
+    )?;
     let presentation_rt = presentation_bfr
         .cargo_rt
         .take()
@@ -108,8 +104,7 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         FrameFifPrt::DoubleBuffered,
         &boot.device_default_rt_pkg,
         &boot.swapchain_command_pool_default_rt_pkg,
-    )
-    .map_err(|e| e.to_string())?;
+    )?;
     let frame_rt = frame_bfr
         .cargo_rt
         .take()
@@ -122,8 +117,7 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         FIF,
         &boot.device_default_rt_pkg,
         &boot.swapchain_command_pool_default_rt_pkg,
-    )
-    .map_err(|e| e.to_string())?;
+    )?;
     let display_rt = display_bfr
         .cargo_rt
         .take()
@@ -148,8 +142,7 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         inst,
         phys,
         &mesh,
-    )
-    .map_err(|e| e.to_string())?;
+    )?;
     let mesh_gpu_rt = mesh_gpu_bfr
         .mesh_gpu_default_rt_pkg
         .take()
@@ -157,8 +150,7 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
 
     // Empty line bag — no grid in direct cubes
     let grid_line_rt =
-        LineGpuDefaultRtPkg::auto_assemble(dev, inst, phys, &[], [0.35, 0.37, 0.40, 1.0])
-            .map_err(|e| e.to_string())?;
+        LineGpuDefaultRtPkg::auto_assemble(dev, inst, phys, &[], [0.35, 0.37, 0.40, 1.0])?;
 
     let aspect = w as f32 / h as f32;
     let steel_push_rt = CadSteelPushRt::from_orbit(

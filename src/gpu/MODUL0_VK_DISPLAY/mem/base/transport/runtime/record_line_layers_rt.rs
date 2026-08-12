@@ -3,6 +3,7 @@
 use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::line_gpu_default_rt_pkg::LineGpuDefaultRtPkg;
 
 /// Peels for optional line draws in one frame record.
+#[derive(Clone, Copy)]
 pub struct RecordLineLayersRt<'a> {
     /// Nested package bag field `grid_line_gpu_default_rt_pkg`.
     pub grid_line_gpu_default_rt_pkg: Option<&'a LineGpuDefaultRtPkg>,
@@ -17,7 +18,7 @@ impl RecordLineLayersRt<'_> {
     /// Public API entry for this module.
     /// Belongs to: command-buffer record / display MCG.
     #[must_use]
-    pub fn empty() -> Self {
+    pub const fn empty() -> Self {
         Self {
             grid_line_gpu_default_rt_pkg: None,
             sketch_line_gpu_default_rt_pkg: None,

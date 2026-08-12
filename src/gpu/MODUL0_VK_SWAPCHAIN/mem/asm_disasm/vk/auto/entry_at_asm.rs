@@ -7,6 +7,6 @@ pub trait EntryAuto {
 
 impl EntryAuto for ash::Entry {
     fn auto_assemble() -> Self {
-        ash::Entry::linked()
+        Self::linked()
     }
 }

@@ -20,6 +20,7 @@ use crate::ModulResult;
 pub const IMPORT_FOR_ASM_FACTORY_LINE_N: u8 = 3;
 
 /// `FrameTransportable` — trait (frame transportable).
+///
 /// Transportable surface: import/export peels for PTP slot-factory-line wiring.
 /// Belongs to: frames-in-flight MCG.
 /// Module path context: `gpu/MODUL0_VK_FRAME/conv/port`.

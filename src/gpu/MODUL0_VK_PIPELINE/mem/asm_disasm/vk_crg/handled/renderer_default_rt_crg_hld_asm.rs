@@ -1,4 +1,4 @@
-//! vk_crg **handled** — pack renderer cargo from bfr slots (takes inside).
+//! `vk_crg` **handled** — pack renderer cargo from bfr slots (takes inside).
 
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_bfr::auto::renderer_bfr_at_asm::RendererBfrAuto;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::embedded::buffer::RendererBfr;
@@ -6,6 +6,7 @@ use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::runtime::render_res_in
 use crate::ModulResult;
 
 /// `RendererDefaultRtCrgHandled` — trait (renderer default rt crg handled).
+///
 /// Handled-assemble catalog trait: construction from imported knobs / peels (FIX-129 Handled rank).
 /// Belongs to: render-pass / graphics pipeline MCG.
 /// Module path context: `gpu/MODUL0_VK_PIPELINE/mem/asm_disasm/vk_crg/handled`.
@@ -15,7 +16,7 @@ pub trait RendererDefaultRtCrgHandled {
 
 impl RendererDefaultRtCrgHandled for RendererDefaultRtCrg {
     fn handled_assemble(bfr: &mut RendererBfr) -> ModulResult<RendererDefaultRtCrg> {
-        Ok(RendererDefaultRtCrg {
+        Ok(Self {
             shaders_triangle_rt_pkg: <RendererBfr as RendererBfrAuto>::slot_take(
                 &mut bfr.shaders_triangle_rt_pkg,
                 "shaders_triangle_rt_pkg",

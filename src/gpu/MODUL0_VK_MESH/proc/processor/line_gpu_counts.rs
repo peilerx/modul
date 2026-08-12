@@ -2,7 +2,7 @@
 
 /// Minimum float count for list (6) vs tris ribbons (9).
 #[must_use]
-pub fn line_gpu_min_floats(as_tris_rt: bool) -> usize {
+pub const fn line_gpu_min_floats(as_tris_rt: bool) -> usize {
     if as_tris_rt {
         9
     } else {
@@ -12,7 +12,7 @@ pub fn line_gpu_min_floats(as_tris_rt: bool) -> usize {
 
 /// `(vertex_count, line_count)` from position float len.
 #[must_use]
-pub fn line_gpu_counts(positions_len_stp: usize, as_tris_rt: bool) -> (u32, u32) {
+pub const fn line_gpu_counts(positions_len_stp: usize, as_tris_rt: bool) -> (u32, u32) {
     let vertex_count_rt = (positions_len_stp / 3) as u32;
     let line_count_rt = if as_tris_rt {
         vertex_count_rt / 6
@@ -24,7 +24,7 @@ pub fn line_gpu_counts(positions_len_stp: usize, as_tris_rt: bool) -> (u32, u32)
 
 /// Whether rewrite is size/topology-compatible.
 #[must_use]
-pub fn line_gpu_rewrite_ok(
+pub const fn line_gpu_rewrite_ok(
     positions_len_stp: usize,
     as_tris_rt: bool,
     ready_rt: bool,

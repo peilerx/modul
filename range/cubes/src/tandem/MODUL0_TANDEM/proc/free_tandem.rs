@@ -9,9 +9,8 @@ use modul::gpu::MODUL0_VK_SWAPCHAIN::conv::port::{SwapchainBfr, SwapchainTranspo
 use crate::tandem::MODUL0_TANDEM::mem::tandem_bfr::TandemBfr;
 
 pub fn free_tandem(hub: &mut TandemBfr) {
-    let boot = match SwapchainBfr::export_asmed1(&hub.swapchain_bfr) {
-        Some(b) => b,
-        None => return,
+    let Some(boot) = SwapchainBfr::export_asmed1(&hub.swapchain_bfr) else {
+        return;
     };
     let dev = &boot.device_default_rt_pkg.device_extrl;
     unsafe {

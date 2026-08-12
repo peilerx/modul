@@ -1,4 +1,4 @@
-//! vk_pkg — pack full pipeline API bags from **vk** primitives (FIX-120).
+//! `vk_pkg` — pack full pipeline API bags from **vk** primitives (FIX-120).
 //! Flexible surface beyond triangle: descriptors · sampler · cache · compute.
 
 use ash::vk;
@@ -203,23 +203,21 @@ impl SamplerDefaultHandled for SamplerDefaultRtPkg {
         anisotropy_enable_stp: bool,
         max_anisotropy_stp: f32,
     ) -> ModulResult<Self> {
-        match mag_filter_op {
-            mag_filter_op => {
-                let sampler_extrl = vk::Sampler::handled_assemble(
-                    device_extrl,
-                    mag_filter_op,
-                    min_filter_op,
-                    address_mode_u_op,
-                    address_mode_v_op,
-                    address_mode_w_op,
-                    anisotropy_enable_stp,
-                    max_anisotropy_stp,
-                )?;
-                Ok(Self {
-                    sampler_extrl,
-                    desc: "sampler",
-                })
-            }
+        {
+            let sampler_extrl = vk::Sampler::handled_assemble(
+                device_extrl,
+                mag_filter_op,
+                min_filter_op,
+                address_mode_u_op,
+                address_mode_v_op,
+                address_mode_w_op,
+                anisotropy_enable_stp,
+                max_anisotropy_stp,
+            )?;
+            Ok(Self {
+                sampler_extrl,
+                desc: "sampler",
+            })
         }
     }
 }

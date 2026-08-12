@@ -11,9 +11,11 @@ pub mod descriptor_sets_at_asm;
 /// Part of `gpu/MODUL0_VK_PIPELINE/mem/asm_disasm/vk/auto` under the mem/conv/proc MCG canon.
 pub mod graphics_pipeline_at_asm;
 /// Submodule `pipeline_cache_res_intsct_at_asm`.
+///
 /// Part of `gpu/MODUL0_VK_PIPELINE/mem/asm_disasm/vk/auto` under the mem/conv/proc MCG canon.
 pub mod pipeline_cache_res_intsct_at_asm;
 /// Submodule `pipeline_layout_res_intsct_at_asm`.
+///
 /// Part of `gpu/MODUL0_VK_PIPELINE/mem/asm_disasm/vk/auto` under the mem/conv/proc MCG canon.
 pub mod pipeline_layout_res_intsct_at_asm;
 /// Submodule `render_pass_at_asm`.

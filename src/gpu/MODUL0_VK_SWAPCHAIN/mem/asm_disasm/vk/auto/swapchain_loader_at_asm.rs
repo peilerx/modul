@@ -9,6 +9,6 @@ pub trait SwapchainLoaderAuto {
 
 impl SwapchainLoaderAuto for swapchain::Device {
     fn auto_assemble(instance_extrl: &ash::Instance, device_extrl: &ash::Device) -> Self {
-        swapchain::Device::new(instance_extrl, device_extrl)
+        Self::new(instance_extrl, device_extrl)
     }
 }

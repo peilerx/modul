@@ -8,6 +8,7 @@ use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::render_res_ints
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::render_res_intsct_stp_pkgs::RenderPassTriangleStpPkg;
 
 /// `RendererBfr` — buffer / warehouse bag (renderer bfr).
+///
 /// Memory-layer bag: owned fields, no product control flow.
 /// Belongs to: render-pass / graphics pipeline MCG.
 /// Module path context: `gpu/MODUL0_VK_PIPELINE/mem/base/embedded/buffer`.

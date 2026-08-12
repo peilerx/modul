@@ -29,7 +29,7 @@ pub struct MeshGpuDefaultRtPkg {
     pub instance_capacity_rt: u32,
     /// Runtime phase field `triangle_count_rt`.
     pub triangle_count_rt: u32,
-    /// 3 = SteelSolid · 1 = raw tri list · 0 = empty.
+    /// 3 = `SteelSolid` · 1 = raw tri list · 0 = empty.
     pub mode_rt: u32,
     /// Runtime phase field `steel_r_rt`.
     pub steel_r_rt: f32,
@@ -51,7 +51,8 @@ impl MeshGpuDefaultRtPkg {
     /// `empty` — function (empty).
     /// Public API entry for this module.
     /// Belongs to: mesh upload / solid draw MCG.
-    pub fn empty() -> Self {
+    #[must_use]
+    pub const fn empty() -> Self {
         Self {
             vertex_buffer_extrl: vk::Buffer::null(),
             index_buffer_extrl: vk::Buffer::null(),
@@ -79,6 +80,7 @@ impl MeshGpuDefaultRtPkg {
     /// Public API entry for this module.
     /// Belongs to: mesh upload / solid draw MCG.
     #[inline]
+    #[must_use]
     pub fn center_rt(&self) -> [f32; 3] {
         [
             0.5 * (self.bounds_min_rt[0] + self.bounds_max_rt[0]),
@@ -91,12 +93,13 @@ impl MeshGpuDefaultRtPkg {
     /// Public API entry for this module.
     /// Belongs to: mesh upload / solid draw MCG.
     #[inline]
+    #[must_use]
     pub fn radius_rt(&self) -> f32 {
         let c = self.center_rt();
         let dx = (self.bounds_max_rt[0] - c[0]).abs();
         let dy = (self.bounds_max_rt[1] - c[1]).abs();
         let dz = (self.bounds_max_rt[2] - c[2]).abs();
-        (dx * dx + dy * dy + dz * dz).sqrt().max(0.5)
+        dz.mul_add(dz, dy.mul_add(dy, dx * dx)).sqrt().max(0.5)
     }
 }
 
@@ -127,7 +130,7 @@ pub struct CadSteelPushRt {
     pub look: [f32; 4],
     /// rim, brush, film, contrast.
     pub look2: [f32; 4],
-    /// **Pulse** (vert): time, sep_max, y_half, period — not GGX cavity in the cubes path.
+    /// **Pulse** (vert): time, `sep_max`, `y_half`, period — not GGX cavity in the cubes path.
     pub look3: [f32; 4],
 }
 
@@ -138,7 +141,8 @@ impl CadSteelPushRt {
     /// `identity_steel` — function (identity steel).
     /// Public API entry for this module.
     /// Belongs to: mesh upload / solid draw MCG.
-    pub fn identity_steel(steel_rgb: [f32; 3]) -> Self {
+    #[must_use]
+    pub const fn identity_steel(steel_rgb: [f32; 3]) -> Self {
         Self {
             mvp: [
                 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
@@ -153,6 +157,7 @@ impl CadSteelPushRt {
     }
 
     /// Orbit camera around mesh AABB; perspective + Vulkan Y-flip.
+    #[must_use]
     pub fn from_orbit(
         center: [f32; 3],
         radius: f32,
@@ -167,9 +172,9 @@ impl CadSteelPushRt {
         let cp = pitch.cos();
         let sp = pitch.sin();
         let eye = [
-            center[0] + r * cp * sy,
+            (r * cp).mul_add(sy, center[0]),
             center[1] + r * sp,
-            center[2] + r * cp * cy,
+            (r * cp).mul_add(cy, center[2]),
         ];
         let view = look_at_rh(eye, center, [0.0, 1.0, 0.0]);
         let proj = perspective_vk(45.0_f32.to_radians(), aspect.max(0.1), 0.05, r * 8.0);
@@ -186,7 +191,7 @@ impl CadSteelPushRt {
     }
 
     /// Overlay 3D View look knobs (keeps MVP / eye from orbit).
-    pub fn apply_view3d_look(
+    pub const fn apply_view3d_look(
         &mut self,
         metal_f0: f32,
         roughness: f32,
@@ -285,11 +290,7 @@ fn mat4_mul(a: [f32; 16], b: [f32; 16]) -> [f32; 16] {
     let mut o = [0.0f32; 16];
     for col in 0..4 {
         for row in 0..4 {
-            o[col * 4 + row] = a[row]
-                * b[col * 4]
-                + a[4 + row] * b[col * 4 + 1]
-                + a[8 + row] * b[col * 4 + 2]
-                + a[12 + row] * b[col * 4 + 3];
+            o[col * 4 + row] = a[12 + row].mul_add(b[col * 4 + 3], a[8 + row].mul_add(b[col * 4 + 2], a[4 + row].mul_add(b[col * 4 + 1], a[row] * b[col * 4])));
         }
     }
     o
@@ -297,17 +298,17 @@ fn mat4_mul(a: [f32; 16], b: [f32; 16]) -> [f32; 16] {
 
 fn cross(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
     [
-        a[1] * b[2] - a[2] * b[1],
-        a[2] * b[0] - a[0] * b[2],
-        a[0] * b[1] - a[1] * b[0],
+        a[2].mul_add(-b[1], a[1] * b[2]),
+        a[0].mul_add(-b[2], a[2] * b[0]),
+        a[1].mul_add(-b[0], a[0] * b[1]),
     ]
 }
 
 fn dot(a: [f32; 3], b: [f32; 3]) -> f32 {
-    a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+    a[2].mul_add(b[2], a[1].mul_add(b[1], a[0] * b[0]))
 }
 
 fn normalize(v: [f32; 3]) -> [f32; 3] {
-    let l = (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]).sqrt().max(1e-8);
+    let l = v[2].mul_add(v[2], v[1].mul_add(v[1], v[0] * v[0])).sqrt().max(1e-8);
     [v[0] / l, v[1] / l, v[2] / l]
 }

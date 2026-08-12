@@ -9,7 +9,7 @@ pub trait CommandBeginInfoDefaultAuto {
 
 impl CommandBeginInfoDefaultAuto for FrameCommandBeginInfoDefaultRt {
     fn auto_assemble() -> FrameCommandBeginInfoDefaultRt {
-        FrameCommandBeginInfoDefaultRt {
+        Self {
             buffer_usage_flags_op: vk::CommandBufferUsageFlags::ONE_TIME_SUBMIT,
             desc: "command_begin_info",
         }
@@ -19,7 +19,6 @@ impl CommandBeginInfoDefaultAuto for FrameCommandBeginInfoDefaultRt {
 /// `auto_vk_cmd_begin` — function (auto vk cmd begin).
 /// Auto-rank assemble/disassemble entry.
 /// Belongs to: frames-in-flight MCG.
-#[must_use]
 pub fn auto_vk_cmd_begin(rt: &FrameCommandBeginInfoDefaultRt) -> vk::CommandBufferBeginInfo<'_> {
     vk::CommandBufferBeginInfo::default().flags(rt.buffer_usage_flags_op)
 }

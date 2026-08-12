@@ -10,6 +10,7 @@ use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::setup::display_present_
 use crate::ModulResult;
 
 /// `DisplayBfrAuto` — trait (display bfr auto).
+///
 /// Auto-assemble catalog trait: pure construction without external peels (FIX-129 Auto rank).
 /// Belongs to: command-buffer record / display MCG.
 /// Module path context: `gpu/MODUL0_VK_DISPLAY/mem/asm_disasm/vk_bfr/auto`.

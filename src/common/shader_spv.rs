@@ -15,7 +15,6 @@ use super::{map_vk, ModulResult};
 /// - Empty code
 /// - Length not a multiple of 4
 /// - Vulkan `create_shader_module` failure
-#[expect(clippy::cast_ptr_alignment, reason = "SPIR-V bytecode alignment per Vulkan spec")]
 #[inline]
 pub fn assemble_shader_spv(device_extrl: &Device, code: &[u8]) -> ModulResult<vk::ShaderModule> {
     if code.is_empty() {

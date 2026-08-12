@@ -9,6 +9,7 @@ pub const STEEL_VERT_STRIDE: usize = 24;
 ///
 /// Unit cuboid (8 pos · 36 idx) → hard-edge 24 verts (index reuse per face) for
 /// mass instancing. General meshes still expand to flat triangle lists.
+#[must_use]
 pub fn pack_steel_flat_from_mesh(
     mesh: &MeshSoaRtBfr,
 ) -> (Vec<u8>, Vec<u32>, [f32; 3], [f32; 3]) {
@@ -45,11 +46,11 @@ fn pack_unit_cuboid_hard_edge(
         let e1 = [c[1][0] - c[0][0], c[1][1] - c[0][1], c[1][2] - c[0][2]];
         let e2 = [c[2][0] - c[0][0], c[2][1] - c[0][1], c[2][2] - c[0][2]];
         let cxp = [
-            e1[1] * e2[2] - e1[2] * e2[1],
-            e1[2] * e2[0] - e1[0] * e2[2],
-            e1[0] * e2[1] - e1[1] * e2[0],
+            e1[2].mul_add(-e2[1], e1[1] * e2[2]),
+            e1[0].mul_add(-e2[2], e1[2] * e2[0]),
+            e1[1].mul_add(-e2[0], e1[0] * e2[1]),
         ];
-        let dot = cxp[0] * nrm[0] + cxp[1] * nrm[1] + cxp[2] * nrm[2];
+        let dot = cxp[2].mul_add(nrm[2], cxp[1].mul_add(nrm[1], cxp[0] * nrm[0]));
         if dot < 0.0 {
             c.swap(1, 3);
         }
@@ -102,10 +103,10 @@ fn pack_steel_expand_flat(
         let e2x = cx - ax;
         let e2y = cy - ay;
         let e2z = cz - az;
-        let mut nx = e1y * e2z - e1z * e2y;
-        let mut ny = e1z * e2x - e1x * e2z;
-        let mut nz = e1x * e2y - e1y * e2x;
-        let len = (nx * nx + ny * ny + nz * nz).sqrt();
+        let mut nx = e1z.mul_add(-e2y, e1y * e2z);
+        let mut ny = e1x.mul_add(-e2z, e1z * e2x);
+        let mut nz = e1y.mul_add(-e2x, e1x * e2y);
+        let len = nz.mul_add(nz, ny.mul_add(ny, nx * nx)).sqrt();
         if len < 1e-12 {
             continue;
         }

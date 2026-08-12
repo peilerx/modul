@@ -1,4 +1,4 @@
-//! Base **boot** resource intersection (M.BASE_RES_INTSCT · N.RES_INTSCT · FIX-120).
+//! Base **boot** resource intersection (`M.BASE_RES_INTSCT` · `N.RES_INTSCT` · FIX-120).
 //!
 //! Co-created device line · always packed into `SwapchainRtCrg`.
 //! One file · multi-struct · co-recreate with bootstrap assemble.

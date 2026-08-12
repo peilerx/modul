@@ -1,5 +1,5 @@
-//! MCU **sync_res_intsct** — vk primitives for frame sync (N.RES_INTSCT · N.FREQ · FIX-120).
-//! Semaphore · Fence · CommandBuffer allocate · impl for ash/vk · ¬ *Pkg.
+//! MCU **`sync_res_intsct`** — vk primitives for frame sync (`N.RES_INTSCT` · N.FREQ · FIX-120).
+//! Semaphore · Fence · `CommandBuffer` allocate · impl for ash/vk · ¬ *Pkg.
 
 use ash::vk;
 use ash::Device;

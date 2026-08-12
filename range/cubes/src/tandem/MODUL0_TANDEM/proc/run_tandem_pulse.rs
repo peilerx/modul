@@ -55,8 +55,7 @@ pub fn run_tandem_pulse(hub: &mut TandemBfr) -> Result<(), String> {
     let loader = &boot.swapchain_loader_default_rt_pkg;
 
     let (slot, image_index) =
-        begin_frame(device, &hub.presentation_rt, loader, &hub.frame_rt)
-            .map_err(|e| e.to_string())?;
+        begin_frame(device, &hub.presentation_rt, loader, &hub.frame_rt)?;
 
     let render_policy = export_asmed_frame_render(&hub.frame_rt);
     record_frame_with_serial(
@@ -73,8 +72,7 @@ pub fn run_tandem_pulse(hub: &mut TandemBfr) -> Result<(), String> {
         None,
         image_index,
         &mut hub.display_rt,
-    )
-    .map_err(|e| e.to_string())?;
+    )?;
 
     end_frame(
         device,
@@ -83,8 +81,7 @@ pub fn run_tandem_pulse(hub: &mut TandemBfr) -> Result<(), String> {
         &mut hub.frame_rt,
         &slot,
         image_index,
-    )
-    .map_err(|e| e.to_string())?;
+    )?;
 
     let now = Instant::now();
     let dt = now

@@ -66,7 +66,7 @@ impl SwapchainDefaultHandled for SwapchainDefaultRtPkg {
             surface_format_op,
             present_mode_op,
         )?;
-        Ok(SwapchainDefaultRtPkg {
+        Ok(Self {
             surface_format_op,
             extent_rt,
             swapchain_extrl,

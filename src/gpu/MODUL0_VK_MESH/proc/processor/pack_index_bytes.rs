@@ -12,7 +12,7 @@ pub fn pack_u32_indices_to_bytes(indices_extrl: &[u32]) -> Vec<u8> {
 
 /// `(vertex_count, index_count, triangle_count)` from steel interleaved bytes + indices.
 #[must_use]
-pub fn steel_buffer_counts(vert_bytes_len_stp: usize, index_len_stp: usize) -> (u32, u32, u32) {
+pub const fn steel_buffer_counts(vert_bytes_len_stp: usize, index_len_stp: usize) -> (u32, u32, u32) {
     let vertex_count_rt = (vert_bytes_len_stp / 24) as u32;
     let index_count_rt = index_len_stp as u32;
     let triangle_count_rt = index_count_rt / 3;

@@ -6,7 +6,7 @@ pub struct MeshDrawDefaultStpPkg {
     pub vertex_count_stp: u32,
     /// Index count from CAD peel.
     pub index_count_stp: u32,
-    /// Steel base RGB (cad_steel push constant).
+    /// Steel base RGB (`cad_steel` push constant).
     pub steel_r_stp: f32,
     /// Setup phase field `steel_g_stp`.
     pub steel_g_stp: f32,

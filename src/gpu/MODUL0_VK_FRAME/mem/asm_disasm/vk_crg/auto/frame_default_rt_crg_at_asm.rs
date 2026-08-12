@@ -1,4 +1,4 @@
-//! vk_crg — pack FrameDefaultRtCrg (FIX-120).
+//! `vk_crg` — pack `FrameDefaultRtCrg` (FIX-120).
 
 use crate::gpu::MODUL0_VK_FRAME::mem::base::transport::runtime::frame_res_intsct_rt_pkgs::{
     FrameRenderDefaultRtPkg, FrameDefaultRtCrg, FrameSyncDefaultRtPkg,
@@ -17,7 +17,7 @@ impl FrameDefaultRtCrgAuto for FrameDefaultRtCrg {
         frame_sync_default_rt_pkg: FrameSyncDefaultRtPkg,
         frame_render_default_rt_pkg: FrameRenderDefaultRtPkg,
     ) -> FrameDefaultRtCrg {
-        FrameDefaultRtCrg {
+        Self {
             frame_sync_default_rt_pkg,
             frame_render_default_rt_pkg,
             desc: "frame_rt",

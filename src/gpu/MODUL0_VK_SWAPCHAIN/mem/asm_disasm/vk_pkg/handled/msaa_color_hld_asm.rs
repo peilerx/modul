@@ -33,40 +33,37 @@ impl MsaaColorDefaultHandled for MsaaColorDefaultRtPkg {
         sample_count_default_rt_pkg: &SampleCountDefaultRtPkg,
         sample_count_op: vk::SampleCountFlags,
     ) -> ModulResult<MsaaColorDefaultRtPkg> {
-        match sample_count_op {
-            vk::SampleCountFlags::TYPE_1 => Ok(MsaaColorDefaultRtPkg {
-                images_extrl: Vec::new(),
-                image_views_extrl: Vec::new(),
-                device_memories_extrl: Vec::new(),
-                desc: "msaa_color_disabled",
-            }),
-            _ => {
-                let sample_count_op = sample_count_default_rt_pkg.sample_count_op;
-                let extent_stp = swapchain_default_rt_pkg.extent_rt;
-                let format_op = swapchain_default_rt_pkg.surface_format_op.format;
-                let image_count_stp = swapchain_default_rt_pkg.images_extrl.len();
-                let (images_extrl, device_memories_extrl, image_views_extrl) =
-                    update_repeat_lanes(image_count_stp, || {
-                        <(vk::Image, vk::DeviceMemory, vk::ImageView) as ImageResIntsctHandled>::handled_assemble(
-                            &device_default_rt_pkg.device_extrl,
-                            &instance_default_rt.instance_extrl,
-                            physical_device_default_rt_pkg.physical_device_extrl,
-                            format_op,
-                            extent_stp,
-                            sample_count_op,
-                            vk::ImageUsageFlags::TRANSIENT_ATTACHMENT
-                                | vk::ImageUsageFlags::COLOR_ATTACHMENT,
-                            vk::ImageAspectFlags::COLOR,
-                            vk::MemoryPropertyFlags::DEVICE_LOCAL,
-                        )
-                    })?;
-                Ok(MsaaColorDefaultRtPkg {
-                    images_extrl,
-                    image_views_extrl,
-                    device_memories_extrl,
-                    desc: "msaa_color",
-                })
-            }
+        if sample_count_op == vk::SampleCountFlags::TYPE_1 { Ok(Self {
+            images_extrl: Vec::new(),
+            image_views_extrl: Vec::new(),
+            device_memories_extrl: Vec::new(),
+            desc: "msaa_color_disabled",
+        }) } else {
+            let sample_count_op = sample_count_default_rt_pkg.sample_count_op;
+            let extent_stp = swapchain_default_rt_pkg.extent_rt;
+            let format_op = swapchain_default_rt_pkg.surface_format_op.format;
+            let image_count_stp = swapchain_default_rt_pkg.images_extrl.len();
+            let (images_extrl, device_memories_extrl, image_views_extrl) =
+                update_repeat_lanes(image_count_stp, || {
+                    <(vk::Image, vk::DeviceMemory, vk::ImageView) as ImageResIntsctHandled>::handled_assemble(
+                        &device_default_rt_pkg.device_extrl,
+                        &instance_default_rt.instance_extrl,
+                        physical_device_default_rt_pkg.physical_device_extrl,
+                        format_op,
+                        extent_stp,
+                        sample_count_op,
+                        vk::ImageUsageFlags::TRANSIENT_ATTACHMENT
+                            | vk::ImageUsageFlags::COLOR_ATTACHMENT,
+                        vk::ImageAspectFlags::COLOR,
+                        vk::MemoryPropertyFlags::DEVICE_LOCAL,
+                    )
+                })?;
+            Ok(Self {
+                images_extrl,
+                image_views_extrl,
+                device_memories_extrl,
+                desc: "msaa_color",
+            })
         }
     }
 }

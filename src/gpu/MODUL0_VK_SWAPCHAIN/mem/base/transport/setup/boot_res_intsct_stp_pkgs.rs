@@ -1,4 +1,4 @@
-//! Base **boot** setup intersection (M.BASE_RES_INTSCT · FIX-120).
+//! Base **boot** setup intersection (`M.BASE_RES_INTSCT` · FIX-120).
 //! Window surface handles + swapchain assembly setup recipe.
 
 /// Window handles for surface creation.

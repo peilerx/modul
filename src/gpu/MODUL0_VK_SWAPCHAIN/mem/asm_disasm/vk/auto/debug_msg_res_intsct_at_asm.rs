@@ -1,4 +1,4 @@
-//! MCU **debug_msg** — loader + messenger + create-info (local only · FIX-120).
+//! MCU **`debug_msg`** — loader + messenger + create-info (local only · FIX-120).
 
 use ash::ext::debug_utils;
 use ash::vk;
@@ -31,7 +31,7 @@ impl DebugMsgCreateInfoAuto for vk::DebugUtilsMessengerCreateInfoEXT<'static> {
 
 impl DebugMsgLoaderAuto for debug_utils::Instance {
     fn auto_assemble(entry_extrl: &ash::Entry, instance_extrl: &ash::Instance) -> Self {
-        debug_utils::Instance::new(entry_extrl, instance_extrl)
+        Self::new(entry_extrl, instance_extrl)
     }
 }
 

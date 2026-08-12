@@ -7,7 +7,7 @@ pub trait DisplayInputDefaultAuto {
 
 impl DisplayInputDefaultAuto for DisplayInputDefaultRtPkg {
     fn auto_assemble() -> DisplayInputDefaultRtPkg {
-        DisplayInputDefaultRtPkg {
+        Self {
             cursor_x_rt: 0.0,
             desc: "display_input",
         }

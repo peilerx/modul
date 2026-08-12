@@ -10,6 +10,7 @@ use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::render_res_ints
 use crate::ModulResult;
 
 /// `RendererBfrAuto` — trait (renderer bfr auto).
+///
 /// Auto-assemble catalog trait: pure construction without external peels (FIX-129 Auto rank).
 /// Belongs to: render-pass / graphics pipeline MCG.
 /// Module path context: `gpu/MODUL0_VK_PIPELINE/mem/asm_disasm/vk_bfr/auto`.

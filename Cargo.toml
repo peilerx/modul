@@ -5,6 +5,8 @@ edition.workspace = true
 authors = ["Daniil Vasilev"]
 description = "Vulkan API extender — MCG-structured GPU factories (MODUL0_VK_*) on ash"
 license = "Apache-2.0"
+repository = "https://github.com/peilerx/modul"
+homepage = "https://github.com/peilerx/modul"
 readme = "README.md"
 keywords = ["vulkan", "ash", "gpu", "mcg", "graphics"]
 categories = ["graphics", "rendering"]
@@ -396,3 +398,36 @@ rules = ["proc-access", "prefix-hint"]
 [package.metadata.modlin.preset.mcg-display]
 paths = ["src/**/MODUL0_*/proc/display/**"]
 rules = ["trait-only", "proc-resource-bag", "no-vk-create", "proc-no-catalog-assemble", "prefix-proc"]
+
+[lints.rust]
+unsafe_op_in_unsafe_fn = "warn"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
+cast_possible_truncation = "allow"
+cast_possible_wrap = "allow"
+cast_precision_loss = "allow"
+cast_sign_loss = "allow"
+too_many_arguments = "allow"
+too_many_lines = "allow"
+similar_names = "allow"
+struct_excessive_bools = "allow"
+fn_params_excessive_bools = "allow"
+struct_field_names = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+doc_markdown = "allow"
+too_long_first_doc_paragraph = "allow"
+option_if_let_else = "allow"
+match_same_arms = "allow"
+must_use_candidate = "allow"
+trivially_copy_pass_by_ref = "allow"
+type_complexity = "allow"
+multiple_crate_versions = "allow"
+wildcard_dependencies = "allow"
+redundant_pub_crate = "allow"
+default_trait_access = "allow"
+cargo_common_metadata = "allow"

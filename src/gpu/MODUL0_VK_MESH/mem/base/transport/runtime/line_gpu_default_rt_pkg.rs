@@ -10,11 +10,11 @@ pub struct LineGpuDefaultRtPkg {
     pub vertex_memory_extrl: vk::DeviceMemory,
     /// Runtime phase field `vertex_count_rt`.
     pub vertex_count_rt: u32,
-    /// Line segment count (vertex_count / 2) when LINE_LIST.
+    /// Line segment count (`vertex_count` / 2) when `LINE_LIST`.
     pub line_count_rt: u32,
     /// Runtime phase field `color_rt`.
     pub color_rt: [f32; 4],
-    /// true → draw as TRIANGLE_LIST (solid thick outline quads).
+    /// true → draw as `TRIANGLE_LIST` (solid thick outline quads).
     pub as_tris_rt: bool,
     /// Runtime phase field `ready_rt`.
     pub ready_rt: bool,
@@ -26,7 +26,8 @@ impl LineGpuDefaultRtPkg {
     /// `empty` — function (empty).
     /// Public API entry for this module.
     /// Belongs to: mesh upload / solid draw MCG.
-    pub fn empty(desc: &'static str) -> Self {
+    #[must_use]
+    pub const fn empty(desc: &'static str) -> Self {
         Self {
             vertex_buffer_extrl: vk::Buffer::null(),
             vertex_memory_extrl: vk::DeviceMemory::null(),
@@ -40,7 +41,7 @@ impl LineGpuDefaultRtPkg {
     }
 }
 
-/// cad_line push constants (mat4 mvp + vec4 color = 80 bytes).
+/// `cad_line` push constants (mat4 mvp + vec4 color = 80 bytes).
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct CadLinePushRt {
@@ -58,7 +59,8 @@ impl CadLinePushRt {
     /// `from_mvp_color` — function (from mvp color).
     /// Conversion / mapping helper.
     /// Belongs to: mesh upload / solid draw MCG.
-    pub fn from_mvp_color(mvp: [f32; 16], color: [f32; 4]) -> Self {
+    #[must_use]
+    pub const fn from_mvp_color(mvp: [f32; 16], color: [f32; 4]) -> Self {
         Self { mvp, color }
     }
 }

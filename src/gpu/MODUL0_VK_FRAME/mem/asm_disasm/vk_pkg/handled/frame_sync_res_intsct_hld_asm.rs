@@ -1,4 +1,4 @@
-//! vk_pkg **frame_sync** — pack FrameSyncDefaultRtPkg via **vk** sync_res_intsct (FIX-120).
+//! `vk_pkg` **`frame_sync`** — pack `FrameSyncDefaultRtPkg` via **vk** `sync_res_intsct` (FIX-120).
 
 use ash::vk;
 use ash::Device;
@@ -25,11 +25,6 @@ impl FrameSyncDefaultHandled for FrameSyncDefaultRtPkg {
         command_pool_extrl: vk::CommandPool,
         frames_in_flight_stp: u32,
     ) -> ModulResult<FrameSyncDefaultRtPkg> {
-        #[expect(
-            clippy::as_conversions,
-            clippy::cast_possible_truncation,
-            reason = "frames_in_flight is small"
-        )]
         let frames_in_flight_count_stp = frames_in_flight_stp as usize;
         let (image_available_semaphores_extrl, render_finished_semaphores_extrl, in_flight_fences_extrl) =
             update_frame_sync_semaphores(
@@ -43,7 +38,7 @@ impl FrameSyncDefaultHandled for FrameSyncDefaultRtPkg {
             frames_in_flight_stp,
         )?;
 
-        Ok(FrameSyncDefaultRtPkg {
+        Ok(Self {
             image_available_semaphores_extrl,
             render_finished_semaphores_extrl,
             in_flight_fences_extrl,

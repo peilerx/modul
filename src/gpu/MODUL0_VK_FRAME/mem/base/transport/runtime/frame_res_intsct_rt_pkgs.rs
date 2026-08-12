@@ -1,4 +1,4 @@
-//! Base **frame** resource intersection (M.BASE_RES_INTSCT · N.RES_INTSCT · FIX-120).
+//! Base **frame** resource intersection (`M.BASE_RES_INTSCT` · `N.RES_INTSCT` · FIX-120).
 //! All *Pkg/*Crg that field each other — **this file only**.
 
 /// fences · semaphores · command buffers · FIF index.

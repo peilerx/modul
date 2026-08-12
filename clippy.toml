@@ -1,0 +1,4 @@
+# Shared clippy thresholds for the modul-project workspace.
+cognitive-complexity-threshold = 50
+too-many-arguments-threshold = 12
+type-complexity-threshold = 500

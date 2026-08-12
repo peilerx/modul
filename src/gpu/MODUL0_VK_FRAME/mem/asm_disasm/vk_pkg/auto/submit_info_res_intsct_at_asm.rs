@@ -31,10 +31,10 @@ impl SubmitInfoDefaultAuto for SubmitInfoDefaultRt {
         command_buffer_extrl: vk::CommandBuffer,
         signal_semaphore_extrl: vk::Semaphore,
     ) -> SubmitInfoDefaultRt {
-        SubmitInfoDefaultRt {
+        Self {
             wait_semaphore_extrl,
             wait_dst_stage_mask_op:
-                <SubmitInfoDefaultRt as SubmitInfoDefaultWaitStagesAuto>::auto_assemble(),
+                <Self as SubmitInfoDefaultWaitStagesAuto>::auto_assemble(),
             command_buffer_extrl,
             signal_semaphore_extrl,
             desc: "submit_info",
@@ -55,7 +55,6 @@ impl SubmitInfoDefaultVkAuto for SubmitInfoDefaultRt {
 /// `auto_vk_submit` — function (auto vk submit).
 /// Auto-rank assemble/disassemble entry.
 /// Belongs to: frames-in-flight MCG.
-#[must_use]
-pub fn auto_vk_submit<'a>(rt: &'a SubmitInfoDefaultRt) -> vk::SubmitInfo<'a> {
+pub fn auto_vk_submit(rt: &SubmitInfoDefaultRt) -> vk::SubmitInfo<'_> {
     <SubmitInfoDefaultRt as SubmitInfoDefaultVkAuto>::auto_assemble(rt)
 }

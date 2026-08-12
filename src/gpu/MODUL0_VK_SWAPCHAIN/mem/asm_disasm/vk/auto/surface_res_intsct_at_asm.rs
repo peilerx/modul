@@ -44,6 +44,6 @@ impl SurfaceKhrAuto for vk::SurfaceKHR {
 
 impl SurfaceLoaderAuto for surface::Instance {
     fn auto_assemble(entry_extrl: &ash::Entry, instance_extrl: &ash::Instance) -> Self {
-        surface::Instance::new(entry_extrl, instance_extrl)
+        Self::new(entry_extrl, instance_extrl)
     }
 }

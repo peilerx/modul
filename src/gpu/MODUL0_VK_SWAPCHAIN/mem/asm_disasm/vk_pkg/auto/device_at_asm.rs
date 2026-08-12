@@ -33,7 +33,7 @@ impl DeviceDefaultAuto for DeviceDefaultRtPkg {
             vk::Queue::handled_assemble(&device_extrl, queue_family_index_stp, 0);
         let present_queue_extrl =
             vk::Queue::handled_assemble(&device_extrl, queue_family_index_stp, 0);
-        Ok(DeviceDefaultRtPkg {
+        Ok(Self {
             device_extrl,
             graphics_queue_extrl,
             present_queue_extrl,

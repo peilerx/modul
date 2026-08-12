@@ -3,6 +3,7 @@
 use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshGpuDefaultRtPkg;
 
 /// `MeshGpuBfr` — buffer / warehouse bag (mesh gpu bfr).
+///
 /// Memory-layer bag: owned fields, no product control flow.
 /// Belongs to: mesh upload / solid draw MCG.
 /// Module path context: `gpu/MODUL0_VK_MESH/mem/base/embedded/buffer`.

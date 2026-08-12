@@ -1,4 +1,4 @@
-//! vk_crg — pack DisplayDefaultRtCrg (FIX-120).
+//! `vk_crg` — pack `DisplayDefaultRtCrg` (FIX-120).
 
 use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::display_res_intsct_rt_pkgs::{
     DisplayCommandDefaultRt, DisplayInputDefaultRtPkg, DisplayRenderDefaultRt,
@@ -22,7 +22,7 @@ impl DisplayDefaultRtCrgAuto for DisplayDefaultRtCrg {
         display_render_default_rt: DisplayRenderDefaultRt,
         vulkan_display_default_rt: VulkanDisplayDefaultRt,
     ) -> DisplayDefaultRtCrg {
-        DisplayDefaultRtCrg {
+        Self {
             display_input_default_rt_pkg,
             command_rt,
             display_render_default_rt,

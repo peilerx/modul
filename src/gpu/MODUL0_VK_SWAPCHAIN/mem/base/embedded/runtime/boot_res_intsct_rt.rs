@@ -1,4 +1,4 @@
-//! Embedded **boot** resource intersection (M.BASE_RES_INTSCT · FIX-120).
+//! Embedded **boot** resource intersection (`M.BASE_RES_INTSCT` · FIX-120).
 //! Entry · instance · debug messenger co-created on bootstrap.
 
 /// Vulkan entry link bag.

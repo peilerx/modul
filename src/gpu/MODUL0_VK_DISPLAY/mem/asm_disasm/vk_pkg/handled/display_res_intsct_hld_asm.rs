@@ -1,4 +1,4 @@
-//! MCU **display_res_intsct** — command · render · vulkan display (N.RES_INTSCT · N.FREQ · FIX-120).
+//! MCU **`display_res_intsct`** — command · render · vulkan display (`N.RES_INTSCT` · N.FREQ · FIX-120).
 //! Mixed Auto/Handled in one MCU · local chain only.
 
 use ash::vk;
@@ -40,7 +40,7 @@ impl CommandDefaultHandled for DisplayCommandDefaultRt {
         _command_pool_extrl: vk::CommandPool,
         _frames_in_flight_stp: u32,
     ) -> DisplayCommandDefaultRt {
-        DisplayCommandDefaultRt {
+        Self {
             recording_rt: false,
             desc: "command_rt",
         }
@@ -49,7 +49,7 @@ impl CommandDefaultHandled for DisplayCommandDefaultRt {
 
 impl DisplayRenderDefaultAuto for DisplayRenderDefaultRt {
     fn auto_assemble() -> DisplayRenderDefaultRt {
-        DisplayRenderDefaultRt {
+        Self {
             frame_serial_rt: 0,
             desc: "display_render",
         }
@@ -61,7 +61,7 @@ impl VulkanDisplayRuntimeDefaultAuto for VulkanDisplayDefaultRt {
         _command_rt: &DisplayCommandDefaultRt,
         _display_render_rt: &DisplayRenderDefaultRt,
     ) -> VulkanDisplayDefaultRt {
-        VulkanDisplayDefaultRt {
+        Self {
             ready_rt: true,
             desc: "vulkan_display_runtime",
         }

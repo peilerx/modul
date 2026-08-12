@@ -1,4 +1,4 @@
-//! Embedded **frame_info** resource intersection (M.BASE_RES_INTSCT · FIX-120).
+//! Embedded **`frame_info`** resource intersection (`M.BASE_RES_INTSCT` · FIX-120).
 //! Ephemeral begin/submit/present/rp-begin bags · co-used on frame tick.
 
 /// ephemeral begin

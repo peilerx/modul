@@ -21,10 +21,10 @@ impl PresentInfoDefaultAuto for PresentInfoDefaultRt {
         swapchain_extrl: vk::SwapchainKHR,
         image_index_rt: u32,
     ) -> PresentInfoDefaultRt {
-        PresentInfoDefaultRt {
+        Self {
             wait_semaphore_extrl,
             swapchain_extrl,
-            image_index_rt: image_index_rt,
+            image_index_rt,
             desc: "present_info",
         }
     }
@@ -42,7 +42,6 @@ impl PresentInfoDefaultVkAuto for PresentInfoDefaultRt {
 /// `auto_vk_present` — function (auto vk present).
 /// Auto-rank assemble/disassemble entry.
 /// Belongs to: frames-in-flight MCG.
-#[must_use]
-pub fn auto_vk_present<'a>(rt: &'a PresentInfoDefaultRt) -> vk::PresentInfoKHR<'a> {
+pub fn auto_vk_present(rt: &PresentInfoDefaultRt) -> vk::PresentInfoKHR<'_> {
     <PresentInfoDefaultRt as PresentInfoDefaultVkAuto>::auto_assemble(rt)
 }

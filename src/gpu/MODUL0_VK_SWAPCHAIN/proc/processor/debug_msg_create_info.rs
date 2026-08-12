@@ -5,7 +5,6 @@ use ash::vk;
 use crate::gpu::MODUL0_VK_SWAPCHAIN::proc::processor::debug_messenger::update_vulkan_debug_callback;
 
 /// Shared create-info for validation messenger (instance pNext + create messenger).
-#[must_use]
 pub fn debug_msg_create_info() -> vk::DebugUtilsMessengerCreateInfoEXT<'static> {
     vk::DebugUtilsMessengerCreateInfoEXT::default()
         .message_severity(

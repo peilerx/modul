@@ -7,7 +7,7 @@ use crate::gpu::MODUL0_VK_MESH::mem::base::transport::setup::mesh_draw_default_s
 /// Public API entry for this module.
 /// Belongs to: mesh upload / solid draw MCG.
 #[must_use]
-pub fn pack_mesh_draw_default_rt(
+pub const fn pack_mesh_draw_default_rt(
     mesh_draw_default_stp_pkg: &MeshDrawDefaultStpPkg,
     mode_stp: u32,
 ) -> MeshDrawDefaultRtPkg {

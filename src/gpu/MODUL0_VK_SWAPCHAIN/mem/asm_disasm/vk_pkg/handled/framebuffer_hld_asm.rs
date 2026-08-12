@@ -56,46 +56,44 @@ impl FramebufferDefaultHandled for FramebufferDefaultRtPkg {
         render_pass_triangle_rt_pkg: &RenderPassTriangleRtPkg,
         sample_count_op: vk::SampleCountFlags,
     ) -> ModulResult<FramebufferDefaultRtPkg> {
-        match sample_count_op {
-            sample_count_op => {
-                let extent_stp = swapchain_default_rt_pkg.extent_rt;
-                let framebuffers_extrl = swapchain_image_views_default_rt_pkg
-                    .image_views_extrl
-                    .iter()
-                    .zip(depth_images_default_rt_pkg.image_views_extrl.iter())
-                    .enumerate()
-                    .map(|(index_stp, (&swapchain_view_extrl, &depth_view_extrl))| {
-                        let attachments_extrl = update_framebuffer_attachment_layout(
-                            sample_count_op,
-                            || {
-                                handled_simple_attachments(
-                                    swapchain_view_extrl,
-                                    depth_view_extrl,
-                                )
-                            },
-                            || {
-                                handled_msaa_attachments(
-                                    index_stp,
-                                    swapchain_view_extrl,
-                                    depth_view_extrl,
-                                    msaa_color_default_rt_pkg,
-                                )
-                            },
-                        )?;
-                        vk::Framebuffer::handled_assemble(
-                            &device_default_rt_pkg.device_extrl,
-                            render_pass_triangle_rt_pkg.render_pass_extrl,
-                            &attachments_extrl,
-                            extent_stp,
-                        )
-                    })
-                    .collect::<Result<Vec<_>, _>>()?;
-
-                Ok(FramebufferDefaultRtPkg {
-                    framebuffers_extrl,
-                    desc: "framebuffer",
+        {
+            let extent_stp = swapchain_default_rt_pkg.extent_rt;
+            let framebuffers_extrl = swapchain_image_views_default_rt_pkg
+                .image_views_extrl
+                .iter()
+                .zip(depth_images_default_rt_pkg.image_views_extrl.iter())
+                .enumerate()
+                .map(|(index_stp, (&swapchain_view_extrl, &depth_view_extrl))| {
+                    let attachments_extrl = update_framebuffer_attachment_layout(
+                        sample_count_op,
+                        || {
+                            handled_simple_attachments(
+                                swapchain_view_extrl,
+                                depth_view_extrl,
+                            )
+                        },
+                        || {
+                            handled_msaa_attachments(
+                                index_stp,
+                                swapchain_view_extrl,
+                                depth_view_extrl,
+                                msaa_color_default_rt_pkg,
+                            )
+                        },
+                    )?;
+                    vk::Framebuffer::handled_assemble(
+                        &device_default_rt_pkg.device_extrl,
+                        render_pass_triangle_rt_pkg.render_pass_extrl,
+                        &attachments_extrl,
+                        extent_stp,
+                    )
                 })
-            }
+                .collect::<Result<Vec<_>, _>>()?;
+
+            Ok(Self {
+                framebuffers_extrl,
+                desc: "framebuffer",
+            })
         }
     }
 }

@@ -1,4 +1,4 @@
-//! vk_crg — pack presentation lane cargo (no child creates).
+//! `vk_crg` — pack presentation lane cargo (no child creates).
 
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::present_res_intsct_rt_pkgs::DepthImagesDefaultRtPkg;
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::present_res_intsct_rt_pkgs::FramebufferDefaultRtPkg;
@@ -29,7 +29,7 @@ impl PresentationDefaultRtCrgAuto for PresentationDefaultRtCrg {
         msaa_color_default_rt_pkg: MsaaColorDefaultRtPkg,
         framebuffer_default_rt_pkg: FramebufferDefaultRtPkg,
     ) -> PresentationDefaultRtCrg {
-        PresentationDefaultRtCrg {
+        Self {
             swapchain_default_rt_pkg,
             swapchain_image_views_default_rt_pkg,
             sample_count_default_rt_pkg,

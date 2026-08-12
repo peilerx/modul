@@ -7,7 +7,7 @@ pub trait RenderRuntimeDefaultAuto {
 
 impl RenderRuntimeDefaultAuto for FrameRenderDefaultRtPkg {
     fn auto_assemble() -> FrameRenderDefaultRtPkg {
-        FrameRenderDefaultRtPkg {
+        Self {
             clear_color_rt: [0.0, 0.0, 0.0, 1.0],
             desc: "render_runtime",
         }

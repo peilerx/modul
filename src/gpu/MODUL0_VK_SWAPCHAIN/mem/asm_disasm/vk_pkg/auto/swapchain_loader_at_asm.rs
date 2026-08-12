@@ -17,7 +17,7 @@ impl SwapchainLoaderDefaultAuto for SwapchainLoaderDefaultRtPkg {
         instance_default_rt: &InstanceDefaultRt,
         device_default_rt_pkg: &DeviceDefaultRtPkg,
     ) -> SwapchainLoaderDefaultRtPkg {
-        SwapchainLoaderDefaultRtPkg {
+        Self {
             swapchain_loader_extrl: swapchain::Device::auto_assemble(
                 &instance_default_rt.instance_extrl,
                 &device_default_rt_pkg.device_extrl,

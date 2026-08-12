@@ -7,6 +7,7 @@
 
 pub mod boot_res_intsct_rt_pkgs;
 /// Submodule `present_res_intsct_rt_pkgs`.
+///
 /// Part of `gpu/MODUL0_VK_SWAPCHAIN/mem/base/transport/runtime` under the mem/conv/proc MCG canon.
 pub mod present_res_intsct_rt_pkgs;
 

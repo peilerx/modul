@@ -32,7 +32,7 @@ impl SwapchainImageViewsDefaultAuto for SwapchainImageViewsDefaultRtPkg {
                 )
             })
             .collect::<Result<Vec<_>, _>>()?;
-        Ok(SwapchainImageViewsDefaultRtPkg {
+        Ok(Self {
             image_views_extrl,
             desc: "swapchain_image_views",
         })

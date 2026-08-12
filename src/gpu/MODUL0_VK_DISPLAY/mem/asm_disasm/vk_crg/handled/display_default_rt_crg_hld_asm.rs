@@ -1,4 +1,4 @@
-//! vk_crg **handled** — pack display cargo from bfr slots.
+//! `vk_crg` **handled** — pack display cargo from bfr slots.
 
 use crate::gpu::MODUL0_VK_DISPLAY::mem::asm_disasm::vk_bfr::auto::display_bfr_at_asm::DisplayBfrAuto;
 use crate::gpu::MODUL0_VK_DISPLAY::mem::base::embedded::buffer::DisplayBfr;
@@ -6,6 +6,7 @@ use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::display_res_in
 use crate::ModulResult;
 
 /// `DisplayDefaultRtCrgHandled` — trait (display default rt crg handled).
+///
 /// Handled-assemble catalog trait: construction from imported knobs / peels (FIX-129 Handled rank).
 /// Belongs to: command-buffer record / display MCG.
 /// Module path context: `gpu/MODUL0_VK_DISPLAY/mem/asm_disasm/vk_crg/handled`.
@@ -15,7 +16,7 @@ pub trait DisplayDefaultRtCrgHandled {
 
 impl DisplayDefaultRtCrgHandled for DisplayDefaultRtCrg {
     fn handled_assemble(bfr: &mut DisplayBfr) -> ModulResult<DisplayDefaultRtCrg> {
-        Ok(DisplayDefaultRtCrg {
+        Ok(Self {
             display_input_default_rt_pkg: <DisplayBfr as DisplayBfrAuto>::slot_take(
                 &mut bfr.display_input_default_rt_pkg,
                 "display_input_default_rt_pkg",

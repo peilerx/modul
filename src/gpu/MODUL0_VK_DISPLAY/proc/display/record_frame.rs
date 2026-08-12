@@ -106,15 +106,12 @@ pub fn record_display_frame(
             .device_extrl
             .cmd_set_scissor(slot.command_buffer_extrl, 0, std::slice::from_ref(&scissor));
 
-        let steel_ready = mesh_gpu.map(|m| m.ready_rt && m.index_count_rt > 0).unwrap_or(false)
-            && renderer.pipeline_steel_rt_pkg.is_some()
-            && steel_push.is_some();
-
-        // 1) CAD solid steel
-        if steel_ready {
-            let mesh = mesh_gpu.unwrap();
-            let steel_pl = renderer.pipeline_steel_rt_pkg.as_ref().unwrap();
-            let push = steel_push.unwrap();
+        // 1) CAD solid steel (all three peels required for a draw)
+        if let (Some(mesh), Some(steel_pl), Some(push)) = (
+            mesh_gpu.filter(|m| m.ready_rt && m.index_count_rt > 0),
+            renderer.pipeline_steel_rt_pkg.as_ref(),
+            steel_push,
+        ) {
             device.device_extrl.cmd_bind_pipeline(
                 slot.command_buffer_extrl,
                 vk::PipelineBindPoint::GRAPHICS,
@@ -135,7 +132,7 @@ pub fn record_display_frame(
                 vk::IndexType::UINT32,
             );
             let push_bytes = std::slice::from_raw_parts(
-                (push as *const CadSteelPushRt).cast::<u8>(),
+                std::ptr::from_ref::<CadSteelPushRt>(push).cast::<u8>(),
                 size_of::<CadSteelPushRt>(),
             );
             device.device_extrl.cmd_push_constants(
@@ -168,9 +165,9 @@ pub fn record_display_frame(
         // 2) Lines (grid · sketch · outline) after solid so they composite on depth.
         // Outline may be solid TRIANGLE_LIST quads (thick Borderline); grid/sketch stay LINE_LIST.
         if let Some(line_pl) = renderer.pipeline_line_rt_pkg.as_ref() {
-            let mvp = steel_push.map(|p| p.mvp).unwrap_or([
+            let mvp = steel_push.map_or([
                 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
-            ]);
+            ], |p| p.mvp);
             let tri_pl = renderer.pipeline_line_tris_rt_pkg.as_ref();
             for layer in [
                 lines.grid_line_gpu_default_rt_pkg,
@@ -193,7 +190,7 @@ pub fn record_display_frame(
                 );
                 let push = CadLinePushRt::from_mvp_color(mvp, line.color_rt);
                 let push_bytes = std::slice::from_raw_parts(
-                    (&push as *const CadLinePushRt).cast::<u8>(),
+                    (&raw const push).cast::<u8>(),
                     size_of::<CadLinePushRt>(),
                 );
                 device.device_extrl.cmd_push_constants(

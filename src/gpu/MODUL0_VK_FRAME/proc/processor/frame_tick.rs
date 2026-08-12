@@ -16,7 +16,6 @@ use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::{
 use crate::{map_vk, ModulResult};
 
 /// Resolve current FIF slot from Internal sync bag.
-#[must_use]
 pub fn current_slot(sync: &FrameSyncDefaultRtPkg) -> ModulResult<FrameSlotDefaultRtPkg> {
     let i = sync.current_frame_rt;
     if i >= sync.frames_in_flight_rt {
@@ -147,7 +146,7 @@ pub fn present_image(
 /// `advance_frame` — function (advance frame).
 /// Public API entry for this module.
 /// Belongs to: frames-in-flight MCG.
-pub fn advance_frame(sync: &mut FrameSyncDefaultRtPkg) {
+pub const fn advance_frame(sync: &mut FrameSyncDefaultRtPkg) {
     if sync.frames_in_flight_rt == 0 {
         return;
     }
@@ -158,7 +157,7 @@ pub fn advance_frame(sync: &mut FrameSyncDefaultRtPkg) {
 use crate::gpu::MODUL0_VK_FRAME::mem::base::transport::runtime::frame_res_intsct_rt_pkgs::FrameDefaultRtCrg;
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::PresentationDefaultRtCrg;
 
-/// Wait + acquire for current FIF slot. Returns (slot, image_index).
+/// Wait + acquire for current FIF slot. Returns (slot, `image_index`).
 pub fn begin_frame(
     device: &DeviceDefaultRtPkg,
     presentation: &PresentationDefaultRtCrg,

@@ -55,10 +55,10 @@ impl RenderPassBeginTriangleHandled for RenderPassBeginInfoTriangleRt {
         clear_color_stp: [f32; 4],
     ) -> RenderPassBeginInfoTriangleRt {
         let clear_values_stp =
-            <RenderPassBeginInfoTriangleRt as RenderPassBeginInfoTriangleClearValuesHandled>::handled_assemble(
+            <Self as RenderPassBeginInfoTriangleClearValuesHandled>::handled_assemble(
                 clear_color_stp,
             );
-        RenderPassBeginInfoTriangleRt {
+        Self {
             render_pass_extrl,
             framebuffer_extrl,
             extent_rt: extent_stp,
@@ -71,10 +71,9 @@ impl RenderPassBeginTriangleHandled for RenderPassBeginInfoTriangleRt {
 /// `handled_vk_rp_begin` — function (handled vk rp begin).
 /// Handled-rank assemble/disassemble entry.
 /// Belongs to: frames-in-flight MCG.
-#[must_use]
-pub fn handled_vk_rp_begin<'a>(
-    rt: &'a RenderPassBeginInfoTriangleRt,
-) -> vk::RenderPassBeginInfo<'a> {
+pub fn handled_vk_rp_begin(
+    rt: &RenderPassBeginInfoTriangleRt,
+) -> vk::RenderPassBeginInfo<'_> {
     let render_area_stp =
         <RenderPassBeginInfoTriangleRt as RenderPassBeginInfoTriangleRenderAreaHandled>::handled_assemble(
             rt.extent_rt,

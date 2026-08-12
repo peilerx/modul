@@ -4,6 +4,7 @@
 
 pub mod presentation_prt;
 /// Submodule `swapchain_assembly_prt`.
+///
 /// Part of `gpu/MODUL0_VK_SWAPCHAIN/mem/base/transport/prt` under the mem/conv/proc MCG canon.
 pub mod swapchain_assembly_prt;
 /// Submodule `swapchain_prt`.

@@ -1,4 +1,4 @@
-//! Intent in-port — PortMatch `FrameFifPrt` → write `FrameFifDefaultStpPkg` (FIX-128 · v5.1).
+//! Intent in-port — `PortMatch` `FrameFifPrt` → write `FrameFifDefaultStpPkg` (FIX-128 · v5.1).
 //!
 //! **Closed gestalt:** each arm writes **every** *Stp lever into dest.
 //! import never returns a bag · factory-line name `import_frame_fif_for_asm`.
@@ -6,8 +6,8 @@
 use crate::gpu::MODUL0_VK_FRAME::mem::base::transport::setup::frame_fif_default_stp_pkg::FrameFifDefaultStpPkg;
 use crate::gpu::MODUL0_VK_FRAME::mem::base::transport::FrameFifPrt;
 
-/// PortMatch frame FIF picture → write setup bag (near-port yard knobs).
-pub fn import_frame_fif_for_asm(
+/// `PortMatch` frame FIF picture → write setup bag (near-port yard knobs).
+pub const fn import_frame_fif_for_asm(
     frame_fif_prt: FrameFifPrt,
     frame_fif_default_stp_pkg: &mut FrameFifDefaultStpPkg,
 ) {
