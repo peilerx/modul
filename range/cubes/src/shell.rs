@@ -14,7 +14,7 @@ use crate::tandem::MODUL0_TANDEM::{
     assemble_tandem_session, free_tandem, run_tandem_pulse, TandemBfr,
 };
 
-const TITLE: &str = "modul/range/cubes · direct";
+const TITLE: &str = "modul cubes · ship";
 pub const VIEW_W: u32 = 1280;
 pub const VIEW_H: u32 = 720;
 
@@ -25,7 +25,10 @@ struct App {
 
 pub fn run() {
     let Ok(event_loop) = EventLoop::new() else {
-        eprintln!("cubes: failed to create event loop");
+        eprintln!(
+            "cubes: failed to create event loop (display server / Wayland / X11 missing?)"
+        );
+        eprintln!("On headless machines this demo cannot open a window.");
         return;
     };
     let mut app = App {
@@ -89,7 +92,15 @@ impl ApplicationHandler for App {
                 }
             }
             Err(e) => {
-                eprintln!("assemble_tandem_session fail: {e}");
+                eprintln!("============================================================");
+                eprintln!("cubes: Vulkan session failed to start");
+                eprintln!("{e}");
+                eprintln!("------------------------------------------------------------");
+                eprintln!("Typical fixes:");
+                eprintln!("  • Install a Vulkan GPU driver (mesa-vulkan-drivers / vendor)");
+                eprintln!("  • Check:  vulkaninfo --summary");
+                eprintln!("  • Desktop session with GPU (not pure SSH without display)");
+                eprintln!("============================================================");
                 event_loop.exit();
             }
         }

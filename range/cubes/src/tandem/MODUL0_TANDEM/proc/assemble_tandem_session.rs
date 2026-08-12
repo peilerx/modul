@@ -36,6 +36,45 @@ const FIF: u32 = 2;
 /// Default lattice size (override with `CUBES_COUNT`).
 const DEFAULT_CUBE_COUNT: usize = 1_000_000;
 
+/// Prefer 4× MSAA when color+depth both allow it; else 1× (must match render lane preset).
+fn pick_sample_count(instance: &ash::Instance, phys: vk::PhysicalDevice) -> vk::SampleCountFlags {
+    let props = unsafe { instance.get_physical_device_properties(phys) };
+    let bits = props.limits.framebuffer_color_sample_counts
+        & props.limits.framebuffer_depth_sample_counts;
+    if bits.contains(vk::SampleCountFlags::TYPE_4) {
+        vk::SampleCountFlags::TYPE_4
+    } else {
+        vk::SampleCountFlags::TYPE_1
+    }
+}
+
+fn pick_render_lane(samples: vk::SampleCountFlags) -> RenderLanePrt {
+    if samples == vk::SampleCountFlags::TYPE_4 {
+        RenderLanePrt::TriangleSolidDepthAa4
+    } else {
+        RenderLanePrt::TriangleSolidDepth
+    }
+}
+
+/// Depth format candidates for ship (first supported wins).
+fn pick_depth_format(instance: &ash::Instance, phys: vk::PhysicalDevice) -> Result<vk::Format, String> {
+    const CANDIDATES: [vk::Format; 3] = [
+        vk::Format::D32_SFLOAT,
+        vk::Format::D24_UNORM_S8_UINT,
+        vk::Format::D16_UNORM,
+    ];
+    for format in CANDIDATES {
+        let props = unsafe { instance.get_physical_device_format_properties(phys, format) };
+        if props
+            .optimal_tiling_features
+            .contains(vk::FormatFeatureFlags::DEPTH_STENCIL_ATTACHMENT)
+        {
+            return Ok(format);
+        }
+    }
+    Err("cubes: no depth format (D32/D24/D16) with DEPTH_STENCIL_ATTACHMENT".into())
+}
+
 fn surface_stp(window: &Window) -> Result<SurfaceWindowStpPkg, String> {
     let display_handle_extrl = window
         .display_handle()
@@ -61,14 +100,16 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
     let surface = surface_stp(window)?;
 
     // --- MCG: swapchain (instance · device · surface · KHR present) ---
+    // Ship: no validation layers (portable · no layer package required).
     let mut swapchain_bfr = SwapchainBfr::auto_assemble();
     SwapchainBfr::import_for_asm8(
         &mut swapchain_bfr,
-        SwapchainAssemblyPrt::GraphicsPresentValidation,
+        SwapchainAssemblyPrt::GraphicsPresentNoValidation,
         surface,
     )?;
     SwapchainBfr::import_present_for_asm1(
         &mut swapchain_bfr,
+        // MAILBOX when available · else FIFO (inside swapchain KHR assemble).
         SwapchainPrt::SrgbMailbox,
         w,
         h,
@@ -80,14 +121,27 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
     let boot = SwapchainBfr::export_asmed1(&swapchain_bfr)
         .ok_or_else(|| "cubes: boot cargo missing".to_string())?;
 
-    // --- MCG: renderer (render pass + steel/line pipelines) ---
+    let inst = &boot.instance_default_rt.instance_extrl;
+    let phys = boot.physical_device_default_rt_pkg.physical_device_extrl;
+    let sample_count = pick_sample_count(inst, phys);
+    let render_lane = pick_render_lane(sample_count);
+    let depth_format = pick_depth_format(inst, phys)?;
+    let surface_format = swapchain_default_rt_pkg.surface_format_op.format;
+    eprintln!(
+        "cubes ship GPU path · samples=0x{:x} · depth=0x{:x} · lane={render_lane:?} · format=0x{:x}",
+        sample_count.as_raw(),
+        depth_format.as_raw(),
+        surface_format.as_raw(),
+    );
+
+    // --- MCG: renderer (render pass + solid/line pipelines) ---
     let mut renderer_bfr = RendererBfr::auto_assemble();
     RendererBfr::import_for_asm9(
         &mut renderer_bfr,
-        RenderLanePrt::TriangleSolidDepthAa4,
+        render_lane,
         w,
         h,
-        vk::Format::B8G8R8A8_SRGB,
+        surface_format,
         &boot.device_default_rt_pkg,
     )?;
     let renderer_rt = renderer_bfr
@@ -102,8 +156,8 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         boot,
         &renderer_rt.render_pass_triangle_rt_pkg,
         swapchain_default_rt_pkg,
-        vk::SampleCountFlags::TYPE_4,
-        vk::Format::D32_SFLOAT,
+        sample_count,
+        depth_format,
     )?;
     let presentation_rt = presentation_bfr
         .cargo_rt
@@ -138,8 +192,6 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         .ok_or_else(|| "cubes: display cargo missing".to_string())?;
 
     let dev = &boot.device_default_rt_pkg.device_extrl;
-    let inst = &boot.instance_default_rt.instance_extrl;
-    let phys = boot.physical_device_default_rt_pkg.physical_device_extrl;
 
     let cube_count: usize = std::env::var("CUBES_COUNT")
         .ok()
