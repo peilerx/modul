@@ -35,6 +35,9 @@ pub trait FrameTransportable {
     ) -> ModulResult<()>;
 
     fn export_asmed1(bfr: &Self) -> Option<&FrameDefaultRtCrg>;
+
+    /// Export asmed render policy peel · **1** product.
+    fn export_asmed_render1(bfr: &Self) -> Option<&FrameRenderDefaultRtPkg>;
 }
 
 impl FrameTransportable for FrameBfr {
@@ -87,5 +90,12 @@ impl FrameTransportable for FrameBfr {
 
     fn export_asmed1(bfr: &Self) -> Option<&FrameDefaultRtCrg> {
         bfr.cargo_rt.as_ref()
+    }
+
+    fn export_asmed_render1(bfr: &Self) -> Option<&FrameRenderDefaultRtPkg> {
+        bfr.cargo_rt
+            .as_ref()
+            .map(FrameDefaultRtCrg::export_asmed_render1)
+            .or(bfr.frame_render_default_rt_pkg.as_ref())
     }
 }

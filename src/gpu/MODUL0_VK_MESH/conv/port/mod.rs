@@ -1,11 +1,5 @@
-//! Port — subject ports + legacy free import/export.
+//! Port — subject `*_port.rs` only (swapchain calque · ¬ import/export folders).
 
-pub mod export;
-/// Submodule `import`.
-/// Part of `gpu/MODUL0_VK_MESH/conv/port` under the mem/conv/proc MCG canon.
-pub mod import;
-/// Submodule `mesh_gpu_port`.
-/// Part of `gpu/MODUL0_VK_MESH/conv/port` under the mem/conv/proc MCG canon.
 pub mod mesh_gpu_port;
 
 pub use mesh_gpu_port::{MeshGpuTransportable, IMPORT_FOR_ASM_FACTORY_LINE_N};

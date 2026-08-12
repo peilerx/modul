@@ -7,7 +7,6 @@
 use std::time::Instant;
 
 use modul::gpu::MODUL0_VK_DISPLAY::proc::display::display_frame::record_frame_with_serial;
-use modul::gpu::MODUL0_VK_FRAME::conv::port::export::frame::export_asmed_frame_render;
 use modul::gpu::MODUL0_VK_FRAME::proc::processor::frame_tick::{begin_frame, end_frame};
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshPushRt;
 use modul::gpu::MODUL0_VK_SWAPCHAIN::conv::port::{SwapchainBfr, SwapchainTransportable};
@@ -60,7 +59,7 @@ pub fn run_tandem_pulse(hub: &mut TandemBfr) -> Result<(), String> {
     let (slot, image_index) =
         begin_frame(device, &hub.presentation_rt, loader, &hub.frame_rt)?;
 
-    let render_policy = export_asmed_frame_render(&hub.frame_rt);
+    let render_policy = hub.frame_rt.export_asmed_render1();
     // Peels: solid mesh + push only (no line layers in this etalon).
     record_frame_with_serial(
         device,

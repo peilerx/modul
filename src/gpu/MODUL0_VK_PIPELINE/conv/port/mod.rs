@@ -1,11 +1,5 @@
-//! Port — subject ports + legacy free import/export.
+//! Port — subject `*_port.rs` only (swapchain calque · ¬ import/export folders).
 
-pub mod export;
-/// Submodule `import`.
-/// Part of `gpu/MODUL0_VK_PIPELINE/conv/port` under the mem/conv/proc MCG canon.
-pub mod import;
-/// Submodule `renderer_port`.
-/// Part of `gpu/MODUL0_VK_PIPELINE/conv/port` under the mem/conv/proc MCG canon.
 pub mod renderer_port;
 
 pub use renderer_port::{RendererTransportable, IMPORT_FOR_ASM_FACTORY_LINE_N};

@@ -53,3 +53,11 @@ pub struct FrameDefaultRtCrg {
     /// Human-readable bag descriptor (`&'static str` protocol tag).
     pub desc: &'static str,
 }
+
+impl FrameDefaultRtCrg {
+    /// Export render-policy peel from asmed cargo (ref · not by-value theater).
+    #[must_use]
+    pub const fn export_asmed_render1(&self) -> &FrameRenderDefaultRtPkg {
+        &self.frame_render_default_rt_pkg
+    }
+}
