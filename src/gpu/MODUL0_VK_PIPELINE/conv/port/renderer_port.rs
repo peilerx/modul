@@ -24,7 +24,10 @@ use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::render_res_ints
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::boot_res_intsct_rt_pkgs::DeviceDefaultRtPkg;
 use crate::ModulResult;
 
-/// Render lane factory-line · **9** = Intent→stp + 7 atom + pack.
+/// Intent line · **1** = PortMatch `RenderLanePrt` → *Stp slots on Bfr only.
+pub const IMPORT_RENDER_LANE_FOR_ASM_FACTORY_LINE_N: u8 = 1;
+
+/// Full factory-line · **9** = lane *Stp already on Bfr · 7 atom · pack (or lane+atoms if called as one shot).
 pub const IMPORT_FOR_ASM_FACTORY_LINE_N: u8 = 9;
 
 /// Vert/frag modules from an Auto shader pack (exactly two stages).
@@ -40,10 +43,31 @@ fn extract_shader_pair(modules: &[vk::ShaderModule]) -> ModulResult<(vk::ShaderM
 
 /// `RendererTransportable` — trait (renderer transportable).
 ///
-/// Transportable surface: import/export peels for PTP slot-factory-line wiring.
-/// Belongs to: render-pass / graphics pipeline MCG.
-/// Module path context: `gpu/MODUL0_VK_PIPELINE/conv/port`.
+/// Same shape as [`SwapchainTransportable`](crate::gpu::MODUL0_VK_SWAPCHAIN::conv::port::SwapchainTransportable):
+/// several **import_*** methods on the trait, all write **`&mut Bfr`**, never return bags.
+///
+/// | Method | Role |
+/// |--------|------|
+/// | [`import_render_lane_for_asm1`](Self::import_render_lane_for_asm1) | Intent → *Stp slots (PortMatch) |
+/// | [`import_for_asm9`](Self::import_for_asm9) | Atom assemblies + pack cargo from Bfr slots |
+/// | [`export_asmed1`](Self::export_asmed1) | Peel asmed cargo |
+///
+/// *Stp packages are **setup bags** (closed gestalt), not Vulkan creates — so they are
+/// filled by PortMatch on Bfr, not by `vk_*` Auto/Handled. Runtime *RtPkg still go through
+/// `mem/asm_disasm` (`RenderPassTriangleHandled`, `PipelineMeshSolidHandled`, …).
 pub trait RendererTransportable {
+    /// Intent import · **1** · `RenderLanePrt` + external extent/format → *Stp on Bfr.
+    /// Write-only · `Result<()>` only for trait uniformity · never returns a bag.
+    fn import_render_lane_for_asm1(
+        bfr: &mut Self,
+        render_lane_prt: RenderLanePrt,
+        extent_width_stp: u32,
+        extent_height_stp: u32,
+        surface_format_op: vk::Format,
+    );
+
+    /// Full factory-line · **9** · runs lane intent then atom asm 1..8 + pack.
+    /// Requires (or performs) *Stp fill · barter: device from swapchain boot.
     fn import_for_asm9(
         bfr: &mut Self,
         render_lane_prt: RenderLanePrt,
@@ -57,6 +81,25 @@ pub trait RendererTransportable {
 }
 
 impl RendererTransportable for RendererBfr {
+    fn import_render_lane_for_asm1(
+        bfr: &mut Self,
+        render_lane_prt: RenderLanePrt,
+        extent_width_stp: u32,
+        extent_height_stp: u32,
+        surface_format_op: vk::Format,
+    ) {
+        debug_assert_eq!(IMPORT_RENDER_LANE_FOR_ASM_FACTORY_LINE_N, 1);
+        let (rp, pl) = render_lane_stp_gestalt(
+            render_lane_prt,
+            extent_width_stp,
+            extent_height_stp,
+            surface_format_op,
+        );
+        // Bfr slots only — same idea as `bfr.surface_window_stp_pkg = Some(...)` on swapchain.
+        bfr.render_pass_triangle_stp_pkg = Some(rp);
+        bfr.pipeline_triangle_stp_pkg = Some(pl);
+    }
+
     fn import_for_asm9(
         bfr: &mut Self,
         render_lane_prt: RenderLanePrt,
@@ -68,41 +111,14 @@ impl RendererTransportable for RendererBfr {
         debug_assert_eq!(IMPORT_FOR_ASM_FACTORY_LINE_N, 9);
         let device_extrl = &device_default_rt_pkg.device_extrl;
 
-        // Intent → setup slots (closed gestalt)
-        let mut rp = RenderPassTriangleStpPkg {
-            surface_format_op: vk::Format::UNDEFINED,
-            sample_count_op: vk::SampleCountFlags::TYPE_1,
-            attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::SIMPLE,
-            depth_format_op: vk::Format::UNDEFINED,
-            color_layout_op: vk::ImageLayout::UNDEFINED,
-            depth_layout_op: vk::ImageLayout::UNDEFINED,
-            present_layout_op: vk::ImageLayout::UNDEFINED,
-            initial_layout_op: vk::ImageLayout::UNDEFINED,
-            desc: "",
-        };
-        let mut pl = PipelineTriangleStpPkg {
-            sample_count_op: vk::SampleCountFlags::TYPE_1,
-            topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
-            polygon_mode_op: vk::PolygonMode::FILL,
-            cull_mode_op: vk::CullModeFlags::NONE,
-            front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
-            depth_compare_op: vk::CompareOp::LESS,
-            color_write_mask_op: vk::ColorComponentFlags::RGBA,
-            extent_width_stp: 0,
-            extent_height_stp: 0,
-            desc: "",
-        };
-        // Intent → setup slots (import *Prt → *Stp · write-only · ¬ return bag)
-        import_render_lane_for_asm(
+        // Step 0 · intent on Bfr (Transportable · ¬ free helper / ¬ local theater bags)
+        Self::import_render_lane_for_asm1(
+            bfr,
             render_lane_prt,
             extent_width_stp,
             extent_height_stp,
             surface_format_op,
-            &mut rp,
-            &mut pl,
         );
-        bfr.render_pass_triangle_stp_pkg = Some(rp);
-        bfr.pipeline_triangle_stp_pkg = Some(pl);
 
         // asm 1/9 · triangle shaders
         bfr.shaders_triangle_rt_pkg = Some(
@@ -219,23 +235,16 @@ impl RendererTransportable for RendererBfr {
     }
 }
 
-// ── Intent import (PortMatch *Prt → *Stp · write-only · lives in port, not import/) ──
-//
-// Not `import_for_asmN`: that name is reserved for Transportable factory-line
-// (atom assemblies + pack). This is the **picture → setup bag** step only:
-// one closed gestalt write, zero resource return (FIX-128).
+// ── Closed gestalt table (PortMatch body) · pure data · written onto Bfr by trait method ──
 
-/// `import_render_lane_for_asm` — PortMatch `RenderLanePrt` → write *Stp bags.
-/// Never returns a bag/resource · dests are `&mut` slots filled in place.
-const fn import_render_lane_for_asm(
+/// Build *Stp pair for one `RenderLanePrt` picture (no I/O · no Bfr · no return to caller of port).
+const fn render_lane_stp_gestalt(
     render_lane_prt: RenderLanePrt,
     extent_width_stp: u32,
     extent_height_stp: u32,
     surface_format_op: vk::Format,
-    render_pass_triangle_stp_pkg: &mut RenderPassTriangleStpPkg,
-    pipeline_triangle_stp_pkg: &mut PipelineTriangleStpPkg,
-) {
-    let (rp, pl) = match render_lane_prt {
+) -> (RenderPassTriangleStpPkg, PipelineTriangleStpPkg) {
+    match render_lane_prt {
         RenderLanePrt::TriangleSolidDepth => (
             RenderPassTriangleStpPkg {
                 surface_format_op,
@@ -411,7 +420,5 @@ const fn import_render_lane_for_asm(
                 desc: "pipeline_triangle_solid_depth_always",
             },
         ),
-    };
-    *render_pass_triangle_stp_pkg = rp;
-    *pipeline_triangle_stp_pkg = pl;
+    }
 }
