@@ -11,6 +11,9 @@ use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::RenderPassTriangleHandled;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::ShadersLineAuto;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::ShadersMeshSolidAuto;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::auto::render_lane_stp_at_asm::{
+    PipelineTriangleStpAuto, RenderPassTriangleStpAuto,
+};
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::ShadersTriangleAuto;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::embedded::buffer::RendererBfr;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::prt::render_lane_prt::RenderLanePrt;
@@ -18,7 +21,6 @@ use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::runtime::render_res_in
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::runtime::render_res_intsct_rt_pkgs::RenderPassTriangleRtPkg;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::runtime::render_res_intsct_rt_pkgs::RendererDefaultRtCrg;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::runtime::render_res_intsct_rt_pkgs::ShadersTriangleRtPkg;
-use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::op::RenderPassAttachmentLayoutStpPkgOp;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::render_res_intsct_stp_pkgs::PipelineTriangleStpPkg;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::render_res_intsct_stp_pkgs::RenderPassTriangleStpPkg;
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::boot_res_intsct_rt_pkgs::DeviceDefaultRtPkg;
@@ -53,8 +55,8 @@ fn extract_shader_pair(modules: &[vk::ShaderModule]) -> ModulResult<(vk::ShaderM
 /// | [`export_asmed1`](Self::export_asmed1) | Peel asmed cargo |
 ///
 /// *Stp packages are **setup bags** (closed gestalt), not Vulkan creates — so they are
-/// filled by PortMatch on Bfr, not by `vk_*` Auto/Handled. Runtime *RtPkg still go through
-/// `mem/asm_disasm` (`RenderPassTriangleHandled`, `PipelineMeshSolidHandled`, …).
+/// filled by Auto *Stp assemblers (`render_lane_stp_at_asm`) onto Bfr.
+/// Runtime *RtPkg still go through Handled (`RenderPassTriangleHandled`, …).
 pub trait RendererTransportable {
     /// Intent import · **1** · `RenderLanePrt` + external extent/format → *Stp on Bfr.
     /// Write-only · `Result<()>` only for trait uniformity · never returns a bag.
@@ -89,185 +91,16 @@ impl RendererTransportable for RendererBfr {
         surface_format_op: vk::Format,
     ) {
         debug_assert_eq!(IMPORT_RENDER_LANE_FOR_ASM_FACTORY_LINE_N, 1);
-        // PortMatch *Prt → *Stp **on Bfr** (swapchain calque · frame FIF match style).
-        // No free gestalt helper · no returned bags.
-        match render_lane_prt {
-            RenderLanePrt::TriangleSolidDepth => {
-                bfr.render_pass_triangle_stp_pkg = Some(RenderPassTriangleStpPkg {
-                surface_format_op,
-                sample_count_op: vk::SampleCountFlags::TYPE_1,
-                attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::SIMPLE,
-                depth_format_op: vk::Format::D32_SFLOAT,
-                color_layout_op: vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-                depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
-                initial_layout_op: vk::ImageLayout::UNDEFINED,
-                desc: "render_pass_triangle_solid_depth",
-            });
-                bfr.pipeline_triangle_stp_pkg = Some(PipelineTriangleStpPkg {
-                sample_count_op: vk::SampleCountFlags::TYPE_1,
-                topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
-                polygon_mode_op: vk::PolygonMode::FILL,
-                cull_mode_op: vk::CullModeFlags::NONE,
-                front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
-                depth_compare_op: vk::CompareOp::LESS,
-                color_write_mask_op: vk::ColorComponentFlags::RGBA,
-                extent_width_stp,
-                extent_height_stp,
-                desc: "pipeline_triangle_solid_depth",
-            });
-            }
-            RenderLanePrt::TriangleSolidDepthCullBack => {
-                bfr.render_pass_triangle_stp_pkg = Some(RenderPassTriangleStpPkg {
-                surface_format_op,
-                sample_count_op: vk::SampleCountFlags::TYPE_1,
-                attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::SIMPLE,
-                depth_format_op: vk::Format::D32_SFLOAT,
-                color_layout_op: vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-                depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
-                initial_layout_op: vk::ImageLayout::UNDEFINED,
-                desc: "render_pass_triangle_solid_depth_cull_back",
-            });
-                bfr.pipeline_triangle_stp_pkg = Some(PipelineTriangleStpPkg {
-                sample_count_op: vk::SampleCountFlags::TYPE_1,
-                topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
-                polygon_mode_op: vk::PolygonMode::FILL,
-                cull_mode_op: vk::CullModeFlags::BACK,
-                front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
-                depth_compare_op: vk::CompareOp::LESS,
-                color_write_mask_op: vk::ColorComponentFlags::RGBA,
-                extent_width_stp,
-                extent_height_stp,
-                desc: "pipeline_triangle_solid_depth_cull_back",
-            });
-            }
-            RenderLanePrt::TriangleWireDepth => {
-                bfr.render_pass_triangle_stp_pkg = Some(RenderPassTriangleStpPkg {
-                surface_format_op,
-                sample_count_op: vk::SampleCountFlags::TYPE_1,
-                attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::SIMPLE,
-                depth_format_op: vk::Format::D32_SFLOAT,
-                color_layout_op: vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-                depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
-                initial_layout_op: vk::ImageLayout::UNDEFINED,
-                desc: "render_pass_triangle_wire_depth",
-            });
-                bfr.pipeline_triangle_stp_pkg = Some(PipelineTriangleStpPkg {
-                sample_count_op: vk::SampleCountFlags::TYPE_1,
-                topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
-                polygon_mode_op: vk::PolygonMode::LINE,
-                cull_mode_op: vk::CullModeFlags::NONE,
-                front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
-                depth_compare_op: vk::CompareOp::LESS,
-                color_write_mask_op: vk::ColorComponentFlags::RGBA,
-                extent_width_stp,
-                extent_height_stp,
-                desc: "pipeline_triangle_wire_depth",
-            });
-            }
-            RenderLanePrt::TriangleSolidDepthAa4 => {
-                bfr.render_pass_triangle_stp_pkg = Some(RenderPassTriangleStpPkg {
-                surface_format_op,
-                sample_count_op: vk::SampleCountFlags::TYPE_4,
-                attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::MSAA,
-                depth_format_op: vk::Format::D32_SFLOAT,
-                color_layout_op: vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-                depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
-                initial_layout_op: vk::ImageLayout::UNDEFINED,
-                desc: "render_pass_triangle_solid_depth_aa4",
-            });
-                bfr.pipeline_triangle_stp_pkg = Some(PipelineTriangleStpPkg {
-                sample_count_op: vk::SampleCountFlags::TYPE_4,
-                topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
-                polygon_mode_op: vk::PolygonMode::FILL,
-                cull_mode_op: vk::CullModeFlags::NONE,
-                front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
-                depth_compare_op: vk::CompareOp::LESS,
-                color_write_mask_op: vk::ColorComponentFlags::RGBA,
-                extent_width_stp,
-                extent_height_stp,
-                desc: "pipeline_triangle_solid_depth_aa4",
-            });
-            }
-            RenderLanePrt::TriangleSolidDepthAa8 => {
-                bfr.render_pass_triangle_stp_pkg = Some(RenderPassTriangleStpPkg {
-                surface_format_op,
-                sample_count_op: vk::SampleCountFlags::TYPE_8,
-                attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::MSAA,
-                depth_format_op: vk::Format::D32_SFLOAT,
-                color_layout_op: vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-                depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
-                initial_layout_op: vk::ImageLayout::UNDEFINED,
-                desc: "render_pass_triangle_solid_depth_aa8",
-            });
-                bfr.pipeline_triangle_stp_pkg = Some(PipelineTriangleStpPkg {
-                sample_count_op: vk::SampleCountFlags::TYPE_8,
-                topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
-                polygon_mode_op: vk::PolygonMode::FILL,
-                cull_mode_op: vk::CullModeFlags::NONE,
-                front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
-                depth_compare_op: vk::CompareOp::LESS,
-                color_write_mask_op: vk::ColorComponentFlags::RGBA,
-                extent_width_stp,
-                extent_height_stp,
-                desc: "pipeline_triangle_solid_depth_aa8",
-            });
-            }
-            RenderLanePrt::TriangleWireDepthAa4 => {
-                bfr.render_pass_triangle_stp_pkg = Some(RenderPassTriangleStpPkg {
-                surface_format_op,
-                sample_count_op: vk::SampleCountFlags::TYPE_4,
-                attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::MSAA,
-                depth_format_op: vk::Format::D32_SFLOAT,
-                color_layout_op: vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-                depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
-                initial_layout_op: vk::ImageLayout::UNDEFINED,
-                desc: "render_pass_triangle_wire_depth_aa4",
-            });
-                bfr.pipeline_triangle_stp_pkg = Some(PipelineTriangleStpPkg {
-                sample_count_op: vk::SampleCountFlags::TYPE_4,
-                topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
-                polygon_mode_op: vk::PolygonMode::LINE,
-                cull_mode_op: vk::CullModeFlags::NONE,
-                front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
-                depth_compare_op: vk::CompareOp::LESS,
-                color_write_mask_op: vk::ColorComponentFlags::RGBA,
-                extent_width_stp,
-                extent_height_stp,
-                desc: "pipeline_triangle_wire_depth_aa4",
-            });
-            }
-            RenderLanePrt::TriangleSolidDepthAlways => {
-                bfr.render_pass_triangle_stp_pkg = Some(RenderPassTriangleStpPkg {
-                surface_format_op,
-                sample_count_op: vk::SampleCountFlags::TYPE_1,
-                attachment_layout_op: RenderPassAttachmentLayoutStpPkgOp::SIMPLE,
-                depth_format_op: vk::Format::D32_SFLOAT,
-                color_layout_op: vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-                depth_layout_op: vk::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                present_layout_op: vk::ImageLayout::PRESENT_SRC_KHR,
-                initial_layout_op: vk::ImageLayout::UNDEFINED,
-                desc: "render_pass_triangle_solid_depth_always",
-            });
-                bfr.pipeline_triangle_stp_pkg = Some(PipelineTriangleStpPkg {
-                sample_count_op: vk::SampleCountFlags::TYPE_1,
-                topology_op: vk::PrimitiveTopology::TRIANGLE_LIST,
-                polygon_mode_op: vk::PolygonMode::FILL,
-                cull_mode_op: vk::CullModeFlags::NONE,
-                front_face_op: vk::FrontFace::COUNTER_CLOCKWISE,
-                depth_compare_op: vk::CompareOp::ALWAYS,
-                color_write_mask_op: vk::ColorComponentFlags::RGBA,
-                extent_width_stp,
-                extent_height_stp,
-                desc: "pipeline_triangle_solid_depth_always",
-            });
-            }
-        }
+        // Auto *Stp from RenderLanePrt (asm_disasm presets) → Bfr slots only.
+        bfr.render_pass_triangle_stp_pkg = Some(RenderPassTriangleStpPkg::auto_assemble(
+            render_lane_prt,
+            surface_format_op,
+        ));
+        bfr.pipeline_triangle_stp_pkg = Some(PipelineTriangleStpPkg::auto_assemble(
+            render_lane_prt,
+            extent_width_stp,
+            extent_height_stp,
+        ));
     }
 
     fn import_for_asm9(
