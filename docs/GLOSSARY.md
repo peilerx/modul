@@ -37,7 +37,7 @@ Open HTML: `target/doc/modul/canon/index.html`.
 ## Phases & ranks
 
 **Stp** setup · **Rt** runtime · **Op** operator · **extrl** external handle ·  
-**Prt** port intent · **Bfr** buffer warehouse ·  
+**Prt** intent protocol · **Bfr** buffer warehouse ·  
 **StpPkg / RtPkg / RtCrg / StpCrg / MxCrg** package/cargo ranks ·  
 **asm_disasm** Auto|Handled assemble · **vk / vk_pkg / vk_crg / vk_bfr** ranks
 
