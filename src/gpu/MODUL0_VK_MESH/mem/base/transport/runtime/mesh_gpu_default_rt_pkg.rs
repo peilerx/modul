@@ -5,7 +5,7 @@ use ash::vk;
 /// Device mesh buffers for the solid instanced path.
 ///
 /// Holds vertex/index/instance buffers, draw counts, AABB, and steel albedo.
-/// Built via `MeshGpuBfr` port + `MeshDrawPrt::SteelSolid`.
+/// Built via `MeshGpuBfr` port + `MeshDrawPrt::Solid`.
 pub struct MeshGpuDefaultRtPkg {
     /// External / raw Vulkan handle or host pointer field `vertex_buffer_extrl` (`vertex_buffer` peel).
     pub vertex_buffer_extrl: vk::Buffer,
@@ -29,14 +29,14 @@ pub struct MeshGpuDefaultRtPkg {
     pub instance_capacity_rt: u32,
     /// Runtime phase field `triangle_count_rt`.
     pub triangle_count_rt: u32,
-    /// 3 = `SteelSolid` · 1 = raw tri list · 0 = empty.
+    /// 3 = `Solid` · 1 = raw tri list · 0 = empty.
     pub mode_rt: u32,
-    /// Runtime phase field `steel_r_rt`.
-    pub steel_r_rt: f32,
-    /// Runtime phase field `steel_g_rt`.
-    pub steel_g_rt: f32,
-    /// Runtime phase field `steel_b_rt`.
-    pub steel_b_rt: f32,
+    /// Runtime phase field `base_r_rt`.
+    pub base_r_rt: f32,
+    /// Runtime phase field `base_g_rt`.
+    pub base_g_rt: f32,
+    /// Runtime phase field `base_b_rt`.
+    pub base_b_rt: f32,
     /// World AABB of uploaded mesh (orbit / fit).
     pub bounds_min_rt: [f32; 3],
     /// Runtime phase field `bounds_max_rt`.
@@ -66,9 +66,9 @@ impl MeshGpuDefaultRtPkg {
             instance_capacity_rt: 0,
             triangle_count_rt: 0,
             mode_rt: 0,
-            steel_r_rt: 0.70,
-            steel_g_rt: 0.725,
-            steel_b_rt: 0.765,
+            base_r_rt: 0.70,
+            base_g_rt: 0.725,
+            base_b_rt: 0.765,
             bounds_min_rt: [0.0; 3],
             bounds_max_rt: [0.0; 3],
             ready_rt: false,
@@ -111,19 +111,19 @@ impl MeshGpuDefaultRtPkg {
 /// |-------|------------------------|-------------------|
 /// | `mvp` | transform | — |
 /// | `light_dir` | — | key dir + intensity |
-/// | `steel_base` | — | albedo + roughness |
+/// | `base_color` | — | albedo + roughness |
 /// | `cam_pos` | eye for shading | exposure in `w` |
 /// | `look` / `look2` | — | GGX look knobs |
 /// | `look3` | **time, sep_max, y_half, period** | frag uses fixed cavity defaults |
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct CadSteelPushRt {
+pub struct MeshPushRt {
     /// Column-major 4×4 MVP.
     pub mvp: [f32; 16],
     /// xyz key dir · w key intensity.
     pub light_dir: [f32; 4],
     /// rgb albedo · w roughness.
-    pub steel_base: [f32; 4],
+    pub base_color: [f32; 4],
     /// xyz eye · w exposure.
     pub cam_pos: [f32; 4],
     /// f0, specular, env, fill.
@@ -134,7 +134,7 @@ pub struct CadSteelPushRt {
     pub look3: [f32; 4],
 }
 
-impl CadSteelPushRt {
+impl MeshPushRt {
     /// Byte size of the push-constant block (must match pipeline layout).
     pub const SIZE: u32 = 160;
 
@@ -142,13 +142,13 @@ impl CadSteelPushRt {
     /// Public API entry for this module.
     /// Belongs to: mesh upload / solid draw MCG.
     #[must_use]
-    pub const fn identity_steel(steel_rgb: [f32; 3]) -> Self {
+    pub const fn identity_steel(base_rgb: [f32; 3]) -> Self {
         Self {
             mvp: [
                 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
             ],
             light_dir: [0.48, 0.72, 0.50, 1.0],
-            steel_base: [steel_rgb[0], steel_rgb[1], steel_rgb[2], 0.14],
+            base_color: [base_rgb[0], base_rgb[1], base_rgb[2], 0.14],
             cam_pos: [0.0, 0.0, 4.0, 1.08],
             look: [0.55, 1.2, 0.85, 0.0],
             look2: [0.5, 1.1, 1.55, 1.08],
@@ -164,7 +164,7 @@ impl CadSteelPushRt {
         yaw: f32,
         pitch: f32,
         aspect: f32,
-        steel_rgb: [f32; 3],
+        base_rgb: [f32; 3],
     ) -> Self {
         let r = radius.max(0.25) * 2.6;
         let cy = yaw.cos();
@@ -182,7 +182,7 @@ impl CadSteelPushRt {
         Self {
             mvp,
             light_dir: [0.55, 0.82, 0.42, 1.2],
-            steel_base: [steel_rgb[0], steel_rgb[1], steel_rgb[2], 0.14],
+            base_color: [base_rgb[0], base_rgb[1], base_rgb[2], 0.14],
             cam_pos: [eye[0], eye[1], eye[2], 1.08],
             look: [0.55, 1.25, 0.9, 0.55],
             look2: [0.55, 1.1, 0.0, 1.12],
@@ -210,7 +210,7 @@ impl CadSteelPushRt {
         shadow_soft: f32,
     ) {
         self.light_dir[3] = key_intensity.clamp(0.0, 2.5);
-        self.steel_base[3] = roughness.clamp(0.02, 0.9);
+        self.base_color[3] = roughness.clamp(0.02, 0.9);
         self.cam_pos[3] = exposure.clamp(0.5, 2.0);
         self.look = [
             metal_f0.clamp(0.05, 1.0),

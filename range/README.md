@@ -11,7 +11,7 @@ Product etalons on **modul** — real sessions, not toy wrappers.
 modul organizes GPU work as **Assembly Buffers + protocol intents** (`*Bfr`, `*Prt`, Factory-Line imports). The etalon keeps that surface **visible**:
 
 1. **Session** (`assemble_tandem_session`) — ordered PTP imports: swapchain → renderer → presentation → frame → display → mesh.  
-2. **Pulse** (`run_tandem_pulse`) — explicit `begin_frame` → `record_frame_with_serial` → `end_frame` with peels (`mesh_gpu_rt`, `steel_push_rt`, line layers).  
+2. **Pulse** (`run_tandem_pulse`) — explicit `begin_frame` → `record_frame_with_serial` → `end_frame` with peels (`mesh_gpu_rt`, `mesh_push_rt`, optional line layers).  
 3. **LOD / variants** — extend by changing assembler policies and peels inside pulse, not by adding a second hidden renderer API.
 
 A monomorphic `TandemBuilder::with_*` facade can *call* these assemblers for convenience, but must not replace them: hiding FIF, present mode, render pass, and push constants would collapse modul into OpenGL-style opacity.

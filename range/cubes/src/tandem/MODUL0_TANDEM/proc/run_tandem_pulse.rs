@@ -9,7 +9,7 @@ use std::time::Instant;
 use modul::gpu::MODUL0_VK_DISPLAY::proc::display::display_frame::record_frame_with_serial;
 use modul::gpu::MODUL0_VK_FRAME::conv::port::export::frame::export_asmed_frame_render;
 use modul::gpu::MODUL0_VK_FRAME::proc::processor::frame_tick::{begin_frame, end_frame};
-use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::CadSteelPushRt;
+use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshPushRt;
 use modul::gpu::MODUL0_VK_SWAPCHAIN::conv::port::{SwapchainBfr, SwapchainTransportable};
 
 use crate::tandem::MODUL0_TANDEM::mem::tandem_bfr::TandemBfr;
@@ -30,26 +30,26 @@ pub fn run_tandem_pulse(hub: &mut TandemBfr) -> Result<(), String> {
     let t = hub.pulse_t0.elapsed().as_secs_f32();
 
     let radius = hub.mesh_gpu_rt.radius_rt() * 2.8 / hub.zoom.max(0.2);
-    hub.steel_push_rt = CadSteelPushRt::from_orbit(
+    hub.mesh_push_rt = MeshPushRt::from_orbit(
         hub.mesh_gpu_rt.center_rt(),
         radius,
         hub.orbit_yaw,
         hub.orbit_pitch,
         aspect,
         [
-            hub.mesh_gpu_rt.steel_r_rt,
-            hub.mesh_gpu_rt.steel_g_rt,
-            hub.mesh_gpu_rt.steel_b_rt,
+            hub.mesh_gpu_rt.base_r_rt,
+            hub.mesh_gpu_rt.base_g_rt,
+            hub.mesh_gpu_rt.base_b_rt,
         ],
     );
     let y_half = (0.5
         * (hub.mesh_gpu_rt.bounds_max_rt[1] - hub.mesh_gpu_rt.bounds_min_rt[1]))
     .max(0.5);
     // look3: x=time, y=sep_max, z=y_half, w=period (shader cubes.vert)
-    hub.steel_push_rt.look3[0] = t;
-    hub.steel_push_rt.look3[1] = SEP_MAX;
-    hub.steel_push_rt.look3[2] = y_half;
-    hub.steel_push_rt.look3[3] = PULSE_PERIOD_SECS;
+    hub.mesh_push_rt.look3[0] = t;
+    hub.mesh_push_rt.look3[1] = SEP_MAX;
+    hub.mesh_push_rt.look3[2] = y_half;
+    hub.mesh_push_rt.look3[3] = PULSE_PERIOD_SECS;
     hub.frame_rt.frame_render_default_rt_pkg.clear_color_rt = [0.05, 0.05, 0.08, 1.0];
 
     let boot = SwapchainBfr::export_asmed1(&hub.swapchain_bfr)
@@ -70,7 +70,7 @@ pub fn run_tandem_pulse(hub: &mut TandemBfr) -> Result<(), String> {
         &render_policy,
         true,
         Some(&hub.mesh_gpu_rt),
-        Some(&hub.steel_push_rt),
+        Some(&hub.mesh_push_rt),
         Some(&hub.grid_line_rt),
         None,
         None,

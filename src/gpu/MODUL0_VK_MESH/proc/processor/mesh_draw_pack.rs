@@ -17,9 +17,9 @@ pub const fn pack_mesh_draw_default_rt(
         vertex_count_rt: mesh_draw_default_stp_pkg.vertex_count_stp,
         index_count_rt: mesh_draw_default_stp_pkg.index_count_stp,
         triangle_count_rt: mesh_draw_default_stp_pkg.index_count_stp / 3,
-        steel_r_rt: mesh_draw_default_stp_pkg.steel_r_stp,
-        steel_g_rt: mesh_draw_default_stp_pkg.steel_g_stp,
-        steel_b_rt: mesh_draw_default_stp_pkg.steel_b_stp,
+        base_r_rt: mesh_draw_default_stp_pkg.base_r_stp,
+        base_g_rt: mesh_draw_default_stp_pkg.base_g_stp,
+        base_b_rt: mesh_draw_default_stp_pkg.base_b_stp,
         desc: "mesh_draw_default_rt_pkg",
     }
 }

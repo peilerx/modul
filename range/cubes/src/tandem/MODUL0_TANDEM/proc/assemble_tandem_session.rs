@@ -14,7 +14,7 @@ use modul::gpu::MODUL0_VK_MESH::conv::port::{MeshGpuBfr, MeshGpuBfrAuto, MeshGpu
 use modul::gpu::MODUL0_VK_MESH::mem::asm_disasm::vk_pkg::auto::line_gpu_res_intsct_at_asm::LineGpuDefaultAuto;
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::prt::mesh_draw_prt::MeshDrawPrt;
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::line_gpu_default_rt_pkg::LineGpuDefaultRtPkg;
-use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::CadSteelPushRt;
+use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshPushRt;
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::MeshSoaRtBfr;
 use modul::gpu::MODUL0_VK_PIPELINE::conv::port::{
     RendererBfr, RendererBfrAuto, RendererTransportable,
@@ -154,7 +154,7 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
     let mut mesh_gpu_bfr = MeshGpuBfr::auto_assemble();
     MeshGpuBfr::import_for_asm1(
         &mut mesh_gpu_bfr,
-        MeshDrawPrt::SteelSolid,
+        MeshDrawPrt::Solid,
         dev,
         inst,
         phys,
@@ -170,16 +170,16 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         LineGpuDefaultRtPkg::auto_assemble(dev, inst, phys, &[], [0.35, 0.37, 0.40, 1.0])?;
 
     let aspect = w as f32 / h as f32;
-    let steel_push_rt = CadSteelPushRt::from_orbit(
+    let mesh_push_rt = MeshPushRt::from_orbit(
         mesh_gpu_rt.center_rt(),
         mesh_gpu_rt.radius_rt() * 2.8,
         0.6,
         0.4,
         aspect,
         [
-            mesh_gpu_rt.steel_r_rt,
-            mesh_gpu_rt.steel_g_rt,
-            mesh_gpu_rt.steel_b_rt,
+            mesh_gpu_rt.base_r_rt,
+            mesh_gpu_rt.base_g_rt,
+            mesh_gpu_rt.base_b_rt,
         ],
     );
 
@@ -196,7 +196,7 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         display_rt,
         mesh_gpu_rt,
         grid_line_rt,
-        steel_push_rt,
+        mesh_push_rt,
         orbit_yaw: 0.6,
         orbit_pitch: 0.4,
         zoom: 1.0,

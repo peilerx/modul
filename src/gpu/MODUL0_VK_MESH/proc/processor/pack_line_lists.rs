@@ -1,4 +1,4 @@
-//! Pack world-space line lists (grid only after CAD strip).
+//! Pack world-space line lists (optional line lists).
 
 /// Interleaved f32 pos.xyz for `LINE_LIST`.
 #[must_use]

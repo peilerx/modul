@@ -1,4 +1,4 @@
-//! MCU buffer + host-visible device memory for CAD mesh VBO/IBO.
+//! MCU buffer + host-visible device memory for mesh VBO/IBO.
 
 use ash::vk;
 use ash::{Device, Instance};

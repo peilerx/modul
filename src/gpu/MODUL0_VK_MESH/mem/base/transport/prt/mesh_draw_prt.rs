@@ -5,11 +5,11 @@
 /// Mesh draw session intent.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum MeshDrawPrt {
-    /// Triangle list from a generic mesh peel (legacy etalon naming).
+    /// Generic triangle list (no special material path).
     #[default]
     TriangleList,
-    /// Solid steel/cubes-shaded triangle list (`cubes` SPIR-V · pos+nrm VBO + instances).
-    SteelSolid,
+    /// Solid shaded instanced mesh (`cubes` SPIR-V · pos+nrm + instance XYZ/LOD).
+    Solid,
     /// Wireframe edges (reserved).
     Wireframe,
     /// Skip GPU mesh bind.

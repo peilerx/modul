@@ -41,17 +41,17 @@ impl LineGpuDefaultRtPkg {
     }
 }
 
-/// `cad_line` push constants (mat4 mvp + vec4 color = 80 bytes).
+/// `line` push constants (mat4 mvp + vec4 color = 80 bytes).
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct CadLinePushRt {
+pub struct LinePushRt {
     /// Public field `mvp`.
     pub mvp: [f32; 16],
     /// Public field `color`.
     pub color: [f32; 4],
 }
 
-impl CadLinePushRt {
+impl LinePushRt {
     /// `SIZE` — const (SIZE).
     /// Module path context: `gpu/MODUL0_VK_MESH/mem/base/transport/runtime`.
     pub const SIZE: u32 = 80;

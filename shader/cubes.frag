@@ -1,19 +1,19 @@
 #version 450
 
-// Product steel — multi-lobe GGX + cavity / soft contact shadow (mass cubes).
-// look3 is owned by the vertex pulse (time, sep, y_half, period) — do not
-// read lighting knobs from look3 here. Cavity/shadow defaults match View look.
+// Cubes solid — multi-lobe GGX + cavity / soft contact (instanced lattice).
+// look3: vertex pulse (time, sep, y_half, period) — do not
+// read lighting knobs from look3 here.
 
 layout(location = 0) in vec3 vNormal;
 layout(location = 1) in vec3 vWorldPos;
 layout(location = 2) in vec3 vView;
 layout(location = 0) out vec4 outColor;
 
-// 160 bytes: mat4 + 6×vec4 — layout must match vert / CadSteelPushRt
+// 160 bytes: mat4 + 6×vec4 — layout must match vert / MeshPushRt
 layout(push_constant) uniform Pc {
     mat4 mvp;
     vec4 light_dir;   // xyz key dir · w key intensity
-    vec4 steel_base;  // rgb albedo · w roughness
+    vec4 base_color;  // rgb albedo · w roughness
     vec4 cam_pos;     // xyz eye · w exposure
     vec4 look;        // f0, specular, env, fill
     vec4 look2;       // rim, brush, film, contrast
@@ -47,7 +47,7 @@ void main() {
 
     float F0 = clamp(pc.look.x, 0.05, 1.0);
     if (F0 < 0.01) F0 = 0.55;
-    float rough = clamp(pc.steel_base.w, 0.02, 0.9);
+    float rough = clamp(pc.base_color.w, 0.02, 0.9);
     if (rough < 0.01) rough = 0.14;
     float spec_gain = clamp(pc.look.y, 0.0, 2.5);
     if (spec_gain < 0.01) spec_gain = 1.2;
@@ -141,8 +141,8 @@ void main() {
     env *= saturate(NdV * 1.6 + 0.15) * env_i;
 
     vec3 albedo = vec3(0.70, 0.725, 0.765);
-    if (length(pc.steel_base.rgb) > 0.01) {
-        albedo = pc.steel_base.rgb;
+    if (length(pc.base_color.rgb) > 0.01) {
+        albedo = pc.base_color.rgb;
     }
     float hemi = 0.09 + 0.14 * saturate(N.y * 0.5 + 0.5);
     // Stronger key diffuse so faces read as lit vs shaded

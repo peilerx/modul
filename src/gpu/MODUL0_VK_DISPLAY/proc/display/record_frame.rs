@@ -1,4 +1,4 @@
-//! DISPLAY record — product CAD solid + grid/sketch/outline lines on MODUL0_VK.
+//! DISPLAY record — product mesh solid + grid/sketch/outline lines on MODUL0_VK.
 
 use ash::vk;
 use std::mem::size_of;
@@ -9,9 +9,9 @@ use crate::gpu::MODUL0_VK_FRAME::mem::asm_disasm::vk_pkg::auto::command_begin_in
 use crate::gpu::MODUL0_VK_FRAME::mem::asm_disasm::vk_pkg::handled::render_pass_begin_triangle_hld_asm::handled_vk_rp_begin;
 use crate::gpu::MODUL0_VK_FRAME::mem::base::transport::{FrameRenderDefaultRtPkg, FrameSlotDefaultRtPkg};
 use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::record_line_layers_rt::RecordLineLayersRt;
-use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::line_gpu_default_rt_pkg::CadLinePushRt;
+use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::line_gpu_default_rt_pkg::LinePushRt;
 use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::{
-    CadSteelPushRt, MeshGpuDefaultRtPkg,
+    MeshPushRt, MeshGpuDefaultRtPkg,
 };
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::RendererDefaultRtCrg;
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::{DeviceDefaultRtPkg, PresentationDefaultRtCrg};
@@ -26,7 +26,7 @@ pub fn record_display_frame(
     render_policy: &FrameRenderDefaultRtPkg,
     bind_geometry_stp: bool,
     mesh_gpu: Option<&MeshGpuDefaultRtPkg>,
-    steel_push: Option<&CadSteelPushRt>,
+    mesh_push: Option<&MeshPushRt>,
     lines: RecordLineLayersRt<'_>,
     image_index: u32,
 ) -> ModulResult<()> {
@@ -106,11 +106,11 @@ pub fn record_display_frame(
             .device_extrl
             .cmd_set_scissor(slot.command_buffer_extrl, 0, std::slice::from_ref(&scissor));
 
-        // 1) CAD solid steel (all three peels required for a draw)
+        // 1) mesh solid steel (all three peels required for a draw)
         if let (Some(mesh), Some(steel_pl), Some(push)) = (
             mesh_gpu.filter(|m| m.ready_rt && m.index_count_rt > 0),
-            renderer.pipeline_steel_rt_pkg.as_ref(),
-            steel_push,
+            renderer.pipeline_mesh_solid_rt_pkg.as_ref(),
+            mesh_push,
         ) {
             device.device_extrl.cmd_bind_pipeline(
                 slot.command_buffer_extrl,
@@ -132,8 +132,8 @@ pub fn record_display_frame(
                 vk::IndexType::UINT32,
             );
             let push_bytes = std::slice::from_raw_parts(
-                std::ptr::from_ref::<CadSteelPushRt>(push).cast::<u8>(),
-                size_of::<CadSteelPushRt>(),
+                std::ptr::from_ref::<MeshPushRt>(push).cast::<u8>(),
+                size_of::<MeshPushRt>(),
             );
             device.device_extrl.cmd_push_constants(
                 slot.command_buffer_extrl,
@@ -165,7 +165,7 @@ pub fn record_display_frame(
         // 2) Lines (grid · sketch · outline) after solid so they composite on depth.
         // Outline may be solid TRIANGLE_LIST quads (thick Borderline); grid/sketch stay LINE_LIST.
         if let Some(line_pl) = renderer.pipeline_line_rt_pkg.as_ref() {
-            let mvp = steel_push.map_or([
+            let mvp = mesh_push.map_or([
                 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
             ], |p| p.mvp);
             let tri_pl = renderer.pipeline_line_tris_rt_pkg.as_ref();
@@ -188,10 +188,10 @@ pub fn record_display_frame(
                     vk::PipelineBindPoint::GRAPHICS,
                     pl.pipeline_extrl,
                 );
-                let push = CadLinePushRt::from_mvp_color(mvp, line.color_rt);
+                let push = LinePushRt::from_mvp_color(mvp, line.color_rt);
                 let push_bytes = std::slice::from_raw_parts(
                     (&raw const push).cast::<u8>(),
-                    size_of::<CadLinePushRt>(),
+                    size_of::<LinePushRt>(),
                 );
                 device.device_extrl.cmd_push_constants(
                     slot.command_buffer_extrl,

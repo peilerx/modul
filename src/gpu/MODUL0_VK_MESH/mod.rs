@@ -4,7 +4,7 @@
 //!
 //! - Unit cuboid / instanced lattice (`MeshSoaRtBfr`)
 //! - Steel solid path: interleaved pos+nrm VBO, indices, instance buffer
-//! - Push constants [`CadSteelPushRt`](crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::CadSteelPushRt)
+//! - Push constants [`MeshPushRt`](crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshPushRt)
 //!   (MVP, light, material, pulse knobs in `look3`)
 //!
 //! ## Layers
@@ -15,7 +15,7 @@
 //!
 //! ## App usage
 //!
-//! `MeshGpuBfr::import_for_asm1(MeshDrawPrt::SteelSolid, device, instance, phys, &mesh)`.
+//! `MeshGpuBfr::import_for_asm1(MeshDrawPrt::Solid, device, instance, phys, &mesh)`.
 pub mod conv;
 /// Submodule `mem`.
 /// Part of `gpu/MODUL0_VK_MESH` under the mem/conv/proc MCG canon.

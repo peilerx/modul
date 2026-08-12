@@ -3,7 +3,7 @@
 use crate::gpu::MODUL0_VK_MESH::mem::base::transport::prt::mesh_draw_prt::MeshDrawPrt;
 use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::MeshSoaRtBfr;
 use crate::gpu::MODUL0_VK_MESH::proc::processor::pack_index_bytes::{
-    pack_u32_indices_to_bytes, steel_buffer_counts,
+    pack_u32_indices_to_bytes, mesh_solid_buffer_counts,
 };
 use crate::gpu::MODUL0_VK_MESH::proc::processor::pack_steel_interleaved::pack_steel_flat_from_mesh;
 
@@ -53,14 +53,14 @@ pub fn prepare_mesh_upload(
     let (vert_bytes_extrl, indices_extrl, bounds_min_rt, bounds_max_rt) =
         pack_steel_flat_from_mesh(mesh_soa_rt_bfr);
     let mode_rt = match mesh_draw_prt {
-        MeshDrawPrt::SteelSolid => 3,
+        MeshDrawPrt::Solid => 3,
         MeshDrawPrt::TriangleList => 1,
         MeshDrawPrt::Wireframe => 2,
         MeshDrawPrt::Disabled => 0,
     };
     let idx_bytes_extrl = pack_u32_indices_to_bytes(&indices_extrl);
     let (vertex_count_rt, index_count_rt, triangle_count_rt) =
-        steel_buffer_counts(vert_bytes_extrl.len(), indices_extrl.len());
+        mesh_solid_buffer_counts(vert_bytes_extrl.len(), indices_extrl.len());
     MeshUploadPrep {
         empty_stp: 0,
         mode_rt,

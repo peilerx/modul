@@ -1,6 +1,6 @@
 #version 450
 
-// CAD steel · unit cube instances + Viewsor LOD in instance.w
+// mesh solid · unit cube instances + Viewsor LOD in instance.w
 // lod 0 = full 6 faces · 1 = front-facing faces only · 2 = point impostor
 
 layout(location = 0) in vec3 inPos;
@@ -10,7 +10,7 @@ layout(location = 2) in vec4 inInstancePos; // xyz center · w lod
 layout(push_constant) uniform Pc {
     mat4 mvp;
     vec4 light_dir;
-    vec4 steel_base;
+    vec4 base_color;
     vec4 cam_pos;
     vec4 look;
     vec4 look2;

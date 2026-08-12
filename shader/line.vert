@@ -1,5 +1,5 @@
 #version 450
-// CAD line / grid — pos only + MVP push (CadLinePushRt = 80 bytes).
+// line / grid — pos only + MVP push (LinePushRt = 80 bytes).
 
 layout(location = 0) in vec3 inPos;
 

@@ -11,7 +11,7 @@
 //!
 //! ## App usage
 //!
-//! `record_frame_with_serial(…, mesh_gpu, steel_push, grid_line, …)` after
+//! `record_frame_with_serial(…, mesh_gpu, mesh_push, grid_line, …)` after
 //! `begin_frame`.
 pub mod conv;
 /// Submodule `mem`.

@@ -23,10 +23,10 @@ pub struct RendererBfr {
     pub render_pass_triangle_rt_pkg: Option<RenderPassDefaultRtPkg>,
     /// Nested package bag field `pipeline_triangle_rt_pkg`.
     pub pipeline_triangle_rt_pkg: Option<GraphicsPipelineDefaultRtPkg>,
-    /// Nested package bag field `shaders_steel_rt_pkg`.
-    pub shaders_steel_rt_pkg: Option<ShaderModulesDefaultRtPkg>,
-    /// Nested package bag field `pipeline_steel_rt_pkg`.
-    pub pipeline_steel_rt_pkg: Option<GraphicsPipelineDefaultRtPkg>,
+    /// Nested package bag field `shaders_mesh_solid_rt_pkg`.
+    pub shaders_mesh_solid_rt_pkg: Option<ShaderModulesDefaultRtPkg>,
+    /// Nested package bag field `pipeline_mesh_solid_rt_pkg`.
+    pub pipeline_mesh_solid_rt_pkg: Option<GraphicsPipelineDefaultRtPkg>,
     /// Nested package bag field `shaders_line_rt_pkg`.
     pub shaders_line_rt_pkg: Option<ShaderModulesDefaultRtPkg>,
     /// Nested package bag field `pipeline_line_rt_pkg`.

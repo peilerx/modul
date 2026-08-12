@@ -10,12 +10,12 @@ pub struct MeshDrawDefaultRtPkg {
     pub index_count_rt: u32,
     /// Runtime phase field `triangle_count_rt`.
     pub triangle_count_rt: u32,
-    /// Runtime phase field `steel_r_rt`.
-    pub steel_r_rt: f32,
-    /// Runtime phase field `steel_g_rt`.
-    pub steel_g_rt: f32,
-    /// Runtime phase field `steel_b_rt`.
-    pub steel_b_rt: f32,
+    /// Runtime phase field `base_r_rt`.
+    pub base_r_rt: f32,
+    /// Runtime phase field `base_g_rt`.
+    pub base_g_rt: f32,
+    /// Runtime phase field `base_b_rt`.
+    pub base_b_rt: f32,
     /// Human-readable bag descriptor (`&'static str` protocol tag).
     pub desc: &'static str,
 }

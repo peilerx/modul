@@ -609,14 +609,14 @@ impl PipelineTriangleHandled for PipelineTriangleRtPkg {
     }
 }
 
-// ========== CAD STEEL (product solid) ==========
+// ========== MESH SOLID (cubes product · pos+nrm+instance) ==========
 
-/// Catalog — `cad_steel` SPIR-V (pos+nrm solid).
-pub trait ShadersCadSteelAuto {
+/// Catalog — `mesh_solid` SPIR-V (pos+nrm solid).
+pub trait ShadersMeshSolidAuto {
     fn auto_assemble(device_extrl: &Device) -> ModulResult<ShadersTriangleRtPkg>;
 }
 
-impl ShadersCadSteelAuto for ShadersTriangleRtPkg {
+impl ShadersMeshSolidAuto for ShadersTriangleRtPkg {
     fn auto_assemble(device_extrl: &Device) -> ModulResult<ShadersTriangleRtPkg> {
         let vert_code =
             include_bytes!("../../../../../../../shader/cubes.vert.spv").as_slice();
@@ -630,13 +630,13 @@ impl ShadersCadSteelAuto for ShadersTriangleRtPkg {
             )?;
         Ok(ShadersTriangleRtPkg {
             shader_modules_extrl,
-            desc: "shaders_cubes",
+            desc: "shaders_mesh_solid",
         })
     }
 }
 
-/// Catalog — graphics pipeline for `cad_steel` (vertex input + push constants).
-pub trait PipelineCadSteelHandled {
+/// Catalog — graphics pipeline for `mesh_solid` (vertex input + push constants).
+pub trait PipelineMeshSolidHandled {
     fn handled_assemble(
         device_extrl: &Device,
         sample_count_op: vk::SampleCountFlags,
@@ -652,7 +652,7 @@ pub trait PipelineCadSteelHandled {
     ) -> ModulResult<PipelineTriangleRtPkg>;
 }
 
-impl PipelineCadSteelHandled for PipelineTriangleRtPkg {
+impl PipelineMeshSolidHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
         device_extrl: &Device,
         sample_count_op: vk::SampleCountFlags,
@@ -696,7 +696,7 @@ impl PipelineCadSteelHandled for PipelineTriangleRtPkg {
                     vert_module_extrl,
                     frag_module_extrl,
                 );
-            // Push: mat4 + 6×vec4 = 160 bytes (cad_steel · 3D View look knobs).
+            // Push: mat4 + 6×vec4 = 160 bytes (mesh_solid · 3D View look knobs).
             let push_range = vk::PushConstantRange::default()
                 .stage_flags(vk::ShaderStageFlags::VERTEX | vk::ShaderStageFlags::FRAGMENT)
                 .offset(0)
@@ -766,26 +766,26 @@ impl PipelineCadSteelHandled for PipelineTriangleRtPkg {
             Ok(PipelineTriangleRtPkg {
                 pipeline_extrl,
                 pipeline_layout_extrl,
-                desc: "pipeline_cubes",
+                desc: "pipeline_mesh_solid",
             })
         }
     }
 }
 
-// ========== CAD LINE (grid · sketch · outline) ==========
+// ========== LINE (optional grid/sketch/outline peels) ==========
 
-/// `ShadersCadLineAuto` — trait (shaders cad line auto).
+/// `ShadersLineAuto` — trait (shaders cad line auto).
 ///
 /// Auto-assemble catalog trait: pure construction without external peels (FIX-129 Auto rank).
 /// Belongs to: render-pass / graphics pipeline MCG.
 /// Module path context: `gpu/MODUL0_VK_PIPELINE/mem/asm_disasm/vk_pkg/handled`.
-pub trait ShadersCadLineAuto {
+pub trait ShadersLineAuto {
     fn auto_assemble(device_extrl: &Device) -> ModulResult<ShadersTriangleRtPkg>;
 }
 
-impl ShadersCadLineAuto for ShadersTriangleRtPkg {
+impl ShadersLineAuto for ShadersTriangleRtPkg {
     fn auto_assemble(device_extrl: &Device) -> ModulResult<ShadersTriangleRtPkg> {
-        // CadLinePushRt = mat4 + vec4 (80 B) · vertex loc0 xyz only.
+        // LinePushRt = mat4 + vec4 (80 B) · vertex loc0 xyz only.
         let vert_code = include_bytes!("../../../../../../../shader/line.vert.spv").as_slice();
         let frag_code = include_bytes!("../../../../../../../shader/line.frag.spv").as_slice();
         let shader_modules_extrl =
@@ -796,17 +796,17 @@ impl ShadersCadLineAuto for ShadersTriangleRtPkg {
             )?;
         Ok(ShadersTriangleRtPkg {
             shader_modules_extrl,
-            desc: "shaders_cad_line",
+            desc: "shaders_line",
         })
     }
 }
 
-/// `PipelineCadLineHandled` — trait (pipeline cad line handled).
+/// `PipelineLineHandled` — trait (pipeline cad line handled).
 ///
 /// Handled-assemble catalog trait: construction from imported knobs / peels (FIX-129 Handled rank).
 /// Belongs to: render-pass / graphics pipeline MCG.
 /// Module path context: `gpu/MODUL0_VK_PIPELINE/mem/asm_disasm/vk_pkg/handled`.
-pub trait PipelineCadLineHandled {
+pub trait PipelineLineHandled {
     fn handled_assemble(
         device_extrl: &Device,
         sample_count_op: vk::SampleCountFlags,
@@ -818,8 +818,8 @@ pub trait PipelineCadLineHandled {
     ) -> ModulResult<PipelineTriangleRtPkg>;
 }
 
-/// Catalog — CAD line ribbons as `TRIANGLE_LIST`.
-pub trait PipelineCadLineTrisHandled {
+/// Catalog — line ribbons as `TRIANGLE_LIST`.
+pub trait PipelineLineTrisHandled {
     fn handled_assemble(
         device_extrl: &Device,
         sample_count_op: vk::SampleCountFlags,
@@ -831,7 +831,7 @@ pub trait PipelineCadLineTrisHandled {
     ) -> ModulResult<PipelineTriangleRtPkg>;
 }
 
-impl PipelineCadLineHandled for PipelineTriangleRtPkg {
+impl PipelineLineHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
         device_extrl: &Device,
         sample_count_op: vk::SampleCountFlags,
@@ -921,13 +921,13 @@ impl PipelineCadLineHandled for PipelineTriangleRtPkg {
             Ok(PipelineTriangleRtPkg {
                 pipeline_extrl,
                 pipeline_layout_extrl,
-                desc: "pipeline_cad_line",
+                desc: "pipeline_line",
             })
         }
     }
 }
 
-impl PipelineCadLineTrisHandled for PipelineTriangleRtPkg {
+impl PipelineLineTrisHandled for PipelineTriangleRtPkg {
     fn handled_assemble(
         device_extrl: &Device,
         sample_count_op: vk::SampleCountFlags,
@@ -1017,7 +1017,7 @@ impl PipelineCadLineTrisHandled for PipelineTriangleRtPkg {
             Ok(PipelineTriangleRtPkg {
                 pipeline_extrl,
                 pipeline_layout_extrl,
-                desc: "pipeline_cad_line_tris",
+                desc: "pipeline_line_tris",
             })
         }
     }

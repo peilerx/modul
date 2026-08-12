@@ -45,8 +45,8 @@ impl RendererBfrAuto for RendererBfr {
             shaders_triangle_rt_pkg: None,
             render_pass_triangle_rt_pkg: None,
             pipeline_triangle_rt_pkg: None,
-            shaders_steel_rt_pkg: None,
-            pipeline_steel_rt_pkg: None,
+            shaders_mesh_solid_rt_pkg: None,
+            pipeline_mesh_solid_rt_pkg: None,
             shaders_line_rt_pkg: None,
             pipeline_line_rt_pkg: None,
             pipeline_line_tris_rt_pkg: None,
@@ -78,10 +78,10 @@ impl RendererBfrAuto for RendererBfr {
         Self::slot_ref(&self.pipeline_triangle_rt_pkg, "pipeline_triangle_rt_pkg")
     }
     fn shaders_steel(&self) -> ModulResult<&ShaderModulesDefaultRtPkg> {
-        Self::slot_ref(&self.shaders_steel_rt_pkg, "shaders_steel_rt_pkg")
+        Self::slot_ref(&self.shaders_mesh_solid_rt_pkg, "shaders_mesh_solid_rt_pkg")
     }
     fn pl_steel(&self) -> ModulResult<&GraphicsPipelineDefaultRtPkg> {
-        Self::slot_ref(&self.pipeline_steel_rt_pkg, "pipeline_steel_rt_pkg")
+        Self::slot_ref(&self.pipeline_mesh_solid_rt_pkg, "pipeline_mesh_solid_rt_pkg")
     }
     fn shaders_line(&self) -> ModulResult<&ShaderModulesDefaultRtPkg> {
         Self::slot_ref(&self.shaders_line_rt_pkg, "shaders_line_rt_pkg")

@@ -4,13 +4,13 @@ use ash::vk;
 
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_bfr::auto::renderer_bfr_at_asm::RendererBfrAuto;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_crg::handled::renderer_default_rt_crg_hld_asm::RendererDefaultRtCrgHandled;
-use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::PipelineCadLineHandled;
-use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::PipelineCadLineTrisHandled;
-use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::PipelineCadSteelHandled;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::PipelineLineHandled;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::PipelineLineTrisHandled;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::PipelineMeshSolidHandled;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::PipelineTriangleHandled;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::RenderPassTriangleHandled;
-use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::ShadersCadLineAuto;
-use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::ShadersCadSteelAuto;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::ShadersLineAuto;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::ShadersMeshSolidAuto;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::ShadersTriangleAuto;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::embedded::buffer::RendererBfr;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::prt::render_lane_prt::RenderLanePrt;
@@ -150,15 +150,15 @@ impl RendererTransportable for RendererBfr {
         );
 
         // asm 4/9 · steel shaders
-        bfr.shaders_steel_rt_pkg = Some(
-            <ShadersTriangleRtPkg as ShadersCadSteelAuto>::auto_assemble(device_extrl)?,
+        bfr.shaders_mesh_solid_rt_pkg = Some(
+            <ShadersTriangleRtPkg as ShadersMeshSolidAuto>::auto_assemble(device_extrl)?,
         );
 
         // asm 5/9 · steel pipeline
         let steel = bfr.shaders_steel()?;
         let (steel_vert, steel_frag) = extract_shader_pair(&steel.shader_modules_extrl)?;
-        bfr.pipeline_steel_rt_pkg = Some(
-            <PipelineTriangleRtPkg as PipelineCadSteelHandled>::handled_assemble(
+        bfr.pipeline_mesh_solid_rt_pkg = Some(
+            <PipelineTriangleRtPkg as PipelineMeshSolidHandled>::handled_assemble(
                 device_extrl,
                 pl_stp.sample_count_op,
                 pl_stp.topology_op,
@@ -176,14 +176,14 @@ impl RendererTransportable for RendererBfr {
 
         // asm 6/9 · line shaders
         bfr.shaders_line_rt_pkg = Some(
-            <ShadersTriangleRtPkg as ShadersCadLineAuto>::auto_assemble(device_extrl)?,
+            <ShadersTriangleRtPkg as ShadersLineAuto>::auto_assemble(device_extrl)?,
         );
 
         // asm 7/9 · line pipeline
         let line = bfr.shaders_line()?;
         let (line_vert, line_frag) = extract_shader_pair(&line.shader_modules_extrl)?;
         bfr.pipeline_line_rt_pkg = Some(
-            <PipelineTriangleRtPkg as PipelineCadLineHandled>::handled_assemble(
+            <PipelineTriangleRtPkg as PipelineLineHandled>::handled_assemble(
                 device_extrl,
                 pl_stp.sample_count_op,
                 pl_stp.depth_compare_op,
@@ -196,7 +196,7 @@ impl RendererTransportable for RendererBfr {
 
         // asm 8/9 · line tris pipeline (reuses line shader modules)
         bfr.pipeline_line_tris_rt_pkg = Some(
-            <PipelineTriangleRtPkg as PipelineCadLineTrisHandled>::handled_assemble(
+            <PipelineTriangleRtPkg as PipelineLineTrisHandled>::handled_assemble(
                 device_extrl,
                 pl_stp.sample_count_op,
                 pl_stp.depth_compare_op,

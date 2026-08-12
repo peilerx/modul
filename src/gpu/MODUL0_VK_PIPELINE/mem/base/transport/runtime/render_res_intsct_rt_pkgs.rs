@@ -93,7 +93,7 @@ pub struct SamplerDefaultRtPkg {
 
 // ── Capstone cargo (triangle proof path fields; general names preferred long-term) ─
 
-/// Conv-assembled renderer cargo — triangle etalon + product `cad_steel` solid.
+/// Conv-assembled renderer cargo — triangle etalon + product `mesh_solid` solid.
 pub struct RendererDefaultRtCrg {
     /// Nested package bag field `shaders_triangle_rt_pkg`.
     pub shaders_triangle_rt_pkg: ShaderModulesDefaultRtPkg,
@@ -101,15 +101,15 @@ pub struct RendererDefaultRtCrg {
     pub render_pass_triangle_rt_pkg: RenderPassDefaultRtPkg,
     /// Nested package bag field `pipeline_triangle_rt_pkg`.
     pub pipeline_triangle_rt_pkg: GraphicsPipelineDefaultRtPkg,
-    /// Product CAD solid (pos+nrm VBO · `cad_steel.spv` · push constants).
-    pub shaders_steel_rt_pkg: Option<ShaderModulesDefaultRtPkg>,
-    /// Nested package bag field `pipeline_steel_rt_pkg`.
-    pub pipeline_steel_rt_pkg: Option<GraphicsPipelineDefaultRtPkg>,
-    /// Grid / sketch / outline lines (pos VBO · `cad_line.spv`).
+    /// Product mesh solid (pos+nrm VBO · `mesh_solid.spv` · push constants).
+    pub shaders_mesh_solid_rt_pkg: Option<ShaderModulesDefaultRtPkg>,
+    /// Nested package bag field `pipeline_mesh_solid_rt_pkg`.
+    pub pipeline_mesh_solid_rt_pkg: Option<GraphicsPipelineDefaultRtPkg>,
+    /// Optional line layers (pos VBO · `line.spv`).
     pub shaders_line_rt_pkg: Option<ShaderModulesDefaultRtPkg>,
     /// Nested package bag field `pipeline_line_rt_pkg`.
     pub pipeline_line_rt_pkg: Option<GraphicsPipelineDefaultRtPkg>,
-    /// Thick outline ribbons (`TRIANGLE_LIST` · same `cad_line` shaders).
+    /// Thick outline ribbons (`TRIANGLE_LIST` · same `line` shaders).
     pub pipeline_line_tris_rt_pkg: Option<GraphicsPipelineDefaultRtPkg>,
     /// Optional descriptor surface (empty until product wires it).
     pub descriptor_set_layout_default_rt_pkg: Option<DescriptorSetLayoutDefaultRtPkg>,

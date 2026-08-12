@@ -1,4 +1,4 @@
-//! Minimal SoA mesh bag for GPU upload (no CAD MCG dependency).
+//! Minimal SoA mesh bag for GPU upload (standalone mesh bag).
 
 /// Positions + triangle indices (host) · optional per-instance world offsets.
 pub struct MeshSoaRtBfr {
