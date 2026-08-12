@@ -11,9 +11,7 @@ use modul::gpu::MODUL0_VK_DISPLAY::mem::base::transport::prt::display_present_pr
 use modul::gpu::MODUL0_VK_FRAME::conv::port::{FrameBfr, FrameBfrAuto, FrameTransportable};
 use modul::gpu::MODUL0_VK_FRAME::mem::base::transport::prt::frame_fif_prt::FrameFifPrt;
 use modul::gpu::MODUL0_VK_MESH::conv::port::{MeshGpuBfr, MeshGpuBfrAuto, MeshGpuTransportable};
-use modul::gpu::MODUL0_VK_MESH::mem::asm_disasm::vk_pkg::auto::line_gpu_res_intsct_at_asm::LineGpuDefaultAuto;
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::prt::mesh_draw_prt::MeshDrawPrt;
-use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::line_gpu_default_rt_pkg::LineGpuDefaultRtPkg;
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshPushRt;
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::MeshSoaRtBfr;
 use modul::gpu::MODUL0_VK_PIPELINE::conv::port::{
@@ -165,10 +163,6 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         .take()
         .ok_or_else(|| "cubes: mesh_gpu missing".to_string())?;
 
-    // Empty line bag — grid peel reserved for custom etalons (LOD overlays, etc.)
-    let grid_line_rt =
-        LineGpuDefaultRtPkg::auto_assemble(dev, inst, phys, &[], [0.35, 0.37, 0.40, 1.0])?;
-
     let aspect = w as f32 / h as f32;
     let mesh_push_rt = MeshPushRt::from_orbit(
         mesh_gpu_rt.center_rt(),
@@ -195,7 +189,6 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         frame_rt,
         display_rt,
         mesh_gpu_rt,
-        grid_line_rt,
         mesh_push_rt,
         orbit_yaw: 0.6,
         orbit_pitch: 0.4,

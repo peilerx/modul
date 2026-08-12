@@ -1,10 +1,9 @@
-//! `TandemBfr` — hub after PTP boot (direct cubes · no Viewsor).
+//! `TandemBfr` — hub after PTP boot (direct cubes solid only).
 
 use std::time::Instant;
 
 use modul::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::display_res_intsct_rt_pkgs::DisplayDefaultRtCrg;
 use modul::gpu::MODUL0_VK_FRAME::mem::base::transport::runtime::frame_res_intsct_rt_pkgs::FrameDefaultRtCrg;
-use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::line_gpu_default_rt_pkg::LineGpuDefaultRtPkg;
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::{
     MeshPushRt, MeshGpuDefaultRtPkg,
 };
@@ -12,7 +11,7 @@ use modul::gpu::MODUL0_VK_PIPELINE::mem::base::transport::runtime::render_res_in
 use modul::gpu::MODUL0_VK_SWAPCHAIN::conv::port::SwapchainBfr;
 use modul::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::present_res_intsct_rt_pkgs::PresentationDefaultRtCrg;
 
-/// Product hub after `assemble_tandem_session` (direct draw path only).
+/// Product hub after `assemble_tandem_session` (instanced solid cubes only).
 pub struct TandemBfr {
     pub swapchain_bfr: SwapchainBfr,
     pub renderer_rt: RendererDefaultRtCrg,
@@ -20,7 +19,6 @@ pub struct TandemBfr {
     pub frame_rt: FrameDefaultRtCrg,
     pub display_rt: DisplayDefaultRtCrg,
     pub mesh_gpu_rt: MeshGpuDefaultRtPkg,
-    pub grid_line_rt: LineGpuDefaultRtPkg,
     pub mesh_push_rt: MeshPushRt,
     pub orbit_yaw: f32,
     pub orbit_pitch: f32,

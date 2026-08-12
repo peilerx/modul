@@ -61,7 +61,7 @@ pub fn run_tandem_pulse(hub: &mut TandemBfr) -> Result<(), String> {
         begin_frame(device, &hub.presentation_rt, loader, &hub.frame_rt)?;
 
     let render_policy = export_asmed_frame_render(&hub.frame_rt);
-    // Peels: mesh + steel push + optional line layers (grid reserved; sketch/outline free).
+    // Peels: solid mesh + push only (no line layers in this etalon).
     record_frame_with_serial(
         device,
         &hub.presentation_rt,
@@ -71,7 +71,7 @@ pub fn run_tandem_pulse(hub: &mut TandemBfr) -> Result<(), String> {
         true,
         Some(&hub.mesh_gpu_rt),
         Some(&hub.mesh_push_rt),
-        Some(&hub.grid_line_rt),
+        None,
         None,
         None,
         image_index,
