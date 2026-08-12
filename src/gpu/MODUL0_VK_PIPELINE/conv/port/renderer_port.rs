@@ -92,8 +92,8 @@ impl RendererTransportable for RendererBfr {
             extent_height_stp: 0,
             desc: "",
         };
-        // Intent → setup slots (PortMatch writes *Stp · ¬ return bag)
-        port_match_render_lane(
+        // Intent → setup slots (import *Prt → *Stp · write-only · ¬ return bag)
+        import_render_lane_for_asm(
             render_lane_prt,
             extent_width_stp,
             extent_height_stp,
@@ -219,10 +219,15 @@ impl RendererTransportable for RendererBfr {
     }
 }
 
-// ── PortMatch (in-port write only · swapchain calque · no import/ folder) ──
+// ── Intent import (PortMatch *Prt → *Stp · write-only · lives in port, not import/) ──
+//
+// Not `import_for_asmN`: that name is reserved for Transportable factory-line
+// (atom assemblies + pack). This is the **picture → setup bag** step only:
+// one closed gestalt write, zero resource return (FIX-128).
 
-/// PortMatch `RenderLanePrt` → write *Stp bags into slots (never returns a bag).
-const fn port_match_render_lane(
+/// `import_render_lane_for_asm` — PortMatch `RenderLanePrt` → write *Stp bags.
+/// Never returns a bag/resource · dests are `&mut` slots filled in place.
+const fn import_render_lane_for_asm(
     render_lane_prt: RenderLanePrt,
     extent_width_stp: u32,
     extent_height_stp: u32,
