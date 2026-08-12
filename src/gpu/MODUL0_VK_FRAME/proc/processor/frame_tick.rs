@@ -16,6 +16,9 @@ use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::{
 use crate::{map_vk, ModulResult};
 
 /// Resolve current FIF slot from Internal sync bag.
+///
+/// `render_finished` is filled with null here; call
+/// [`bind_present_semaphore_for_image`] after acquire (index by swapchain image).
 pub fn current_slot(sync: &FrameSyncDefaultRtPkg) -> ModulResult<FrameSlotDefaultRtPkg> {
     let i = sync.current_frame_rt;
     if i >= sync.frames_in_flight_rt {
@@ -30,10 +33,8 @@ pub fn current_slot(sync: &FrameSyncDefaultRtPkg) -> ModulResult<FrameSlotDefaul
             .image_available_semaphores_extrl
             .get(i)
             .ok_or("frame_tick: missing image_available semaphore")?,
-        render_finished_semaphore_extrl: *sync
-            .render_finished_semaphores_extrl
-            .get(i)
-            .ok_or("frame_tick: missing render_finished semaphore")?,
+        // Bound after acquire — see bind_present_semaphore_for_image.
+        render_finished_semaphore_extrl: vk::Semaphore::null(),
         in_flight_fence_extrl: *sync
             .in_flight_fences_extrl
             .get(i)
@@ -44,6 +45,25 @@ pub fn current_slot(sync: &FrameSyncDefaultRtPkg) -> ModulResult<FrameSlotDefaul
             .ok_or("frame_tick: missing command buffer")?,
         desc: "frame_slot_current",
     })
+}
+
+/// Present-wait / submit-signal semaphore for this swapchain image (not FIF slot).
+pub fn bind_present_semaphore_for_image(
+    sync: &FrameSyncDefaultRtPkg,
+    slot: &mut FrameSlotDefaultRtPkg,
+    image_index: u32,
+) -> ModulResult<()> {
+    let i = image_index as usize;
+    slot.render_finished_semaphore_extrl = *sync
+        .render_finished_semaphores_extrl
+        .get(i)
+        .ok_or_else(|| {
+            format!(
+                "frame_tick: image_index {image_index} >= present semaphore pool {}",
+                sync.render_finished_semaphores_extrl.len()
+            )
+        })?;
+    Ok(())
 }
 
 /// `wait_slot_fence` — function (wait slot fence).
@@ -158,15 +178,17 @@ use crate::gpu::MODUL0_VK_FRAME::mem::base::transport::runtime::frame_res_intsct
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::PresentationDefaultRtCrg;
 
 /// Wait + acquire for current FIF slot. Returns (slot, `image_index`).
+/// Slot’s `render_finished` is bound to the acquired swapchain image.
 pub fn begin_frame(
     device: &DeviceDefaultRtPkg,
     presentation: &PresentationDefaultRtCrg,
     loader: &SwapchainLoaderDefaultRtPkg,
     frame_rt: &FrameDefaultRtCrg,
 ) -> ModulResult<(FrameSlotDefaultRtPkg, u32)> {
-    let slot = current_slot(&frame_rt.frame_sync_default_rt_pkg)?;
+    let mut slot = current_slot(&frame_rt.frame_sync_default_rt_pkg)?;
     wait_slot_fence(device, &slot)?;
     let image_index = acquire_next_image(loader, &presentation.swapchain_default_rt_pkg, &slot)?;
+    bind_present_semaphore_for_image(&frame_rt.frame_sync_default_rt_pkg, &mut slot, image_index)?;
     Ok((slot, image_index))
 }
 
@@ -179,6 +201,9 @@ pub fn end_frame(
     slot: &FrameSlotDefaultRtPkg,
     image_index: u32,
 ) -> ModulResult<()> {
+    if slot.render_finished_semaphore_extrl == vk::Semaphore::null() {
+        return Err("frame_tick end_frame: present semaphore not bound (begin_frame?)".into());
+    }
     submit_slot(device, slot)?;
     present_image(
         device,

@@ -75,7 +75,7 @@ require_ah_method_prefix = true
 [package.metadata.modlin.hw_topology]
 cpu_dirs = ["cpu"]
 gpu_dirs = ["gpu"]
-tandem_dirs = []
+tandem_dirs = ["tandem"]
 common_dirs = ["common"]
 base_setup_dir = "setup"
 base_runtime_dir = "runtime"
@@ -116,7 +116,7 @@ public_only = true
 # --- Crate-wide AST (A3/A7, B25/B27, B33, FIX-082) ---
 
 [package.metadata.modlin.preset.mcg-global]
-paths = ["src/gpu/**", "src/cpu/**", "src/common/**", "src/lib.rs"]
+paths = ["src/gpu/**", "src/cpu/**", "src/tandem/**", "src/common/**", "src/lib.rs"]
 rules = [
     "mcg-static",
     "lib-only",
@@ -253,7 +253,7 @@ violation = "cpu proc leaves belong under processor|display|refiner|reactor (P.0
 fix = "use src/cpu/MODUL0_*/proc/{processor,display,refiner,reactor}/"
 
 [package.metadata.modlin.preset.mcg-fs-sparse]
-paths = ["src/gpu/**", "src/cpu/**", "src/common/**"]
+paths = ["src/gpu/**", "src/cpu/**", "src/tandem/**", "src/common/**"]
 rules = ["fs-sparse-dir", "fs-empty-dir"]
 
 [package.metadata.modlin.preset.mcg-fs-vague]

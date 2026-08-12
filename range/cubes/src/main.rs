@@ -11,14 +11,28 @@
     reason = "MODUL0_* CAPS segments per Factory Mind"
 )]
 
-mod shell;
 mod tandem;
 
 fn main() {
-    // Always print something so a double-clicked terminal / Telegram tester sees life.
-    eprintln!("modul/range/cubes · ship · 1_000_000 cubes default (CUBES_COUNT overrides)");
-    eprintln!("Controls: LMB orbit · wheel zoom · Esc quit · FPS in window title");
-    shell::run();
-    // If run returned without a window path, leave a moment for logs on Windows/Telegram.
-    eprintln!("cubes: exit");
+    use tandem::proc::session_log;
+
+    let dir = session_log::init();
+    session_log::log("modul/range/cubes · ship · 1_000_000 cubes default (CUBES_COUNT overrides)");
+    session_log::log("Controls: LMB orbit · wheel zoom · Esc quit · FPS in window title");
+    session_log::log(&format!(
+        "session log: {}",
+        session_log::session_path().display()
+    ));
+    session_log::log(&format!(
+        "vk validation log: {}",
+        session_log::vk_validation_path().display()
+    ));
+    session_log::log(&format!("working folder for logs: {}", dir.display()));
+
+    modul::gpu::MODUL0_VK_SWAPCHAIN::proc::processor::debug_messenger::set_vk_validation_log_path(
+        &session_log::vk_validation_path(),
+    );
+
+    tandem::run_shell();
+    session_log::log("cubes: exit");
 }

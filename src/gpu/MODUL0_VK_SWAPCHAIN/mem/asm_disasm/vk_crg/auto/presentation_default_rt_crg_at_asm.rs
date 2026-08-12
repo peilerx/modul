@@ -1,5 +1,7 @@
 //! `vk_crg` — pack presentation lane cargo (no child creates).
 
+use ash::vk;
+
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::present_res_intsct_rt_pkgs::DepthImagesDefaultRtPkg;
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::present_res_intsct_rt_pkgs::FramebufferDefaultRtPkg;
 use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::base::transport::runtime::present_res_intsct_rt_pkgs::MsaaColorDefaultRtPkg;
@@ -14,6 +16,7 @@ pub trait PresentationDefaultRtCrgAuto {
         swapchain_default_rt_pkg: SwapchainDefaultRtPkg,
         swapchain_image_views_default_rt_pkg: SwapchainImageViewsDefaultRtPkg,
         sample_count_default_rt_pkg: SampleCountDefaultRtPkg,
+        depth_format_op: vk::Format,
         depth_images_default_rt_pkg: DepthImagesDefaultRtPkg,
         msaa_color_default_rt_pkg: MsaaColorDefaultRtPkg,
         framebuffer_default_rt_pkg: FramebufferDefaultRtPkg,
@@ -25,6 +28,7 @@ impl PresentationDefaultRtCrgAuto for PresentationDefaultRtCrg {
         swapchain_default_rt_pkg: SwapchainDefaultRtPkg,
         swapchain_image_views_default_rt_pkg: SwapchainImageViewsDefaultRtPkg,
         sample_count_default_rt_pkg: SampleCountDefaultRtPkg,
+        depth_format_op: vk::Format,
         depth_images_default_rt_pkg: DepthImagesDefaultRtPkg,
         msaa_color_default_rt_pkg: MsaaColorDefaultRtPkg,
         framebuffer_default_rt_pkg: FramebufferDefaultRtPkg,
@@ -33,6 +37,7 @@ impl PresentationDefaultRtCrgAuto for PresentationDefaultRtCrg {
             swapchain_default_rt_pkg,
             swapchain_image_views_default_rt_pkg,
             sample_count_default_rt_pkg,
+            depth_format_op,
             depth_images_default_rt_pkg,
             msaa_color_default_rt_pkg,
             framebuffer_default_rt_pkg,

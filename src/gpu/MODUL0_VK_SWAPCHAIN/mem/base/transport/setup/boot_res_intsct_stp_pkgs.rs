@@ -11,6 +11,22 @@ pub struct SurfaceWindowStpPkg {
     pub desc: &'static str,
 }
 
+impl SurfaceWindowStpPkg {
+    /// Build setup bag from raw window handles (app peels winit / other → raw).
+    #[must_use]
+    pub const fn from_raw(
+        display_handle_extrl: raw_window_handle::RawDisplayHandle,
+        window_handle_extrl: raw_window_handle::RawWindowHandle,
+        desc: &'static str,
+    ) -> Self {
+        Self {
+            display_handle_extrl,
+            window_handle_extrl,
+            desc,
+        }
+    }
+}
+
 /// Swapchain assembly setup knobs only (FIX-086/091/097).
 pub struct SwapchainAssemblyDefaultStpPkg {
     /// Setup phase field `validation_layers_stp`.

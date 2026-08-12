@@ -16,6 +16,11 @@ pub trait PresentationDefaultRtCrgHandled {
 
 impl PresentationDefaultRtCrgHandled for PresentationDefaultRtCrg {
     fn handled_assemble(bfr: &mut PresentationBfr) -> ModulResult<PresentationDefaultRtCrg> {
+        let depth_format_op = bfr
+            .presentation_default_stp_pkg
+            .as_ref()
+            .map(|s| s.depth_format_op)
+            .ok_or_else(|| "presentation: depth_format missing on stp before pack".to_string())?;
         Ok(Self {
             swapchain_default_rt_pkg: <PresentationBfr as PresentationBfrAuto>::slot_take(
                 &mut bfr.swapchain_default_rt_pkg,
@@ -29,6 +34,7 @@ impl PresentationDefaultRtCrgHandled for PresentationDefaultRtCrg {
                 &mut bfr.sample_count_default_rt_pkg,
                 "sample_count_default_rt_pkg",
             )?,
+            depth_format_op,
             depth_images_default_rt_pkg: <PresentationBfr as PresentationBfrAuto>::slot_take(
                 &mut bfr.depth_images_default_rt_pkg,
                 "depth_images_default_rt_pkg",

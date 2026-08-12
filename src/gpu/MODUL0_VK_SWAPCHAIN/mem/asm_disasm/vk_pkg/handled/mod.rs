@@ -14,6 +14,8 @@ pub mod instance_hld_asm;
 ///
 /// Part of `gpu/MODUL0_VK_SWAPCHAIN/mem/asm_disasm/vk_pkg/handled` under the mem/conv/proc MCG canon.
 pub mod msaa_color_hld_asm;
+/// Presentation product disassemble + extent recreate (Handled rank).
+pub mod presentation_hld_asm;
 /// Submodule `sample_count_hld_asm`.
 /// Part of `gpu/MODUL0_VK_SWAPCHAIN/mem/asm_disasm/vk_pkg/handled` under the mem/conv/proc MCG canon.
 pub mod sample_count_hld_asm;

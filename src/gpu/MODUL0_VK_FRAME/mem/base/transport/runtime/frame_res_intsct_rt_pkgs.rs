@@ -5,7 +5,8 @@
 pub struct FrameSyncDefaultRtPkg {
     /// External / raw Vulkan handle or host pointer field `image_available_semaphores_extrl` (`image_available_semaphores` peel).
     pub image_available_semaphores_extrl: Vec<ash::vk::Semaphore>,
-    /// External / raw Vulkan handle or host pointer field `render_finished_semaphores_extrl` (`render_finished_semaphores` peel).
+    /// Present/submit signal semaphores **per swapchain image** (not per FIF slot).
+    /// Indexed by `image_index` from acquire — see Vulkan swapchain semaphore reuse guide.
     pub render_finished_semaphores_extrl: Vec<ash::vk::Semaphore>,
     /// External / raw Vulkan handle or host pointer field `in_flight_fences_extrl` (`in_flight_fences` peel).
     pub in_flight_fences_extrl: Vec<ash::vk::Fence>,

@@ -7,7 +7,9 @@ use crate::gpu::MODUL0_VK_FRAME::mem::base::transport::runtime::frame_res_intsct
 use crate::gpu::MODUL0_VK_FRAME::mem::asm_disasm::vk::handled::sync_res_intsct_hld_asm::{
     CommandBufferAllocateHandled, FenceSignaledAuto, SemaphoreAuto,
 };
-use crate::gpu::MODUL0_VK_FRAME::proc::processor::frame_sync::update_frame_sync_semaphores;
+use crate::gpu::MODUL0_VK_FRAME::proc::processor::frame_sync::{
+    update_frame_sync_semaphores, PRESENT_SIGNAL_SEMAPHORE_POOL,
+};
 use crate::ModulResult;
 
 /// Catalog — pack FIF sync bag (hottest frame session API).
@@ -29,6 +31,7 @@ impl FrameSyncDefaultHandled for FrameSyncDefaultRtPkg {
         let (image_available_semaphores_extrl, render_finished_semaphores_extrl, in_flight_fences_extrl) =
             update_frame_sync_semaphores(
                 frames_in_flight_count_stp,
+                PRESENT_SIGNAL_SEMAPHORE_POOL,
                 || vk::Semaphore::auto_assemble(device_extrl),
                 || vk::Fence::auto_assemble(device_extrl),
             )?;

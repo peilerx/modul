@@ -69,7 +69,8 @@
 //!
 //! - [`canon`] — **MCG + abbreviations (PTP, phases, letters)**
 //! - `common` — results, protocol re-exports, SPIR-V, tracing
-//! - `gpu` — live Vulkan MCGs + session stub
+//! - `gpu` — live Vulkan MCGs
+//! - `tandem` — product hubs (`MODUL0_TANDEM`) composing GPU MCGs
 //! - `cpu` — empty lane reserved for future CAD
 
 #![allow(
@@ -89,6 +90,8 @@ pub mod common;
 pub mod cpu;
 /// GPU hardware lane — all live `MODUL0_VK_*` MCGs.
 pub mod gpu;
+/// Product session hubs (compose GPU MCGs; dual Prt + Stp knobs).
+pub mod tandem;
 
 pub use common::{
     assemble_shader_spv, find_vk_memory_type, from_err, map_vk, trace_deep, trace_emit,

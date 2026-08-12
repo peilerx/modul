@@ -73,6 +73,8 @@ pub struct PresentationDefaultRtCrg {
     pub swapchain_image_views_default_rt_pkg: SwapchainImageViewsDefaultRtPkg,
     /// Nested package bag field `sample_count_default_rt_pkg`.
     pub sample_count_default_rt_pkg: SampleCountDefaultRtPkg,
+    /// Depth format used at assemble (recreate keeps the same pick).
+    pub depth_format_op: ash::vk::Format,
     /// Nested package bag field `depth_images_default_rt_pkg`.
     pub depth_images_default_rt_pkg: DepthImagesDefaultRtPkg,
     /// Nested package bag field `msaa_color_default_rt_pkg`.
