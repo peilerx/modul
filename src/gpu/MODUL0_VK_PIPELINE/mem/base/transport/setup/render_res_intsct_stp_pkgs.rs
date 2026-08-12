@@ -27,6 +27,7 @@ pub struct RenderPassDefaultStpPkg {
 }
 
 /// General graphics pipeline recipe knobs.
+#[derive(Clone, Copy)]
 pub struct GraphicsPipelineDefaultStpPkg {
     /// Operator / knob field `sample_count_op`.
     pub sample_count_op: vk::SampleCountFlags,

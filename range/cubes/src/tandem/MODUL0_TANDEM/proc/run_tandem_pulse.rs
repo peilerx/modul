@@ -1,4 +1,8 @@
 //! `run_tandem_pulse` — one takt · **direct** only (camera → push → record → present).
+//!
+//! Frame path stays explicit: `begin_frame` → `record_frame_with_serial` → `end_frame`.
+//! CPU state (orbit, zoom, pulse clock) mutates push constants; GPU peels stay referenced,
+//! not hidden behind a single `draw()` facade — so LOD / multi-pass experiments can branch here.
 
 use std::time::Instant;
 
@@ -13,7 +17,6 @@ use crate::tandem::MODUL0_TANDEM::mem::tandem_bfr::TandemBfr;
 /// Max radial separation when fully “open” (shader `look3.y`).
 const SEP_MAX: f32 = 1.6;
 /// Full open/close cycle length in seconds (shader `look3.w`).
-/// Was accidentally 0 → shader clamped to 0.5s (too fast). Original etalon used ~7s.
 const PULSE_PERIOD_SECS: f32 = 12.0;
 
 /// One discrete unit of product pulse (direct cubes).
@@ -58,6 +61,7 @@ pub fn run_tandem_pulse(hub: &mut TandemBfr) -> Result<(), String> {
         begin_frame(device, &hub.presentation_rt, loader, &hub.frame_rt)?;
 
     let render_policy = export_asmed_frame_render(&hub.frame_rt);
+    // Peels: mesh + steel push + optional line layers (grid reserved; sketch/outline free).
     record_frame_with_serial(
         device,
         &hub.presentation_rt,
@@ -90,7 +94,7 @@ pub fn run_tandem_pulse(hub: &mut TandemBfr) -> Result<(), String> {
         .max(1e-6);
     hub.last_frame_end = now;
     hub.fps_instant = 1.0 / dt;
-    hub.fps_frames += 1;
+    hub.fps_frames = hub.fps_frames.saturating_add(1);
     let win = now
         .duration_since(hub.fps_window_start)
         .as_secs_f32();

@@ -1,4 +1,9 @@
-//! `free_tandem` — reverse product lifetime.
+//! `free_tandem` — reverse product lifetime for host-owned GPU peels.
+//!
+//! Order: wait idle → mesh/line peels first (buffers on device).
+//! Swapchain/instance teardown still rides process exit for this etalon; a full
+//! presentation/frame/display disassemble line can be added when those Handled
+//! ranks expose a symmetric `*_disassemble` on the same devices.
 
 use modul::gpu::MODUL0_VK_MESH::mem::asm_disasm::vk_pkg::auto::line_gpu_res_intsct_at_asm::LineGpuDefaultAuto;
 use modul::gpu::MODUL0_VK_MESH::mem::asm_disasm::vk_pkg::handled::mesh_gpu_hld_asm::MeshGpuDefaultHandled;
@@ -13,6 +18,7 @@ pub fn free_tandem(hub: &mut TandemBfr) {
         return;
     };
     let dev = &boot.device_default_rt_pkg.device_extrl;
+    // Drain GPU before tearing host-visible mesh / line allocations.
     unsafe {
         let _ = dev.device_wait_idle();
     }

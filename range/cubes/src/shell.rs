@@ -24,12 +24,17 @@ struct App {
 }
 
 pub fn run() {
-    let event_loop = EventLoop::new().expect("event loop");
+    let Ok(event_loop) = EventLoop::new() else {
+        eprintln!("cubes: failed to create event loop");
+        return;
+    };
     let mut app = App {
         window: None,
         hub: None,
     };
-    event_loop.run_app(&mut app).expect("run");
+    if let Err(e) = event_loop.run_app(&mut app) {
+        eprintln!("cubes: event loop: {e}");
+    }
 }
 
 fn shutdown(app: &mut App, event_loop: &ActiveEventLoop) {
@@ -37,6 +42,23 @@ fn shutdown(app: &mut App, event_loop: &ActiveEventLoop) {
         free_tandem(&mut hub);
     }
     event_loop.exit();
+}
+
+/// Rebuild Vulkan session after resize (swapchain extent is fixed at assemble time).
+fn rebuild_session(app: &mut App) {
+    let Some(window) = app.window.clone() else {
+        return;
+    };
+    if let Some(mut hub) = app.hub.take() {
+        free_tandem(&mut hub);
+    }
+    match assemble_tandem_session(&window) {
+        Ok(hub) => {
+            app.hub = Some(hub);
+            window.request_redraw();
+        }
+        Err(e) => eprintln!("cubes: rebuild after resize failed: {e}"),
+    }
 }
 
 impl ApplicationHandler for App {
@@ -49,7 +71,14 @@ impl ApplicationHandler for App {
             .with_title(TITLE)
             .with_inner_size(target)
             .with_resizable(true);
-        let window = Arc::new(event_loop.create_window(attrs).expect("window"));
+        let window = match event_loop.create_window(attrs) {
+            Ok(w) => Arc::new(w),
+            Err(e) => {
+                eprintln!("cubes: create_window: {e}");
+                event_loop.exit();
+                return;
+            }
+        };
         let _ = window.request_inner_size(target);
         match assemble_tandem_session(&window) {
             Ok(hub) => {
@@ -74,6 +103,12 @@ impl ApplicationHandler for App {
                     && matches!(event.physical_key, PhysicalKey::Code(KeyCode::Escape)) =>
             {
                 shutdown(self, event_loop);
+            }
+            WindowEvent::Resized(size) => {
+                // Ignore minimize / zero-size; full session rebuild keeps Bfr/PTP path honest.
+                if size.width > 0 && size.height > 0 && self.hub.is_some() {
+                    rebuild_session(self);
+                }
             }
             WindowEvent::RedrawRequested => {
                 if let Some(hub) = self.hub.as_mut() {
@@ -118,8 +153,10 @@ impl ApplicationHandler for App {
                 if let Some(hub) = self.hub.as_mut() {
                     if hub.dragging {
                         if let Some((lx, ly)) = hub.last_cursor {
-                            hub.orbit_yaw = ((position.x - lx) as f32).mul_add(0.005, hub.orbit_yaw);
-                            hub.orbit_pitch = ((position.y - ly) as f32).mul_add(0.005, hub.orbit_pitch)
+                            hub.orbit_yaw =
+                                ((position.x - lx) as f32).mul_add(0.005, hub.orbit_yaw);
+                            hub.orbit_pitch = ((position.y - ly) as f32)
+                                .mul_add(0.005, hub.orbit_pitch)
                                 .clamp(-1.4, 1.4);
                         }
                         hub.last_cursor = Some((position.x, position.y));

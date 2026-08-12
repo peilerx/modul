@@ -27,6 +27,17 @@ use crate::ModulResult;
 /// Render lane factory-line · **9** = Intent→stp + 7 atom + pack.
 pub const IMPORT_FOR_ASM_FACTORY_LINE_N: u8 = 9;
 
+/// Vert/frag modules from an Auto shader pack (exactly two stages).
+fn extract_shader_pair(modules: &[vk::ShaderModule]) -> ModulResult<(vk::ShaderModule, vk::ShaderModule)> {
+    match modules {
+        [vert, frag] => Ok((*vert, *frag)),
+        _ => Err(format!(
+            "renderer: expected 2 shader modules (vert+frag), got {}",
+            modules.len()
+        )),
+    }
+}
+
 /// `RendererTransportable` — trait (renderer transportable).
 ///
 /// Transportable surface: import/export peels for PTP slot-factory-line wiring.
@@ -97,7 +108,7 @@ impl RendererTransportable for RendererBfr {
             <ShadersTriangleRtPkg as ShadersTriangleAuto>::auto_assemble(device_extrl)?,
         );
 
-        // asm 2/9 · render pass
+        // asm 2/9 · render pass (stp intents are fixed for this import; cache peels once)
         let rp_stp = bfr.rp_stp()?;
         bfr.render_pass_triangle_rt_pkg = Some(
             <RenderPassTriangleRtPkg as RenderPassTriangleHandled>::handled_assemble(
@@ -113,14 +124,13 @@ impl RendererTransportable for RendererBfr {
             )?,
         );
 
+        // Shared pipeline / pass peels for asm 3–8 (avoid repeated bag lookups)
+        let pl_stp = *bfr.pl_stp()?;
+        let rp_rt_pass = bfr.rp_rt()?.render_pass_extrl;
+
         // asm 3/9 · triangle pipeline
-        let pl_stp = bfr.pl_stp()?;
         let shaders = bfr.shaders_tri()?;
-        let rp_rt = bfr.rp_rt()?;
-        #[expect(clippy::indexing_slicing)]
-        let vert = shaders.shader_modules_extrl[0];
-        #[expect(clippy::indexing_slicing)]
-        let frag = shaders.shader_modules_extrl[1];
+        let (vert, frag) = extract_shader_pair(&shaders.shader_modules_extrl)?;
         bfr.pipeline_triangle_rt_pkg = Some(
             <PipelineTriangleRtPkg as PipelineTriangleHandled>::handled_assemble(
                 device_extrl,
@@ -133,7 +143,7 @@ impl RendererTransportable for RendererBfr {
                 pl_stp.color_write_mask_op,
                 pl_stp.extent_width_stp,
                 pl_stp.extent_height_stp,
-                rp_rt.render_pass_extrl,
+                rp_rt_pass,
                 vert,
                 frag,
             )?,
@@ -146,12 +156,7 @@ impl RendererTransportable for RendererBfr {
 
         // asm 5/9 · steel pipeline
         let steel = bfr.shaders_steel()?;
-        #[expect(clippy::indexing_slicing)]
-        let steel_vert = steel.shader_modules_extrl[0];
-        #[expect(clippy::indexing_slicing)]
-        let steel_frag = steel.shader_modules_extrl[1];
-        let pl_stp = bfr.pl_stp()?;
-        let rp_rt = bfr.rp_rt()?;
+        let (steel_vert, steel_frag) = extract_shader_pair(&steel.shader_modules_extrl)?;
         bfr.pipeline_steel_rt_pkg = Some(
             <PipelineTriangleRtPkg as PipelineCadSteelHandled>::handled_assemble(
                 device_extrl,
@@ -163,7 +168,7 @@ impl RendererTransportable for RendererBfr {
                 pl_stp.front_face_op,
                 pl_stp.depth_compare_op,
                 pl_stp.color_write_mask_op,
-                rp_rt.render_pass_extrl,
+                rp_rt_pass,
                 steel_vert,
                 steel_frag,
             )?,
@@ -176,39 +181,27 @@ impl RendererTransportable for RendererBfr {
 
         // asm 7/9 · line pipeline
         let line = bfr.shaders_line()?;
-        #[expect(clippy::indexing_slicing)]
-        let line_vert = line.shader_modules_extrl[0];
-        #[expect(clippy::indexing_slicing)]
-        let line_frag = line.shader_modules_extrl[1];
-        let pl_stp = bfr.pl_stp()?;
-        let rp_rt = bfr.rp_rt()?;
+        let (line_vert, line_frag) = extract_shader_pair(&line.shader_modules_extrl)?;
         bfr.pipeline_line_rt_pkg = Some(
             <PipelineTriangleRtPkg as PipelineCadLineHandled>::handled_assemble(
                 device_extrl,
                 pl_stp.sample_count_op,
                 pl_stp.depth_compare_op,
                 pl_stp.color_write_mask_op,
-                rp_rt.render_pass_extrl,
+                rp_rt_pass,
                 line_vert,
                 line_frag,
             )?,
         );
 
-        // asm 8/9 · line tris pipeline
-        let line = bfr.shaders_line()?;
-        #[expect(clippy::indexing_slicing)]
-        let line_vert = line.shader_modules_extrl[0];
-        #[expect(clippy::indexing_slicing)]
-        let line_frag = line.shader_modules_extrl[1];
-        let pl_stp = bfr.pl_stp()?;
-        let rp_rt = bfr.rp_rt()?;
+        // asm 8/9 · line tris pipeline (reuses line shader modules)
         bfr.pipeline_line_tris_rt_pkg = Some(
             <PipelineTriangleRtPkg as PipelineCadLineTrisHandled>::handled_assemble(
                 device_extrl,
                 pl_stp.sample_count_op,
                 pl_stp.depth_compare_op,
                 pl_stp.color_write_mask_op,
-                rp_rt.render_pass_extrl,
+                rp_rt_pass,
                 line_vert,
                 line_frag,
             )?,
