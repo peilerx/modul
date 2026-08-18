@@ -178,7 +178,7 @@ paths = ["src/**/MODUL0_*/mem/base/**"]
 rules = ["fs-forbid-dir-name"]
 forbid_dir_names = ["static", "dynamic"]
 dirs_only = true
-violation = "gen/base lifecycle dirs must be setup/ or runtime/ only (B21)"
+violation = "mem/base lifecycle dirs must be setup/ or runtime/ only (B21)"
 fix = "rename to setup/ or runtime/; bags live there (FIX-043/068)"
 
 # PROTOCOL v5.1 · FIX-120/129/130 — asm_disasm ranks: auto|handled under vk|vk_pkg|vk_crg
@@ -220,16 +220,15 @@ forbid_segments = ["intent"]
 violation = "intent/ folders forbidden — *Prt under transport/prt; imports under port/import (FIX-130)"
 fix = "transport/intent→transport/prt · port/intent→port/import|export"
 
-# Port = only import/ + export/ free functions · ¬ res · ¬ Exportable/Importable theater
+# Canon: conv/port/{subject}_port.rs (+ optional import/ · export/). ¬ res · ¬ pins.
 [package.metadata.modlin.preset.mcg-fs-port-only]
 paths = ["src/**/MODUL0_*/conv/port/**"]
 exclude_paths = ["**/mod.rs"]
-rules = ["fs-require-segment", "fs-forbid-segment"]
-require_any_segment = ["import", "export"]
+rules = ["fs-forbid-segment"]
 forbid_segments = ["res", "intent", "in", "out"]
 files_only = true
-violation = "port leaves only under import/ or export/ free functions (FIX-128/130 · ¬ res · ¬ pins-in-port)"
-fix = "delete port/res and *Exportable/*Importable; peels = free export_*; writes = free import_*_for_*"
+violation = "port forbids res/intent/in/out theater (FIX-128/130). Canon is {subject}_port.rs"
+fix = "keep conv/port/{subject}_port.rs; optional import_/export_ helpers; delete port/res"
 
 [package.metadata.modlin.preset.mcg-fs-proc-flat]
 paths = ["src/**/MODUL0_*/proc/**"]
@@ -267,11 +266,11 @@ forbid_contains = ["utils", "misc", "helper", "helpers", "build_"]
 paths = ["src/common/protocol/**"]
 rules = ["require-desc", "no-impl", "proc-only-logic"]
 
-# --- GEN base ---
+# --- M.Base live tree: embedded/ + transport/{setup,runtime} ---
 
 [package.metadata.modlin.preset.mcg-base-prim-gpu]
 hw = "gpu"
-paths = ["src/gpu/**/mem/base/setup/primitives/**"]
+paths = ["src/gpu/**/mem/base/embedded/**/primitives/**"]
 rules = ["a1-gpu-prim", "a1-gpu-layout", "proc-only-logic"]
 
 [package.metadata.modlin.preset.mcg-base-prim-gpu.layout_perf]
@@ -280,59 +279,65 @@ gpu_std = "std430"
 
 [package.metadata.modlin.preset.mcg-base-prim-cpu]
 hw = "cpu"
-paths = ["src/cpu/**/mem/base/setup/primitives/**"]
+paths = ["src/cpu/**/mem/base/embedded/**/primitives/**"]
 rules = ["a1-cpu", "a1-soa", "a1-cpu-soa-layout", "proc-only-logic"]
 
+# Live bags: structs only + ¬ DomainMath. Naming/desc stay on transport pkgs.
 [package.metadata.modlin.preset.mcg-base-gpu]
 hw = "gpu"
-paths = ["src/gpu/**/MODUL0_*/mem/base/setup/**", "src/gpu/**/MODUL0_*/mem/base/runtime/**"]
-exclude_paths = ["**/setup/primitives/**"]
-rules = [
-    "no-impl",
-    "require-desc",
-    "a1-gpu-dirty",
-    "proc-only-logic",
-    "naming-policy",
-    "base-name-constructor",
-    "base-phase-strict",
-    "naming-file-stem",
+paths = [
+    "src/gpu/**/MODUL0_*/mem/base/embedded/**",
+    "src/gpu/**/MODUL0_*/mem/base/transport/setup/**",
+    "src/gpu/**/MODUL0_*/mem/base/transport/runtime/**",
 ]
+exclude_paths = ["**/primitives/**", "**/mod.rs"]
+rules = ["no-impl", "proc-only-logic"]
+
+[package.metadata.modlin.preset.mcg-base-gpu-transport]
+hw = "gpu"
+paths = [
+    "src/gpu/**/MODUL0_*/mem/base/transport/setup/**",
+    "src/gpu/**/MODUL0_*/mem/base/transport/runtime/**",
+]
+exclude_paths = ["**/mod.rs"]
+rules = ["require-desc", "naming-file-stem"]
+
+[package.metadata.modlin.preset.mcg-base-gpu-prt]
+hw = "gpu"
+paths = ["src/gpu/**/MODUL0_*/mem/base/transport/prt/**"]
+exclude_paths = ["**/mod.rs"]
+rules = ["no-impl", "proc-only-logic"]
 
 [package.metadata.modlin.preset.mcg-base-cpu]
 hw = "cpu"
-paths = ["src/cpu/**/MODUL0_*/mem/base/setup/**", "src/cpu/**/MODUL0_*/mem/base/runtime/**"]
-exclude_paths = ["**/setup/primitives/**"]
-rules = ["no-impl", "require-desc", "a1-cpu-soa-layout", "proc-only-logic", "naming-policy"]
+paths = [
+    "src/cpu/**/MODUL0_*/mem/base/embedded/**",
+    "src/cpu/**/MODUL0_*/mem/base/transport/**",
+]
+exclude_paths = ["**/primitives/**", "**/mod.rs"]
+rules = ["no-impl", "proc-only-logic"]
 
-# --- GEN generator (FIX-078/083/087–095) ---
+# --- M.Assembler (FIX-078/083/087–095/129) ---
 
-[package.metadata.modlin.preset.mcg-generator-gpu-layout]
-hw = "gpu"
-paths = ["src/gpu/**/MODUL0_*/mem/generator/**"]
-rules = ["a1-gpu-layout"]
-
-[package.metadata.modlin.preset.mcg-generator-cpu-layout]
-hw = "cpu"
-paths = ["src/cpu/**/MODUL0_*/mem/generator/**"]
-rules = ["a1-cpu-soa-layout"]
-
-[package.metadata.modlin.preset.mcg-generator]
-# M.Assembler live path (FIX-129) — was mem/generator/**
+[package.metadata.modlin.preset.mcg-assembler]
+# Live assembler path — mem/asm_disasm (mem/generator is forbidden)
+# Tandem hub helpers (free_tandem / recreate) are T verbs, not M catalogs.
 paths = ["src/**/MODUL0_*/mem/asm_disasm/**"]
+exclude_paths = ["src/tandem/**"]
 mode = "provision-allowed"
 rules = [
     "no-struct",
     "trait-fn-pair",
-    "gen-sem",
-    "gen-ah-method",
-    "gen-ah-intention",
-    "gen-ah-path-trait",
-    "gen-res-intsct-stem",
+    "asm-sem",
+    "asm-ah-method",
+    "asm-ah-intention",
+    "asm-ah-path-trait",
+    "asm-res-intsct-stem",
     "trait-signature-only",
-    "prefix-gen",
+    "prefix-asm",
     "proc-only-logic",
-    "gen-protocol",
-    "gen-base-import-local",
+    "asm-protocol",
+    "asm-base-import-local",
     "layer-primitive-external",
     "naming-file-stem",
 ]

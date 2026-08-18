@@ -47,7 +47,7 @@
 //!
 //! ## Typical app boot (direct cubes)
 //!
-//! Etalon: `modul/range/cubes`.
+//! Etalon: `modul/range/cubes-auto` · `modul/range/cubes-handled`.
 //!
 //! 1. `MODUL0_VK_SWAPCHAIN` — device/surface/swapchain (e.g. **FIFO** vsync)
 //! 2. `MODUL0_VK_PIPELINE` — render pass + `cubes` SPIR-V pipelines
@@ -72,7 +72,7 @@
 //! - `common` — results, protocol re-exports, SPIR-V, tracing
 //! - `gpu` — live Vulkan MCGs
 //! - `tandem` — product hubs (`MODUL0_TANDEM`) composing GPU MCGs
-//! - `cpu` — empty lane reserved for future CAD
+//! - `cpu` — host MCGs (`MODUL0_MESH` SoA / pack)
 
 #![allow(
     non_snake_case,

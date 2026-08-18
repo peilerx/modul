@@ -23,7 +23,7 @@ Author: [Daniil Vasilev](https://github.com/peilerx) · license: [Apache-2.0](LI
 | `MODUL0_VK_FRAME` | Frames-in-flight |
 | `MODUL0_VK_DISPLAY` | Command buffer recording |
 | `MODUL0_VK_MESH` | Mesh upload, instancing, push constants |
-| `range/cubes` | Reference app: large instanced cube field (FIFO present) |
+| `range/cubes-auto` · `range/cubes-handled` | Reference apps: large instanced cube field (FIFO present) |
 | `shader/cubes.*` | Product vertex/fragment shaders (+ SPIR-V) |
 
 Each `MODUL0_*` unit follows the same disk shape:

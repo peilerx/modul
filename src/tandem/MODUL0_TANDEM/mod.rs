@@ -1,7 +1,7 @@
 //! # `MODUL0_TANDEM` — product session warehouse (compose GPU MCGs)
 //!
 //! - **mem** — `TandemBfr`, session Prt/Stp, Handled free/recreate  
-//! - App etalon (`range/cubes`) owns winit shell, pulse, logging
+//! - App etalon (`range/cubes-auto` / `range/cubes-handled`) owns winit shell, pulse, logging
 
 /// Submodule `mem`.
 pub mod mem;

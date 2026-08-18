@@ -15,7 +15,7 @@
 //! ## Session
 //!
 //! `session` is a **stub**: product session lives in the app T.Hub
-//! (e.g. `range/cubes` TANDEM). Prefer app-shell assemble order over
+//! (e.g. `range/cubes-auto` / `range/cubes-handled` TANDEM). Prefer app-shell assemble order over
 //! `assemble_gpu_session`.
 //!
 //! ## Layering inside each MCG
