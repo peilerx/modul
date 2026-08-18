@@ -2,8 +2,6 @@
 //!
 //! ```bash
 //! cargo run -p cubes-auto --release
-//! # ship pack:
-//! bash modul/scripts/pack-cubes-linux.sh
 //! ```
 
 #![allow(
