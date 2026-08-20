@@ -6,7 +6,7 @@
 
 use ash::vk;
 
-use crate::{find_vk_memory_type, map_vk, ModulResult};
+use crate::{find_vk_memory_type, pick_vk_memory_type_vram_then_host, map_vk, ModulResult};
 
 // ── Traits (hot → cold) ─────────────────────────────────────────────────────
 
@@ -255,6 +255,86 @@ impl DeviceMemoryHandled for vk::DeviceMemory {
             .allocation_size(allocation_size_stp)
             .memory_type_index(memory_type_index_stp);
         map_vk(unsafe { device_extrl.allocate_memory(&alloc_info, None) })
+    }
+}
+
+/// Catalog — 3D image + memory + view (heat SoA volume, R32F).
+pub trait Image3dResIntsctHandled {
+    fn handled_assemble(
+        device_extrl: &ash::Device,
+        instance_extrl: &ash::Instance,
+        physical_device_extrl: vk::PhysicalDevice,
+        format_op: vk::Format,
+        extent_stp: vk::Extent3D,
+        usage_op: vk::ImageUsageFlags,
+        aspect_mask_op: vk::ImageAspectFlags,
+    ) -> ModulResult<Self>
+    where
+        Self: Sized;
+}
+
+impl Image3dResIntsctHandled for (vk::Image, vk::DeviceMemory, vk::ImageView) {
+    fn handled_assemble(
+        device_extrl: &ash::Device,
+        instance_extrl: &ash::Instance,
+        physical_device_extrl: vk::PhysicalDevice,
+        format_op: vk::Format,
+        extent_stp: vk::Extent3D,
+        usage_op: vk::ImageUsageFlags,
+        aspect_mask_op: vk::ImageAspectFlags,
+    ) -> ModulResult<Self> {
+        let image_info = vk::ImageCreateInfo::default()
+            .image_type(vk::ImageType::TYPE_3D)
+            .format(format_op)
+            .extent(extent_stp)
+            .mip_levels(1)
+            .array_layers(1)
+            .samples(vk::SampleCountFlags::TYPE_1)
+            .tiling(vk::ImageTiling::OPTIMAL)
+            .usage(usage_op)
+            .sharing_mode(vk::SharingMode::EXCLUSIVE)
+            .initial_layout(vk::ImageLayout::UNDEFINED);
+        let image_extrl = map_vk(unsafe { device_extrl.create_image(&image_info, None) })?;
+        let mem_requirements_extrl =
+            unsafe { device_extrl.get_image_memory_requirements(image_extrl) };
+        let (memory_type_index_stp, _) = pick_vk_memory_type_vram_then_host(
+            instance_extrl,
+            physical_device_extrl,
+            mem_requirements_extrl.memory_type_bits,
+            mem_requirements_extrl.size,
+        )
+        .ok_or_else(|| {
+            format!(
+                "image3d: no heap ≥ {} bytes",
+                mem_requirements_extrl.size
+            )
+        })?;
+        let memory_extrl = <vk::DeviceMemory as DeviceMemoryHandled>::handled_assemble(
+            device_extrl,
+            mem_requirements_extrl.size,
+            memory_type_index_stp,
+        )?;
+        <() as ImageMemoryBindHandled>::handled_assemble(device_extrl, image_extrl, memory_extrl, 0)?;
+        let image_view_create_info = vk::ImageViewCreateInfo::default()
+            .view_type(vk::ImageViewType::TYPE_3D)
+            .format(format_op)
+            .components(vk::ComponentMapping {
+                r: vk::ComponentSwizzle::IDENTITY,
+                g: vk::ComponentSwizzle::IDENTITY,
+                b: vk::ComponentSwizzle::IDENTITY,
+                a: vk::ComponentSwizzle::IDENTITY,
+            })
+            .subresource_range(vk::ImageSubresourceRange {
+                aspect_mask: aspect_mask_op,
+                base_mip_level: 0,
+                level_count: 1,
+                base_array_layer: 0,
+                layer_count: 1,
+            })
+            .image(image_extrl);
+        let view_extrl =
+            map_vk(unsafe { device_extrl.create_image_view(&image_view_create_info, None) })?;
+        Ok((image_extrl, memory_extrl, view_extrl))
     }
 }
 

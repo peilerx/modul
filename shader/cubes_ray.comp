@@ -4,9 +4,7 @@
 // Pulse moves centers (size stays 1). One cube per XZ cell, Y slabs front-ish.
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(set = 0, binding = 0, rgba8) uniform writeonly image2D dst;
-layout(set = 0, binding = 1) buffer Heat {
-    float heat[];
-};
+layout(set = 0, binding = 1, r32f) uniform image3D heat_img;
 
 layout(push_constant) uniform Pc {
     mat4 inv_mvp;
@@ -25,7 +23,6 @@ shared float sh_sp[1024];
 
 const float HEAT_COOL = 0.40;
 const float DESTROYED = 2.0;
-// pitch=1 unit cells: 0.5 = coplanar faces. 0.58 stuck out 16% → used/waffle at boot.
 const float HALF = 0.5;
 
 float heat_of(float stored, float now) {
@@ -38,12 +35,35 @@ float heat_of(float stored, float now) {
     return clamp((stored - now) * HEAT_COOL, 0.0, DESTROYED);
 }
 
-void heat_store(uint lin, float h, float now) {
-    if (h >= DESTROYED - 1e-4) {
-        heat[lin] = -1.0;
-    } else {
-        heat[lin] = now + h / HEAT_COOL;
+ivec3 heat_cell(uint lin) {
+    uint plane = max(pc.grid.x * pc.grid.y, 1u);
+    uint iz = lin / plane;
+    uint rem = lin - iz * plane;
+    uint iy = rem / max(pc.grid.x, 1u);
+    uint ix = rem - iy * pc.grid.x;
+    return ivec3(int(ix), int(iy), int(iz));
+}
+
+bool heat_in(ivec3 c) {
+    ivec3 dim = imageSize(heat_img);
+    return all(greaterThanEqual(c, ivec3(0))) && all(lessThan(c, dim));
+}
+
+float heat_load(uint lin) {
+    ivec3 c = heat_cell(lin);
+    if (!heat_in(c)) {
+        return 0.0;
     }
+    return imageLoad(heat_img, c).x;
+}
+
+void heat_store(uint lin, float h, float now) {
+    ivec3 c = heat_cell(lin);
+    if (!heat_in(c)) {
+        return;
+    }
+    float v = (h >= DESTROYED - 1e-4) ? -1.0 : (now + h / HEAT_COOL);
+    imageStore(heat_img, c, vec4(v, 0.0, 0.0, 0.0));
 }
 
 float saturate(float x) { return clamp(x, 0.0, 1.0); }
@@ -178,12 +198,8 @@ void main() {
             vec3(float(nx - 1u), float(ny - 1u), float(nz - 1u))
         ));
         uint lin = uint(ic.x) + uint(ic.y) * nx + uint(ic.z) * nx * ny;
-        float stored = 0.0;
-        if (lin < n && lin < uint(heat.length())) {
-            stored = heat[lin];
-        }
+        float stored = heat_load(lin);
         float h = heat_of(stored, pc.look3.x);
-        // Intact (incl. NaN/zero VRAM) = one AABB. DDA only after melt/destroy.
         if (!(stored < 0.0) && h < 1.75) {
             hit = true;
             smooth_hit = true;
@@ -286,12 +302,8 @@ void main() {
                         cy,
                         (float(cell.y) - c0.z) * sp
                     );
-                    float h = 0.0;
-                    if (lin < uint(heat.length())) {
-                        h = heat_of(heat[lin], pc.look3.x);
-                    }
+                    float h = heat_of(heat_load(lin), pc.look3.x);
                     if (h < DESTROYED) {
-                        // Full AABB until h≈2 so the same cell keeps the ray.
                         float melt = clamp((h - 1.75) / 0.25, 0.0, 1.0);
                         float hs = HALF * (1.0 - melt * 0.90);
                         vec3 c = center;
@@ -319,9 +331,9 @@ void main() {
         }
     }
 
-    if (hit && hit_lin < n && hit_lin < uint(heat.length())) {
+    if (hit && hit_lin < n) {
         float now = pc.look3.x;
-        float h = heat_of(heat[hit_lin], now);
+        float h = heat_of(heat_load(hit_lin), now);
         hit_h = h;
         uint paint = uint(pc.brush.w + 0.5);
         vec2 mpix = (pc.brush.xy * 0.5 + 0.5) * vec2(ext);

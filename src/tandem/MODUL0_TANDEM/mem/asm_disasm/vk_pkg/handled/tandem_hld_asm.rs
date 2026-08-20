@@ -34,7 +34,7 @@ impl TandemDefaultHandled for TandemBfr {
             device,
             &mut bfr.display_rt,
         );
-        crate::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::destroy_soa_heat_buffer(
+        crate::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::destroy_soa_heat_image(
             device,
             &mut bfr.display_rt,
         );

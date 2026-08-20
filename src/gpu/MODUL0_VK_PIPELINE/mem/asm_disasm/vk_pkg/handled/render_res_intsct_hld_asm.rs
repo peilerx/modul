@@ -1134,7 +1134,7 @@ pub fn assemble_soa_set_layout(
             .stage_flags(vk::ShaderStageFlags::COMPUTE),
         vk::DescriptorSetLayoutBinding::default()
             .binding(1)
-            .descriptor_type(vk::DescriptorType::STORAGE_BUFFER)
+            .descriptor_type(vk::DescriptorType::STORAGE_IMAGE)
             .descriptor_count(1)
             .stage_flags(vk::ShaderStageFlags::COMPUTE),
     ];
@@ -1151,14 +1151,9 @@ pub fn assemble_soa_descriptor_sets(
     device_extrl: &Device,
     set_layout_extrl: vk::DescriptorSetLayout,
 ) -> ModulResult<(DescriptorPoolDefaultRtPkg, DescriptorSetsDefaultRtPkg)> {
-    let pool_sizes = [
-        vk::DescriptorPoolSize::default()
-            .ty(vk::DescriptorType::STORAGE_IMAGE)
-            .descriptor_count(1),
-        vk::DescriptorPoolSize::default()
-            .ty(vk::DescriptorType::STORAGE_BUFFER)
-            .descriptor_count(1),
-    ];
+    let pool_sizes = [vk::DescriptorPoolSize::default()
+        .ty(vk::DescriptorType::STORAGE_IMAGE)
+        .descriptor_count(2)];
     let descriptor_pool_extrl =
         vk::DescriptorPool::handled_assemble(device_extrl, 1, &pool_sizes)?;
     let descriptor_sets_extrl = <Vec<vk::DescriptorSet> as DescriptorSetsAllocateAuto>::auto_assemble(

@@ -194,32 +194,61 @@ pub fn record_display_frame(
             std::slice::from_ref(&b0),
         );
 
-        if display.soa_heat_buffer_extrl != vk::Buffer::null() && !display.soa_heat_cleared_rt {
-            device.device_extrl.cmd_fill_buffer(
-                cmd,
-                display.soa_heat_buffer_extrl,
-                0,
-                display.soa_heat_bytes_rt,
-                0,
-            );
-            display.soa_heat_cleared_rt = true;
-            let fill_bar = vk::BufferMemoryBarrier::default()
-                .src_access_mask(vk::AccessFlags::TRANSFER_WRITE)
-                .dst_access_mask(vk::AccessFlags::SHADER_READ | vk::AccessFlags::SHADER_WRITE)
+        if display.soa_heat_image_extrl != vk::Image::null() && !display.soa_heat_cleared_rt {
+            let range = vk::ImageSubresourceRange {
+                aspect_mask: vk::ImageAspectFlags::COLOR,
+                base_mip_level: 0,
+                level_count: 1,
+                base_array_layer: 0,
+                layer_count: 1,
+            };
+            let to_dst = vk::ImageMemoryBarrier::default()
+                .src_access_mask(vk::AccessFlags::empty())
+                .dst_access_mask(vk::AccessFlags::TRANSFER_WRITE)
+                .old_layout(vk::ImageLayout::UNDEFINED)
+                .new_layout(vk::ImageLayout::TRANSFER_DST_OPTIMAL)
                 .src_queue_family_index(vk::QUEUE_FAMILY_IGNORED)
                 .dst_queue_family_index(vk::QUEUE_FAMILY_IGNORED)
-                .buffer(display.soa_heat_buffer_extrl)
-                .offset(0)
-                .size(display.soa_heat_bytes_rt);
+                .image(display.soa_heat_image_extrl)
+                .subresource_range(range);
+            device.device_extrl.cmd_pipeline_barrier(
+                cmd,
+                vk::PipelineStageFlags::TOP_OF_PIPE,
+                vk::PipelineStageFlags::TRANSFER,
+                vk::DependencyFlags::empty(),
+                &[],
+                &[],
+                std::slice::from_ref(&to_dst),
+            );
+            let clear = vk::ClearColorValue {
+                float32: [0.0, 0.0, 0.0, 0.0],
+            };
+            device.device_extrl.cmd_clear_color_image(
+                cmd,
+                display.soa_heat_image_extrl,
+                vk::ImageLayout::TRANSFER_DST_OPTIMAL,
+                &clear,
+                std::slice::from_ref(&range),
+            );
+            let to_general = vk::ImageMemoryBarrier::default()
+                .src_access_mask(vk::AccessFlags::TRANSFER_WRITE)
+                .dst_access_mask(vk::AccessFlags::SHADER_READ | vk::AccessFlags::SHADER_WRITE)
+                .old_layout(vk::ImageLayout::TRANSFER_DST_OPTIMAL)
+                .new_layout(vk::ImageLayout::GENERAL)
+                .src_queue_family_index(vk::QUEUE_FAMILY_IGNORED)
+                .dst_queue_family_index(vk::QUEUE_FAMILY_IGNORED)
+                .image(display.soa_heat_image_extrl)
+                .subresource_range(range);
             device.device_extrl.cmd_pipeline_barrier(
                 cmd,
                 vk::PipelineStageFlags::TRANSFER,
                 vk::PipelineStageFlags::COMPUTE_SHADER,
                 vk::DependencyFlags::empty(),
                 &[],
-                std::slice::from_ref(&fill_bar),
                 &[],
+                std::slice::from_ref(&to_general),
             );
+            display.soa_heat_cleared_rt = true;
         }
 
         device.device_extrl.cmd_bind_pipeline(

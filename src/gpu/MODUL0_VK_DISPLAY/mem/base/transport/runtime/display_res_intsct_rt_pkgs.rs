@@ -51,13 +51,17 @@ pub struct DisplayDefaultRtCrg {
     pub soa_color_view_extrl: ash::vk::ImageView,
     /// Compute target extent (swapchain × SSAA).
     pub soa_color_extent_rt: ash::vk::Extent2D,
-    /// Heat SoA `float[n]` · STORAGE + TRANSFER_DST.
-    pub soa_heat_buffer_extrl: ash::vk::Buffer,
-    /// Device memory of `soa_heat_buffer_extrl`.
+    /// Heat SoA volume · `VkImage` TYPE_3D R32F · STORAGE + TRANSFER_DST.
+    pub soa_heat_image_extrl: ash::vk::Image,
+    /// Image view of `soa_heat_image_extrl` (`TYPE_3D`).
+    pub soa_heat_view_extrl: ash::vk::ImageView,
+    /// Device memory of `soa_heat_image_extrl`.
     pub soa_heat_memory_extrl: ash::vk::DeviceMemory,
-    /// Byte size of the heat buffer.
+    /// Lattice extent of the heat volume (nx³).
+    pub soa_heat_extent_rt: ash::vk::Extent3D,
+    /// Allocated bytes (driver image requirements, may exceed nx³·4).
     pub soa_heat_bytes_rt: u64,
-    /// First-frame fill done.
+    /// First-frame clear done.
     pub soa_heat_cleared_rt: bool,
     /// Mouse NDC x for heat brush.
     pub heat_mouse_x_rt: f32,

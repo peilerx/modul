@@ -316,14 +316,14 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
     mesh_gpu_rt.base_g_rt = 0.11;
     mesh_gpu_rt.base_b_rt = 0.14;
     let heat_heap =
-        modul::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::update_soa_heat_buffer(
+        modul::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::update_soa_heat_image(
             &swapchain_rt_crg.device_default_rt_pkg.device_extrl,
             inst,
             phys,
             mesh_gpu_rt.instance_count_rt,
             &mut display_rt,
         )?;
-    modul::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::clear_soa_heat_buffer(
+    modul::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::clear_soa_heat_image(
         &swapchain_rt_crg.device_default_rt_pkg.device_extrl,
         swapchain_rt_crg.device_default_rt_pkg.graphics_queue_extrl,
         swapchain_rt_crg
@@ -337,8 +337,11 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         &display_rt,
     )?;
     session_log::log(&format!(
-        "lattice n={} · heat {:.2} GiB · {} · cubes are indices not VRAM meshes",
+        "lattice n={} · heat image3D {}x{}x{} · {:.2} GiB · {} · vkCmdDispatch",
         mesh_gpu_rt.instance_count_rt,
+        display_rt.soa_heat_extent_rt.width,
+        display_rt.soa_heat_extent_rt.height,
+        display_rt.soa_heat_extent_rt.depth,
         display_rt.soa_heat_bytes_rt as f64 / (1024.0 * 1024.0 * 1024.0),
         heat_heap
     ));

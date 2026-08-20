@@ -4,8 +4,9 @@ use ash::vk;
 use ash::{Device, Instance};
 
 use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::display_res_intsct_rt_pkgs::DisplayDefaultRtCrg;
-use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::asm_disasm::vk::handled::image_res_intsct_hld_asm::ImageResIntsctHandled;
-use crate::pick_vk_memory_type_vram_then_host;
+use crate::gpu::MODUL0_VK_SWAPCHAIN::mem::asm_disasm::vk::handled::image_res_intsct_hld_asm::{
+    Image3dResIntsctHandled, ImageResIntsctHandled,
+};
 use crate::{map_vk, ModulResult};
 
 /// 1× target. AA is coverage in the SoA compute shader, not extra pixels.
@@ -62,51 +63,49 @@ pub fn destroy_soa_color_target(device_extrl: &Device, display: &mut DisplayDefa
     display.soa_color_extent_rt = vk::Extent2D::default();
 }
 
-/// Allocate `float[n]` heat SoA on VRAM. GTT only if the discrete heap is too small.
-pub fn update_soa_heat_buffer(
+/// Allocate heat SoA as `VkImage` TYPE_3D R32F (one channel = one field).
+pub fn update_soa_heat_image(
     device_extrl: &Device,
     instance_extrl: &Instance,
     physical_device_extrl: vk::PhysicalDevice,
     count: u32,
     display: &mut DisplayDefaultRtCrg,
 ) -> ModulResult<&'static str> {
-    destroy_soa_heat_buffer(device_extrl, display);
-    let n = vk::DeviceSize::from(count.max(1));
-    let size = n.saturating_mul(4);
-    let create_info = vk::BufferCreateInfo::default()
-        .size(size)
-        .usage(vk::BufferUsageFlags::STORAGE_BUFFER | vk::BufferUsageFlags::TRANSFER_DST)
-        .sharing_mode(vk::SharingMode::EXCLUSIVE);
-    let buffer = map_vk(unsafe { device_extrl.create_buffer(&create_info, None) })?;
-    let req = unsafe { device_extrl.get_buffer_memory_requirements(buffer) };
-    let (memory_type_index, heap_tag) = pick_vk_memory_type_vram_then_host(
-        instance_extrl,
-        physical_device_extrl,
-        req.memory_type_bits,
-        req.size.max(size),
-    )
-    .ok_or_else(|| format!("soa heat: no heap ≥ {} bytes", req.size))?;
-    let alloc = vk::MemoryAllocateInfo::default()
-        .allocation_size(req.size)
-        .memory_type_index(memory_type_index);
-    let memory = map_vk(unsafe { device_extrl.allocate_memory(&alloc, None) })?;
-    map_vk(unsafe { device_extrl.bind_buffer_memory(buffer, memory, 0) })?;
-    display.soa_heat_buffer_extrl = buffer;
+    destroy_soa_heat_image(device_extrl, display);
+    let nx = f64::from(count.max(1)).cbrt().round().max(1.0) as u32;
+    let extent = vk::Extent3D {
+        width: nx,
+        height: nx,
+        depth: nx,
+    };
+    let (image, memory, view) =
+        <(vk::Image, vk::DeviceMemory, vk::ImageView) as Image3dResIntsctHandled>::handled_assemble(
+            device_extrl,
+            instance_extrl,
+            physical_device_extrl,
+            vk::Format::R32_SFLOAT,
+            extent,
+            vk::ImageUsageFlags::STORAGE | vk::ImageUsageFlags::TRANSFER_DST,
+            vk::ImageAspectFlags::COLOR,
+        )?;
+    let req = unsafe { device_extrl.get_image_memory_requirements(image) };
+    display.soa_heat_image_extrl = image;
+    display.soa_heat_view_extrl = view;
     display.soa_heat_memory_extrl = memory;
-    display.soa_heat_bytes_rt = size;
+    display.soa_heat_extent_rt = extent;
+    display.soa_heat_bytes_rt = req.size;
     display.soa_heat_cleared_rt = false;
-    Ok(heap_tag)
+    Ok("TYPE_3D R32F VRAM")
 }
 
-/// Zero heat SoA on the GPU and wait. DEVICE_LOCAL starts as garbage;
-/// `NaN`/`stored<0` would punch holes (the chewed boot cube).
-pub fn clear_soa_heat_buffer(
+/// Zero the 3D heat volume (`vkCmdClearColorImage`) and wait.
+pub fn clear_soa_heat_image(
     device_extrl: &Device,
     queue_extrl: vk::Queue,
     command_pool_extrl: vk::CommandPool,
     display: &mut DisplayDefaultRtCrg,
 ) -> ModulResult<()> {
-    if display.soa_heat_buffer_extrl == vk::Buffer::null() || display.soa_heat_bytes_rt < 4 {
+    if display.soa_heat_image_extrl == vk::Image::null() {
         display.soa_heat_cleared_rt = true;
         return Ok(());
     }
@@ -119,18 +118,62 @@ pub fn clear_soa_heat_buffer(
     let begin = vk::CommandBufferBeginInfo::default()
         .flags(vk::CommandBufferUsageFlags::ONE_TIME_SUBMIT);
     map_vk(unsafe { device_extrl.begin_command_buffer(cmd, &begin) })?;
-    const CHUNK: vk::DeviceSize = 64 * 1024 * 1024;
-    let mut off: vk::DeviceSize = 0;
-    while off < display.soa_heat_bytes_rt {
-        let mut len = (display.soa_heat_bytes_rt - off).min(CHUNK);
-        len &= !3;
-        if len == 0 {
-            break;
-        }
-        unsafe {
-            device_extrl.cmd_fill_buffer(cmd, display.soa_heat_buffer_extrl, off, len, 0);
-        }
-        off += len;
+    let range = vk::ImageSubresourceRange {
+        aspect_mask: vk::ImageAspectFlags::COLOR,
+        base_mip_level: 0,
+        level_count: 1,
+        base_array_layer: 0,
+        layer_count: 1,
+    };
+    let to_dst = vk::ImageMemoryBarrier::default()
+        .src_access_mask(vk::AccessFlags::empty())
+        .dst_access_mask(vk::AccessFlags::TRANSFER_WRITE)
+        .old_layout(vk::ImageLayout::UNDEFINED)
+        .new_layout(vk::ImageLayout::TRANSFER_DST_OPTIMAL)
+        .src_queue_family_index(vk::QUEUE_FAMILY_IGNORED)
+        .dst_queue_family_index(vk::QUEUE_FAMILY_IGNORED)
+        .image(display.soa_heat_image_extrl)
+        .subresource_range(range);
+    unsafe {
+        device_extrl.cmd_pipeline_barrier(
+            cmd,
+            vk::PipelineStageFlags::TOP_OF_PIPE,
+            vk::PipelineStageFlags::TRANSFER,
+            vk::DependencyFlags::empty(),
+            &[],
+            &[],
+            std::slice::from_ref(&to_dst),
+        );
+        let clear = vk::ClearColorValue {
+            float32: [0.0, 0.0, 0.0, 0.0],
+        };
+        device_extrl.cmd_clear_color_image(
+            cmd,
+            display.soa_heat_image_extrl,
+            vk::ImageLayout::TRANSFER_DST_OPTIMAL,
+            &clear,
+            std::slice::from_ref(&range),
+        );
+    }
+    let to_general = vk::ImageMemoryBarrier::default()
+        .src_access_mask(vk::AccessFlags::TRANSFER_WRITE)
+        .dst_access_mask(vk::AccessFlags::SHADER_READ | vk::AccessFlags::SHADER_WRITE)
+        .old_layout(vk::ImageLayout::TRANSFER_DST_OPTIMAL)
+        .new_layout(vk::ImageLayout::GENERAL)
+        .src_queue_family_index(vk::QUEUE_FAMILY_IGNORED)
+        .dst_queue_family_index(vk::QUEUE_FAMILY_IGNORED)
+        .image(display.soa_heat_image_extrl)
+        .subresource_range(range);
+    unsafe {
+        device_extrl.cmd_pipeline_barrier(
+            cmd,
+            vk::PipelineStageFlags::TRANSFER,
+            vk::PipelineStageFlags::COMPUTE_SHADER,
+            vk::DependencyFlags::empty(),
+            &[],
+            &[],
+            std::slice::from_ref(&to_general),
+        );
     }
     map_vk(unsafe { device_extrl.end_command_buffer(cmd) })?;
     let cmd_arr = [cmd];
@@ -144,15 +187,22 @@ pub fn clear_soa_heat_buffer(
     Ok(())
 }
 
-/// Free heat SoA.
-pub fn destroy_soa_heat_buffer(device_extrl: &Device, display: &mut DisplayDefaultRtCrg) {
-    if display.soa_heat_buffer_extrl != vk::Buffer::null() {
+/// Free heat volume.
+pub fn destroy_soa_heat_image(device_extrl: &Device, display: &mut DisplayDefaultRtCrg) {
+    if display.soa_heat_view_extrl != vk::ImageView::null() {
         unsafe {
-            device_extrl.destroy_buffer(display.soa_heat_buffer_extrl, None);
+            device_extrl.destroy_image_view(display.soa_heat_view_extrl, None);
+        }
+        display.soa_heat_view_extrl = vk::ImageView::null();
+    }
+    if display.soa_heat_image_extrl != vk::Image::null() {
+        unsafe {
+            device_extrl.destroy_image(display.soa_heat_image_extrl, None);
             device_extrl.free_memory(display.soa_heat_memory_extrl, None);
         }
-        display.soa_heat_buffer_extrl = vk::Buffer::null();
+        display.soa_heat_image_extrl = vk::Image::null();
         display.soa_heat_memory_extrl = vk::DeviceMemory::null();
+        display.soa_heat_extent_rt = vk::Extent3D::default();
         display.soa_heat_bytes_rt = 0;
         display.soa_heat_cleared_rt = false;
     }

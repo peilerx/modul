@@ -7,7 +7,7 @@ use crate::gpu::MODUL0_VK_DISPLAY::mem::base::transport::runtime::display_res_in
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::RendererDefaultRtCrg;
 use crate::ModulResult;
 
-/// Write soa color view + heat buffer into renderer set 0.
+/// Write soa color view + heat 3D view into renderer set 0.
 pub fn bind_soa_color_image(
     device_extrl: &Device,
     renderer: &RendererDefaultRtCrg,
@@ -22,30 +22,29 @@ pub fn bind_soa_color_image(
     if display.soa_color_view_extrl == vk::ImageView::null() {
         return Ok(());
     }
-    let img = vk::DescriptorImageInfo::default()
+    let color = vk::DescriptorImageInfo::default()
         .image_view(display.soa_color_view_extrl)
         .image_layout(vk::ImageLayout::GENERAL);
-    let write_img = vk::WriteDescriptorSet::default()
+    let write_color = vk::WriteDescriptorSet::default()
         .dst_set(set)
         .dst_binding(0)
         .descriptor_type(vk::DescriptorType::STORAGE_IMAGE)
-        .image_info(std::slice::from_ref(&img));
-    if display.soa_heat_buffer_extrl == vk::Buffer::null() {
+        .image_info(std::slice::from_ref(&color));
+    if display.soa_heat_view_extrl == vk::ImageView::null() {
         unsafe {
-            device_extrl.update_descriptor_sets(std::slice::from_ref(&write_img), &[]);
+            device_extrl.update_descriptor_sets(std::slice::from_ref(&write_color), &[]);
         }
     } else {
-        let buf = vk::DescriptorBufferInfo::default()
-            .buffer(display.soa_heat_buffer_extrl)
-            .offset(0)
-            .range(display.soa_heat_bytes_rt);
-        let write_buf = vk::WriteDescriptorSet::default()
+        let heat = vk::DescriptorImageInfo::default()
+            .image_view(display.soa_heat_view_extrl)
+            .image_layout(vk::ImageLayout::GENERAL);
+        let write_heat = vk::WriteDescriptorSet::default()
             .dst_set(set)
             .dst_binding(1)
-            .descriptor_type(vk::DescriptorType::STORAGE_BUFFER)
-            .buffer_info(std::slice::from_ref(&buf));
+            .descriptor_type(vk::DescriptorType::STORAGE_IMAGE)
+            .image_info(std::slice::from_ref(&heat));
         unsafe {
-            device_extrl.update_descriptor_sets(&[write_img, write_buf], &[]);
+            device_extrl.update_descriptor_sets(&[write_color, write_heat], &[]);
         }
     }
     Ok(())
