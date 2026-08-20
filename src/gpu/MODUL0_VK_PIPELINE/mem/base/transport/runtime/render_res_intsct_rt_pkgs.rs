@@ -111,6 +111,10 @@ pub struct RendererDefaultRtCrg {
     pub pipeline_line_rt_pkg: Option<GraphicsPipelineDefaultRtPkg>,
     /// Thick outline ribbons (`TRIANGLE_LIST` · same `line` shaders).
     pub pipeline_line_tris_rt_pkg: Option<GraphicsPipelineDefaultRtPkg>,
+    /// SoA pulse compute (`vkCmdDispatch`).
+    pub pipeline_mesh_soa_comp_rt_pkg: Option<ComputePipelineDefaultRtPkg>,
+    /// Heat brush compute (`vkCmdDispatch` over lattice indices).
+    pub pipeline_soa_heat_comp_rt_pkg: Option<ComputePipelineDefaultRtPkg>,
     /// Optional descriptor surface (empty until product wires it).
     pub descriptor_set_layout_default_rt_pkg: Option<DescriptorSetLayoutDefaultRtPkg>,
     /// Nested package bag field `descriptor_pool_default_rt_pkg`.

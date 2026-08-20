@@ -5,8 +5,13 @@ use ash::vk;
 use ash::Device;
 
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::runtime::render_res_intsct_rt_pkgs::{
-    PipelineTriangleRtPkg, RenderPassTriangleRtPkg, ShadersTriangleRtPkg,
+    ComputePipelineDefaultRtPkg, DescriptorPoolDefaultRtPkg, DescriptorSetLayoutDefaultRtPkg,
+    DescriptorSetsDefaultRtPkg, PipelineTriangleRtPkg, RenderPassTriangleRtPkg,
+    ShadersTriangleRtPkg,
 };
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::descriptor_set_layout_at_asm::DescriptorSetLayoutAuto;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::handled::descriptor_pool_hld_asm::DescriptorPoolHandled;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::descriptor_sets_at_asm::DescriptorSetsAllocateAuto;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::base::transport::setup::op::RenderPassAttachmentLayoutStpPkgOp;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::graphics_pipeline_at_asm::GraphicsPipelineAuto;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::pipeline_layout_res_intsct_at_asm::{
@@ -716,6 +721,7 @@ pub trait PipelineMeshSolidHandled {
         render_pass_extrl: vk::RenderPass,
         vert_module_extrl: vk::ShaderModule,
         frag_module_extrl: vk::ShaderModule,
+        soa_set_layout_extrl: vk::DescriptorSetLayout,
     ) -> ModulResult<PipelineTriangleRtPkg>;
 }
 
@@ -732,6 +738,7 @@ impl PipelineMeshSolidHandled for PipelineTriangleRtPkg {
         render_pass_extrl: vk::RenderPass,
         vert_module_extrl: vk::ShaderModule,
         frag_module_extrl: vk::ShaderModule,
+        soa_set_layout_extrl: vk::DescriptorSetLayout,
     ) -> ModulResult<PipelineTriangleRtPkg> {
         {
             let input_assembly =
@@ -783,7 +790,8 @@ impl PipelineMeshSolidHandled for PipelineTriangleRtPkg {
                     std::slice::from_ref(&push_range),
                 )?;
             // binding 0 VERTEX: stride 24 · loc0 pos · loc1 nrm
-            // binding 1 INSTANCE: stride 16 · loc2 instance xyzw
+            // binding 1 INSTANCE: stride 16 · loc2 xyzw (compute packed world)
+            let _ = soa_set_layout_extrl;
             let bindings = [
                 vk::VertexInputBindingDescription::default()
                     .binding(0)
@@ -1112,4 +1120,136 @@ impl PipelineLineTrisHandled for PipelineTriangleRtPkg {
             })
         }
     }
+}
+
+/// Compute color target + heat SoA.
+pub fn assemble_soa_set_layout(
+    device_extrl: &Device,
+) -> ModulResult<DescriptorSetLayoutDefaultRtPkg> {
+    let bindings = [
+        vk::DescriptorSetLayoutBinding::default()
+            .binding(0)
+            .descriptor_type(vk::DescriptorType::STORAGE_IMAGE)
+            .descriptor_count(1)
+            .stage_flags(vk::ShaderStageFlags::COMPUTE),
+        vk::DescriptorSetLayoutBinding::default()
+            .binding(1)
+            .descriptor_type(vk::DescriptorType::STORAGE_BUFFER)
+            .descriptor_count(1)
+            .stage_flags(vk::ShaderStageFlags::COMPUTE),
+    ];
+    let descriptor_set_layout_extrl =
+        vk::DescriptorSetLayout::auto_assemble(device_extrl, &bindings)?;
+    Ok(DescriptorSetLayoutDefaultRtPkg {
+        descriptor_set_layout_extrl,
+        desc: "soa_set_layout",
+    })
+}
+
+/// Descriptor pool + one set for the SoA layout.
+pub fn assemble_soa_descriptor_sets(
+    device_extrl: &Device,
+    set_layout_extrl: vk::DescriptorSetLayout,
+) -> ModulResult<(DescriptorPoolDefaultRtPkg, DescriptorSetsDefaultRtPkg)> {
+    let pool_sizes = [
+        vk::DescriptorPoolSize::default()
+            .ty(vk::DescriptorType::STORAGE_IMAGE)
+            .descriptor_count(1),
+        vk::DescriptorPoolSize::default()
+            .ty(vk::DescriptorType::STORAGE_BUFFER)
+            .descriptor_count(1),
+    ];
+    let descriptor_pool_extrl =
+        vk::DescriptorPool::handled_assemble(device_extrl, 1, &pool_sizes)?;
+    let descriptor_sets_extrl = <Vec<vk::DescriptorSet> as DescriptorSetsAllocateAuto>::auto_assemble(
+        device_extrl,
+        descriptor_pool_extrl,
+        std::slice::from_ref(&set_layout_extrl),
+    )?;
+    Ok((
+        DescriptorPoolDefaultRtPkg {
+            descriptor_pool_extrl,
+            desc: "soa_descriptor_pool",
+        },
+        DescriptorSetsDefaultRtPkg {
+            descriptor_sets_extrl,
+            desc: "soa_descriptor_sets",
+        },
+    ))
+}
+
+/// Compute pipeline: pulse rest SoA → world SoA.
+pub fn assemble_soa_comp_pipeline(
+    device_extrl: &Device,
+    set_layout_extrl: vk::DescriptorSetLayout,
+) -> ModulResult<ComputePipelineDefaultRtPkg> {
+    let comp_spv = include_bytes!("../../../../../../../shader/cubes_ray.comp.spv").as_slice();
+    let module = vk::ShaderModule::auto_assemble(device_extrl, comp_spv)?;
+    let push = vk::PushConstantRange::default()
+        .stage_flags(vk::ShaderStageFlags::COMPUTE)
+        .offset(0)
+        .size(176);
+    let pipeline_layout_extrl = <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
+        device_extrl,
+        std::slice::from_ref(&set_layout_extrl),
+        std::slice::from_ref(&push),
+    )?;
+    let stage = vk::PipelineShaderStageCreateInfo::default()
+        .stage(vk::ShaderStageFlags::COMPUTE)
+        .module(module)
+        .name(c"main");
+    let info = vk::ComputePipelineCreateInfo::default()
+        .stage(stage)
+        .layout(pipeline_layout_extrl);
+    let pipeline_extrl = <vk::Pipeline as crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::compute_pipeline_at_asm::ComputePipelineAuto>::auto_assemble(
+        device_extrl,
+        vk::PipelineCache::null(),
+        &info,
+    )?;
+    unsafe {
+        device_extrl.destroy_shader_module(module, None);
+    }
+    Ok(ComputePipelineDefaultRtPkg {
+        pipeline_extrl,
+        pipeline_layout_extrl,
+        desc: "pipeline_mesh_soa_comp",
+    })
+}
+
+/// Heat brush compute: one thread per lattice index.
+pub fn assemble_soa_heat_pipeline(
+    device_extrl: &Device,
+    set_layout_extrl: vk::DescriptorSetLayout,
+) -> ModulResult<ComputePipelineDefaultRtPkg> {
+    let comp_spv = include_bytes!("../../../../../../../shader/heat_brush.comp.spv").as_slice();
+    let module = vk::ShaderModule::auto_assemble(device_extrl, comp_spv)?;
+    let push = vk::PushConstantRange::default()
+        .stage_flags(vk::ShaderStageFlags::COMPUTE)
+        .offset(0)
+        .size(160);
+    let pipeline_layout_extrl = <vk::PipelineLayout as PipelineLayoutAuto>::auto_assemble(
+        device_extrl,
+        std::slice::from_ref(&set_layout_extrl),
+        std::slice::from_ref(&push),
+    )?;
+    let stage = vk::PipelineShaderStageCreateInfo::default()
+        .stage(vk::ShaderStageFlags::COMPUTE)
+        .module(module)
+        .name(c"main");
+    let info = vk::ComputePipelineCreateInfo::default()
+        .stage(stage)
+        .layout(pipeline_layout_extrl);
+    let pipeline_extrl = <vk::Pipeline as crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk::auto::compute_pipeline_at_asm::ComputePipelineAuto>::auto_assemble(
+        device_extrl,
+        vk::PipelineCache::null(),
+        &info,
+    )?;
+    unsafe {
+        device_extrl.destroy_shader_module(module, None);
+    }
+    Ok(ComputePipelineDefaultRtPkg {
+        pipeline_extrl,
+        pipeline_layout_extrl,
+        desc: "pipeline_soa_heat_comp",
+    })
 }

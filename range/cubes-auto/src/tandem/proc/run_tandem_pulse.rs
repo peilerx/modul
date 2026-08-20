@@ -6,7 +6,9 @@ use modul::gpu::MODUL0_VK_FRAME::mem::asm_disasm::vk_crg::auto::frame_default_rt
 
 use modul::gpu::MODUL0_VK_DISPLAY::proc::display::display_frame::record_frame_with_serial;
 use modul::gpu::MODUL0_VK_FRAME::proc::processor::frame_tick::{begin_frame, end_frame};
-use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshPushRt;
+use modul::gpu::MODUL0_VK_MESH::proc::processor::{
+    mesh_gpu_center_rt, mesh_gpu_radius_rt, mesh_push_from_orbit,
+};
 use modul::gpu::MODUL0_VK_SWAPCHAIN::conv::port::{SwapchainBfr, SwapchainTransportable};
 use modul::tandem::MODUL0_TANDEM::TandemBfr;
 
@@ -21,10 +23,17 @@ pub fn run_tandem_pulse(bfr: &mut TandemBfr) -> Result<(), String> {
     let t = bfr.pulse_t0.elapsed().as_secs_f32();
     let sep_max = bfr.session_stp.sep_max_stp;
     let pulse_period = bfr.session_stp.pulse_period_secs_stp;
+    let painting = bfr.heat_painting;
+    let ew = extent.width.max(1) as f32;
+    let eh = extent.height.max(1) as f32;
+    bfr.display_rt.heat_mouse_x_rt = (bfr.cursor_px.0 / ew) * 2.0 - 1.0;
+    bfr.display_rt.heat_mouse_y_rt = (bfr.cursor_px.1 / eh) * 2.0 - 1.0;
+    bfr.display_rt.heat_paint_rt = u32::from(painting);
+    bfr.display_rt.heat_run_rt = u32::from(painting);
 
-    let radius = bfr.mesh_gpu_rt.radius_rt() * 2.8 / bfr.zoom.max(0.2);
-    bfr.mesh_push_rt = MeshPushRt::from_orbit(
-        bfr.mesh_gpu_rt.center_rt(),
+    let radius = mesh_gpu_radius_rt(&bfr.mesh_gpu_rt) * 2.8 / bfr.zoom.max(0.08);
+    bfr.mesh_push_rt = mesh_push_from_orbit(
+        mesh_gpu_center_rt(&bfr.mesh_gpu_rt),
         radius,
         bfr.orbit_yaw,
         bfr.orbit_pitch,
@@ -51,6 +60,20 @@ pub fn run_tandem_pulse(bfr: &mut TandemBfr) -> Result<(), String> {
 
     let (slot, image_index) =
         begin_frame(device, &bfr.presentation_rt, loader, &bfr.frame_rt)?;
+
+    // dt AFTER the FIF fence: before begin_frame this is only the winit turn (~1e-4 s).
+    let dt = bfr
+        .last_frame_end
+        .elapsed()
+        .as_secs_f32()
+        .clamp(1e-4, 0.05);
+    if painting {
+        bfr.heat_hold_rt += dt;
+    } else {
+        bfr.heat_hold_rt = 0.0;
+    }
+    bfr.display_rt.heat_dt_rt = dt;
+    bfr.display_rt.heat_hold_rt = bfr.heat_hold_rt;
 
     let render_policy = frame_export_asmed_render1(&bfr.frame_rt);
     record_frame_with_serial(
@@ -94,6 +117,14 @@ pub fn run_tandem_pulse(bfr: &mut TandemBfr) -> Result<(), String> {
         bfr.fps_frames = 0;
         bfr.fps_window_start = now;
         bfr.fps_sample_ready = true;
+        crate::tandem::proc::session_log::log(&format!(
+            "HEAT io · paint={} hold={:.2} mouse=({:.3},{:.3}) dt={:.4}",
+            bfr.display_rt.heat_paint_rt,
+            bfr.display_rt.heat_hold_rt,
+            bfr.display_rt.heat_mouse_x_rt,
+            bfr.display_rt.heat_mouse_y_rt,
+            bfr.display_rt.heat_dt_rt
+        ));
     }
     Ok(())
 }

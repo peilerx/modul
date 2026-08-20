@@ -16,6 +16,10 @@ pub struct MeshSoaRtBfr {
     pub inst_ys: Vec<f32>,
     /// Public field `inst_zs`.
     pub inst_zs: Vec<f32>,
+    /// Logical instance count when host vectors are empty (compute lattice).
+    pub logical_count: usize,
+    /// Lattice pitch used to recover AABB without walking instances.
+    pub lattice_pitch: f32,
     /// Human-readable bag descriptor (`&'static str` protocol tag).
     pub desc: &'static str,
 }

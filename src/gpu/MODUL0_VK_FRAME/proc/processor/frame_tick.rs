@@ -114,7 +114,7 @@ pub fn submit_slot(device: &DeviceDefaultRtPkg, slot: &FrameSlotDefaultRtPkg) ->
     // Peels only — bag literal in proc; catalog assemble stays in asm_disasm (FIX-131).
     let submit_rt = SubmitInfoDefaultRt {
         wait_semaphore_extrl: slot.image_available_semaphore_extrl,
-        wait_dst_stage_mask_op: vec![vk::PipelineStageFlags::COLOR_ATTACHMENT_OUTPUT],
+        wait_dst_stage_mask_op: vec![vk::PipelineStageFlags::TRANSFER],
         command_buffer_extrl: slot.command_buffer_extrl,
         signal_semaphore_extrl: slot.render_finished_semaphore_extrl,
         desc: "submit_info",

@@ -10,6 +10,7 @@ use crate::gpu::MODUL0_VK_MESH::mem::asm_disasm::vk::handled::buffer_hld_asm::{
 use crate::gpu::MODUL0_VK_MESH::proc::processor::line_gpu_counts::{
     line_gpu_counts, line_gpu_min_floats,
 };
+use crate::gpu::MODUL0_VK_MESH::mem::asm_disasm::vk_pkg::auto::line_gpu_default_rt_pkg_at_asm::LineGpuDefaultRtAuto;
 use crate::gpu::MODUL0_VK_MESH::proc::processor::line_gpu_destroy::destroy_line_gpu_buffers;
 use crate::cpu::MODUL0_MESH::proc::processor::pack_line_lists::f32_pos_to_bytes;
 use crate::ModulResult;
@@ -51,7 +52,7 @@ impl LineGpuDefaultAuto for LineGpuDefaultRtPkg {
         let positions_len_stp = positions_extrl.len();
         match positions_len_stp {
             positions_len_stp if positions_len_stp < min_stp => {
-                Ok(Self::empty("line_gpu_list"))
+                Ok(<Self as LineGpuDefaultRtAuto>::auto_assemble("line_gpu_list"))
             }
             positions_len_stp => {
                 let bytes_extrl = f32_pos_to_bytes(positions_extrl);
@@ -99,7 +100,7 @@ impl LineGpuTrisDefaultAuto for LineGpuDefaultRtPkg {
         let positions_len_stp = positions_extrl.len();
         match positions_len_stp {
             positions_len_stp if positions_len_stp < min_stp => {
-                Ok(Self::empty("line_gpu_tris"))
+                Ok(<Self as LineGpuDefaultRtAuto>::auto_assemble("line_gpu_tris"))
             }
             positions_len_stp => {
                 let bytes_extrl = f32_pos_to_bytes(positions_extrl);

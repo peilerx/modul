@@ -17,7 +17,7 @@ use crate::tandem::proc::{
 };
 use modul::tandem::MODUL0_TANDEM::TandemBfr;
 
-const TITLE: &str = "modul cubes · auto";
+const TITLE: &str = "modul cubes · hold LMB/RMB on metal to melt";
 pub const VIEW_W: u32 = 1280;
 pub const VIEW_H: u32 = 720;
 
@@ -260,8 +260,27 @@ impl ApplicationHandler for App {
                     hub.last_cursor = None;
                 }
             }
+            WindowEvent::MouseInput {
+                state: winit::event::ElementState::Pressed,
+                button: winit::event::MouseButton::Right,
+                ..
+            } => {
+                if let Some(hub) = self.hub.as_mut() {
+                    hub.heat_painting = true;
+                }
+            }
+            WindowEvent::MouseInput {
+                state: winit::event::ElementState::Released,
+                button: winit::event::MouseButton::Right,
+                ..
+            } => {
+                if let Some(hub) = self.hub.as_mut() {
+                    hub.heat_painting = false;
+                }
+            }
             WindowEvent::CursorMoved { position, .. } => {
                 if let Some(hub) = self.hub.as_mut() {
+                    hub.cursor_px = (position.x as f32, position.y as f32);
                     if hub.dragging {
                         if let Some((lx, ly)) = hub.last_cursor {
                             hub.orbit_yaw =
@@ -280,7 +299,7 @@ impl ApplicationHandler for App {
                         winit::event::MouseScrollDelta::LineDelta(_, y) => y,
                         winit::event::MouseScrollDelta::PixelDelta(p) => p.y as f32 * 0.01,
                     };
-                    hub.zoom = (hub.zoom * (1.0 + dy * 0.08)).clamp(0.3, 4.0);
+                    hub.zoom = (hub.zoom * (1.0 + dy * 0.12)).clamp(0.08, 12.0);
                 }
             }
             _ => {}

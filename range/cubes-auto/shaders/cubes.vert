@@ -57,19 +57,15 @@ void main() {
     vec3 out_n = n;
 
     if (lod >= 1.5) {
-        // LOD 2: point impostor — collapse cube to tiny billboard at center
-        // keep a sliver of the face so raster still hits a few pixels
         vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), to_cam));
         if (length(right) < 1e-3) right = vec3(1.0, 0.0, 0.0);
         vec3 up = normalize(cross(to_cam, right));
-        float s = 0.08; // ~screen-stable small splat in world units
+        float s = 0.08;
         world = inst + right * (inPos.x * s) + up * (inPos.y * s);
         out_n = to_cam;
     } else if (lod >= 0.5) {
-        // LOD 1: only faces toward camera (hide back planes)
         float facing = dot(n, to_cam);
         if (facing < 0.05) {
-            // park discarded face behind camera (not presented)
             world = eye - to_cam * 10.0;
             out_n = n;
         } else {
@@ -77,7 +73,6 @@ void main() {
             out_n = n;
         }
     } else {
-        // LOD 0: full cube
         world = inPos + inst;
         out_n = n;
     }

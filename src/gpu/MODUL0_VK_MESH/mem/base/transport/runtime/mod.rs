@@ -17,7 +17,8 @@ pub mod mesh_gpu_default_rt_pkg;
 /// Part of `gpu/MODUL0_VK_MESH/mem/base/transport/runtime` under the mem/conv/proc MCG canon.
 pub mod mesh_soa_rt_bfr;
 
-// DomainMath peels on GPU bags (empty · center · radius · push · line) live in proc.
+// DomainMath peels on GPU bags (center · radius · push) live in proc.
+// Empty RtPkg constructors live in mem/asm_disasm/vk_pkg/auto (FIX-136).
 #[allow(unused_imports)]
 use crate::gpu::MODUL0_VK_MESH::proc::processor::{
     line_gpu_rt_at_asm as _, mesh_gpu_rt_at_asm as _, mesh_push_rt_at_asm as _,

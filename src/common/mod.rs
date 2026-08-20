@@ -21,7 +21,7 @@ pub mod shader_spv;
 /// Optional debug tracing runtime.
 pub mod trace_rt;
 
-pub use memory_type::find_vk_memory_type;
+pub use memory_type::{find_vk_memory_type, pick_vk_memory_type_vram_then_host};
 pub use modul_result::{from_err, map_vk, ModulResult};
 pub use shader_spv::assemble_shader_spv;
 pub use trace_rt::{

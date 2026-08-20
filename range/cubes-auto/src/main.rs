@@ -16,8 +16,8 @@ fn main() {
 
     let dir = session_log::init();
     session_log::log("modul/range/cubes-auto · AUTO · TandemSessionPrt::SHIP_MAILBOX_AA4_NO_VALIDATION");
-    session_log::log("Controls: LMB orbit · wheel zoom · Esc quit · FPS in window title");
-    session_log::log("Env: CUBES_COUNT · CUBES_VALIDATION=1");
+    session_log::log("Controls: hold LMB/RMB on metal to melt · wheel zoom · Esc quit");
+    session_log::log("Env: CUBES_COUNT · CUBES_GPU=discrete|0|nvidia · CUBES_VALIDATION=1 · argv --count N");
     session_log::log(&format!(
         "session log: {}",
         session_log::session_path().display()

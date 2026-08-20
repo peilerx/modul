@@ -3,6 +3,7 @@
 //! | Layer | Content |
 //! |-------|---------|
 //! | `mem/base` | `MeshSoaRtBfr` struct only |
+//! | `mem/asm_disasm` | Auto empty seed (`MeshSoaRtAuto`) |
 //! | `proc/processor` | DomainMath: cuboid · lattice · pack instances · steel/index bytes |
 //!
 //! GPU VBO upload: `gpu::MODUL0_VK_MESH`.

@@ -1,29 +1,11 @@
-//! Host mesh SoA factory peels (P · DomainMath · lattice / pack instances).
+//! Host mesh SoA DomainMath (P · lattice / pack instances).
+//! Empty bag constructor ∈ `mem/asm_disasm/pkg/auto/mesh_soa_rt_bfr_at_asm.rs`.
 
 use crate::cpu::MODUL0_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::MeshSoaRtBfr;
 
-
-impl MeshSoaRtBfr {
-    /// `empty` — function (empty).
-    /// Public API entry for this module.
-    /// Belongs to: mesh upload / solid draw MCG.
-    #[must_use]
-    pub const fn empty() -> Self {
-        Self {
-            pos_xs: Vec::new(),
-            pos_ys: Vec::new(),
-            pos_zs: Vec::new(),
-            indices: Vec::new(),
-            inst_xs: Vec::new(),
-            inst_ys: Vec::new(),
-            inst_zs: Vec::new(),
-            desc: "mesh_soa_empty",
-        }
-    }
-
     /// Unit cuboid (axis-aligned 1×1×1 centered at origin) for VK study.
     #[must_use]
-    pub fn unit_cuboid() -> Self {
+pub fn unit_cuboid() -> MeshSoaRtBfr {
         let p = [
             [-0.5f32, -0.5, -0.5],
             [0.5, -0.5, -0.5],
@@ -51,7 +33,7 @@ impl MeshSoaRtBfr {
             0, 3, 7, 0, 7, 4, // -X
             1, 5, 6, 1, 6, 2, // +X
         ];
-        Self {
+        MeshSoaRtBfr {
             pos_xs,
             pos_ys,
             pos_zs,
@@ -59,6 +41,8 @@ impl MeshSoaRtBfr {
             inst_xs: Vec::new(),
             inst_ys: Vec::new(),
             inst_zs: Vec::new(),
+            logical_count: 0,
+            lattice_pitch: 1.25,
             desc: "mesh_soa_unit_cuboid",
         }
     }
@@ -71,14 +55,14 @@ impl MeshSoaRtBfr {
     /// emit only the outer shell so raster cost is O(n²) while the volume still
     /// represents `count` logical cells (n³).
     #[must_use]
-    pub fn unit_cuboid_instanced_lattice(count: usize, pitch: f32) -> Self {
-        Self::unit_cuboid_instanced_lattice_ex(count, pitch, false)
+pub fn unit_cuboid_instanced_lattice(count: usize, pitch: f32) -> MeshSoaRtBfr {
+        unit_cuboid_instanced_lattice_ex(count, pitch, false)
     }
 
     /// Solid 100k-class block: tight pitch + shell instances (interior culled on host).
     #[must_use]
-    pub fn unit_cuboid_instanced_solid_shell(logical_count: usize) -> Self {
-        Self::unit_cuboid_instanced_lattice_ex(logical_count, 1.0, true)
+pub fn unit_cuboid_instanced_solid_shell(logical_count: usize) -> MeshSoaRtBfr {
+        unit_cuboid_instanced_lattice_ex(logical_count, 1.0, true)
     }
 
     /// Solid volume of `count` unit cells (pitch 1) as **one mesh of exterior faces only**.
@@ -86,7 +70,7 @@ impl MeshSoaRtBfr {
     /// No interior geometry · no hollow shell cubes — only the 6 macro-sides tiled by
     /// unit-cell quads (looks like one big cube built from little planes).
     #[must_use]
-    pub fn solid_unit_cells_exterior_mesh(count: usize) -> Self {
+pub fn solid_unit_cells_exterior_mesh(count: usize) -> MeshSoaRtBfr {
         let count = count.max(1);
         let nx = (count as f32).cbrt().ceil() as usize;
         let ny = nx.max(1);
@@ -250,7 +234,7 @@ impl MeshSoaRtBfr {
             }
         }
 
-        Self {
+        MeshSoaRtBfr {
             pos_xs,
             pos_ys,
             pos_zs,
@@ -258,6 +242,8 @@ impl MeshSoaRtBfr {
             inst_xs: Vec::new(),
             inst_ys: Vec::new(),
             inst_zs: Vec::new(),
+            logical_count: 0,
+            lattice_pitch: 1.0,
             desc: "mesh_soa_solid_unit_cells_exterior",
         }
     }
@@ -266,12 +252,12 @@ impl MeshSoaRtBfr {
     /// Public API entry for this module.
     /// Belongs to: mesh upload / solid draw MCG.
     #[must_use]
-    pub fn unit_cuboid_instanced_lattice_ex(
+pub fn unit_cuboid_instanced_lattice_ex(
         count: usize,
         pitch: f32,
         shell_only: bool,
-    ) -> Self {
-        let mut mesh = Self::unit_cuboid();
+    ) -> MeshSoaRtBfr {
+        let mut mesh = unit_cuboid();
         let count = count.max(1);
         let pitch = if pitch.is_finite() && pitch > 0.0 {
             pitch
@@ -331,6 +317,8 @@ impl MeshSoaRtBfr {
                 mesh.inst_zs.push(0.0);
             }
         }
+        mesh.logical_count = mesh.inst_xs.len();
+        mesh.lattice_pitch = pitch;
         mesh.desc = if count == 1 {
             "mesh_soa_unit_cuboid"
         } else if shell_only {
@@ -341,20 +329,60 @@ impl MeshSoaRtBfr {
         mesh
     }
 
+    /// Lattice metadata only — no host instance walk. Compute reconstructs `(ix,iy,iz)`.
+    #[must_use]
+pub fn unit_cuboid_lattice_meta(count: usize, pitch: f32) -> MeshSoaRtBfr {
+        let mut mesh = unit_cuboid();
+        let count = count.max(1);
+        let pitch = if pitch.is_finite() && pitch > 0.0 {
+            pitch
+        } else {
+            1.0
+        };
+        let nx = (count as f64).cbrt().ceil() as usize;
+        let n = nx.saturating_mul(nx).saturating_mul(nx).max(1);
+        mesh.logical_count = n;
+        mesh.lattice_pitch = pitch;
+        mesh.desc = "mesh_soa_lattice_meta";
+        mesh
+    }
+
     /// `instance_count` — function (instance count).
     /// Public API entry for this module.
     /// Belongs to: mesh upload / solid draw MCG.
     #[inline]
     #[must_use]
-    pub fn instance_count(&self) -> usize {
-        let n = self.inst_xs.len().min(self.inst_ys.len()).min(self.inst_zs.len());
+pub fn instance_count(mesh: &MeshSoaRtBfr) -> usize {
+        if mesh.logical_count > 0 {
+            return mesh.logical_count;
+        }
+        let n = mesh.inst_xs.len().min(mesh.inst_ys.len()).min(mesh.inst_zs.len());
         n.max(1)
+    }
+
+    /// Host SoA instance bytes: `x[n] | y[n] | z[n] | lod[n]` (lod = 0).
+    #[must_use]
+pub fn pack_instance_soa_bytes(mesh: &MeshSoaRtBfr) -> Vec<u8> {
+        let n = mesh.inst_xs.len().min(mesh.inst_ys.len()).min(mesh.inst_zs.len());
+        if n == 0 {
+            return vec![0u8; 16];
+        }
+        let mut out = Vec::with_capacity(n * 16);
+        for src in [&mesh.inst_xs, &mesh.inst_ys, &mesh.inst_zs] {
+            for v in src.iter().take(n) {
+                out.extend_from_slice(&v.to_ne_bytes());
+            }
+        }
+        for _ in 0..n {
+            out.extend_from_slice(&0.0f32.to_ne_bytes());
+        }
+        out
     }
 
     /// Host-visible instance buffer bytes: xyzw stride 16 (w=0).
     #[must_use]
-    pub fn pack_instance_xyzw_bytes(&self) -> Vec<u8> {
-        let n = self.inst_xs.len().min(self.inst_ys.len()).min(self.inst_zs.len());
+pub fn pack_instance_xyzw_bytes(mesh: &MeshSoaRtBfr) -> Vec<u8> {
+        let n = mesh.inst_xs.len().min(mesh.inst_ys.len()).min(mesh.inst_zs.len());
         if n == 0 {
             let mut out = Vec::with_capacity(16);
             for f in [0.0f32, 0.0, 0.0, 0.0] {
@@ -364,7 +392,7 @@ impl MeshSoaRtBfr {
         }
         let mut out = Vec::with_capacity(n * 16);
         for i in 0..n {
-            for f in [self.inst_xs[i], self.inst_ys[i], self.inst_zs[i], 0.0f32] {
+            for f in [mesh.inst_xs[i], mesh.inst_ys[i], mesh.inst_zs[i], 0.0f32] {
                 out.extend_from_slice(&f.to_ne_bytes());
             }
         }
@@ -373,17 +401,22 @@ impl MeshSoaRtBfr {
 
     /// World AABB of mesh local AABB translated by every instance (orbit fit).
     #[must_use]
-    pub fn world_bounds_from_local(&self, local_min: [f32; 3], local_max: [f32; 3]) -> ([f32; 3], [f32; 3]) {
-        let n = self.inst_xs.len().min(self.inst_ys.len()).min(self.inst_zs.len());
+pub fn world_bounds_from_local(mesh: &MeshSoaRtBfr, local_min: [f32; 3], local_max: [f32; 3]) -> ([f32; 3], [f32; 3]) {
+        let n = mesh.inst_xs.len().min(mesh.inst_ys.len()).min(mesh.inst_zs.len());
+        if n == 0 && mesh.logical_count > 1 {
+            let nx = (mesh.logical_count as f64).cbrt().round() as f32;
+            let half = (nx - 1.0) * 0.5 * mesh.lattice_pitch.max(0.25) + 0.5;
+            return ([-half, -half, -half], [half, half, half]);
+        }
         if n == 0 {
             return (local_min, local_max);
         }
         let mut bmin = [f32::MAX; 3];
         let mut bmax = [f32::MIN; 3];
         for i in 0..n {
-            let ox = self.inst_xs[i];
-            let oy = self.inst_ys[i];
-            let oz = self.inst_zs[i];
+            let ox = mesh.inst_xs[i];
+            let oy = mesh.inst_ys[i];
+            let oz = mesh.inst_zs[i];
             bmin[0] = bmin[0].min(local_min[0] + ox);
             bmin[1] = bmin[1].min(local_min[1] + oy);
             bmin[2] = bmin[2].min(local_min[2] + oz);
@@ -393,4 +426,3 @@ impl MeshSoaRtBfr {
         }
         (bmin, bmax)
     }
-}

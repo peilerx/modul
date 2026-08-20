@@ -99,7 +99,8 @@ pub mod gpu;
 pub mod tandem;
 
 pub use common::{
-    assemble_shader_spv, find_vk_memory_type, from_err, map_vk, trace_deep, trace_emit,
+    assemble_shader_spv, find_vk_memory_type, from_err, map_vk,
+    pick_vk_memory_type_vram_then_host, trace_deep, trace_emit,
     trace_enabled, trace_init_from_env, trace_mesh_stats, trace_paint_diag, trace_set_enabled,
     trace_sketch_loop, trace_throttle, trace_zbuffer_coverage, ModulResult,
 };

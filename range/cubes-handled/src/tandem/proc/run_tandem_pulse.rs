@@ -6,7 +6,9 @@ use modul::gpu::MODUL0_VK_FRAME::mem::asm_disasm::vk_crg::auto::frame_default_rt
 
 use modul::gpu::MODUL0_VK_DISPLAY::proc::display::display_frame::record_frame_with_serial;
 use modul::gpu::MODUL0_VK_FRAME::proc::processor::frame_tick::{begin_frame, end_frame};
-use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshPushRt;
+use modul::gpu::MODUL0_VK_MESH::proc::processor::{
+    mesh_gpu_center_rt, mesh_gpu_radius_rt, mesh_push_from_orbit,
+};
 use modul::gpu::MODUL0_VK_SWAPCHAIN::conv::port::{SwapchainBfr, SwapchainTransportable};
 use modul::tandem::MODUL0_TANDEM::TandemBfr;
 
@@ -22,9 +24,9 @@ pub fn run_tandem_pulse(bfr: &mut TandemBfr) -> Result<(), String> {
     let sep_max = bfr.session_stp.sep_max_stp;
     let pulse_period = bfr.session_stp.pulse_period_secs_stp;
 
-    let radius = bfr.mesh_gpu_rt.radius_rt() * 2.8 / bfr.zoom.max(0.2);
-    bfr.mesh_push_rt = MeshPushRt::from_orbit(
-        bfr.mesh_gpu_rt.center_rt(),
+    let radius = mesh_gpu_radius_rt(&bfr.mesh_gpu_rt) * 2.8 / bfr.zoom.max(0.2);
+    bfr.mesh_push_rt = mesh_push_from_orbit(
+        mesh_gpu_center_rt(&bfr.mesh_gpu_rt),
         radius,
         bfr.orbit_yaw,
         bfr.orbit_pitch,

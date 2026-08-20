@@ -1,0 +1,369 @@
+#version 450
+
+// Compute-only lattice. One thread = one pixel. No cmdDraw.
+// Pulse moves centers (size stays 1). One cube per XZ cell, Y slabs front-ish.
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout(set = 0, binding = 0, rgba8) uniform writeonly image2D dst;
+layout(set = 0, binding = 1) buffer Heat {
+    float heat[];
+};
+
+layout(push_constant) uniform Pc {
+    mat4 inv_mvp;
+    vec4 cam_pos;
+    vec4 light_dir;
+    vec4 base_color;
+    vec4 look3;
+    uvec4 grid; // nx ny nz n
+    vec4 view;  // width height pitch radius_px
+    vec4 brush; // ndc.xy · dt · paint
+} pc;
+
+shared float sh_s[1024];
+shared float sh_cy[1024];
+shared float sh_sp[1024];
+
+const float HEAT_COOL = 0.40;
+const float DESTROYED = 2.0;
+// pitch=1 unit cells: 0.5 = coplanar faces. 0.58 stuck out 16% → used/waffle at boot.
+const float HALF = 0.5;
+
+float heat_of(float stored, float now) {
+    if (stored != stored || stored == 0.0) {
+        return 0.0;
+    }
+    if (stored < 0.0) {
+        return DESTROYED;
+    }
+    return clamp((stored - now) * HEAT_COOL, 0.0, DESTROYED);
+}
+
+void heat_store(uint lin, float h, float now) {
+    if (h >= DESTROYED - 1e-4) {
+        heat[lin] = -1.0;
+    } else {
+        heat[lin] = now + h / HEAT_COOL;
+    }
+}
+
+float saturate(float x) { return clamp(x, 0.0, 1.0); }
+float smooth01(float x) {
+    x = saturate(x);
+    return x * x * (3.0 - 2.0 * x);
+}
+
+float pulse_open(float base_y) {
+    float t = pc.look3.x;
+    float sep_max = pc.look3.y;
+    if (sep_max < 1e-5) sep_max = 1.6;
+    float y_half = max(pc.look3.z, 0.5);
+    float period = max(pc.look3.w, 0.5);
+    float y_n = saturate(0.5 + 0.5 * (base_y / y_half));
+    float g = fract(t / period);
+    float open_g;
+    if (g < 0.40) open_g = g / 0.40;
+    else if (g < 0.50) open_g = 1.0;
+    else if (g < 0.90) open_g = 1.0 - (g - 0.50) / 0.40;
+    else open_g = 0.0;
+    float local = open_g * 1.45 - (1.0 - y_n) * 0.45;
+    return smooth01(local);
+}
+
+bool ray_aabb(vec3 ro, vec3 rd, vec3 bmin, vec3 bmax, inout float t_best, out vec3 nrm) {
+    vec3 invd = 1.0 / rd;
+    vec3 t0 = (bmin - ro) * invd;
+    vec3 t1 = (bmax - ro) * invd;
+    vec3 tsm = min(t0, t1);
+    vec3 tlg = max(t0, t1);
+    float t_enter = max(max(tsm.x, tsm.y), tsm.z);
+    float t_exit = min(min(tlg.x, tlg.y), tlg.z);
+    if (t_exit < max(t_enter, 0.0)) {
+        nrm = vec3(0.0);
+        return false;
+    }
+    float t_hit = t_enter > 0.0 ? t_enter : 0.0;
+    if (t_hit >= t_best) {
+        nrm = vec3(0.0);
+        return false;
+    }
+    t_best = t_hit;
+    vec3 p = ro + rd * (t_hit + 1e-4);
+    vec3 c = (bmin + bmax) * 0.5;
+    vec3 d = abs(p - c);
+    nrm = vec3(0.0);
+    if (d.x >= d.y && d.x >= d.z) nrm.x = (p.x >= c.x) ? 1.0 : -1.0;
+    else if (d.y >= d.z) nrm.y = (p.y >= c.y) ? 1.0 : -1.0;
+    else nrm.z = (p.z >= c.z) ? 1.0 : -1.0;
+    return true;
+}
+
+bool ray_vol(vec3 ro, vec3 rd, vec3 bmin, vec3 bmax, out float t_enter, out float t_exit) {
+    vec3 invd = 1.0 / rd;
+    vec3 t0 = (bmin - ro) * invd;
+    vec3 t1 = (bmax - ro) * invd;
+    vec3 tsm = min(t0, t1);
+    vec3 tlg = max(t0, t1);
+    t_enter = max(max(tsm.x, tsm.y), tsm.z);
+    t_exit = min(min(tlg.x, tlg.y), tlg.z);
+    if (t_exit < max(t_enter, 0.0)) {
+        return false;
+    }
+    t_enter = max(t_enter, 0.0);
+    return true;
+}
+
+void main() {
+    uint nx = max(pc.grid.x, 1u);
+    uint ny = max(pc.grid.y, 1u);
+    uint nz = max(pc.grid.z, 1u);
+    uint n = max(pc.grid.w, 1u);
+    float pitch = max(pc.view.z, 0.25);
+    vec3 c0 = vec3(float(nx - 1u), float(ny - 1u), float(nz - 1u)) * 0.5;
+    float sep = pc.look3.y;
+    if (sep < 0.0) sep = 0.0;
+
+    uint lid = gl_LocalInvocationIndex;
+    if (ny <= 1024u) {
+        for (uint iy = lid; iy < ny; iy += 64u) {
+            float base_y = (float(iy) - c0.y) * pitch;
+            float s = 1.0 + pulse_open(base_y) * sep;
+            if (sep < 1e-5) s = 1.0;
+            sh_s[iy] = s;
+            sh_cy[iy] = base_y * s;
+            sh_sp[iy] = pitch * s;
+        }
+        barrier();
+    }
+
+    ivec2 pix = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 ext = ivec2(int(pc.view.x), int(pc.view.y));
+    if (pix.x >= ext.x || pix.y >= ext.y) {
+        return;
+    }
+
+    vec2 uv = (vec2(pix) + 0.5) / vec2(ext);
+    vec2 ndc = uv * 2.0 - 1.0;
+    vec4 p_far = pc.inv_mvp * vec4(ndc, 1.0, 1.0);
+    vec3 far_w = p_far.xyz / max(p_far.w, 1e-6);
+    vec3 ro = pc.cam_pos.xyz;
+    vec3 rd = normalize(far_w - ro);
+
+    float smax = 1.0 + sep;
+    vec3 metal_min = -c0 * pitch * smax - vec3(HALF);
+    vec3 metal_max = c0 * pitch * smax + vec3(HALF);
+    vec3 vol_min = metal_min - vec3(0.02);
+    vec3 vol_max = metal_max + vec3(0.02);
+    float t_vol0;
+    float t_vol1;
+    if (!ray_vol(ro, rd, vol_min, vol_max, t_vol0, t_vol1)) {
+        imageStore(dst, pix, vec4(0.78, 0.78, 0.80, 1.0));
+        return;
+    }
+
+    vec3 hit_n = vec3(0.0, 1.0, 0.0);
+    float t_best = t_vol1 + 1e-3;
+    float hit_h = 0.0;
+    uint hit_lin = n;
+    bool hit = false;
+    bool smooth_hit = false;
+
+    // Intact metal = one AABB. 929³ cell DDA is the chewed silhouette.
+    float t_box = 1e30;
+    vec3 n_box;
+    if (ray_aabb(ro, rd, metal_min, metal_max, t_box, n_box)) {
+        vec3 pin = ro + rd * t_box - n_box * 1e-3;
+        ivec3 ic = ivec3(clamp(
+            floor((pin + c0 * pitch + vec3(HALF)) / pitch - 1e-4),
+            vec3(0.0),
+            vec3(float(nx - 1u), float(ny - 1u), float(nz - 1u))
+        ));
+        uint lin = uint(ic.x) + uint(ic.y) * nx + uint(ic.z) * nx * ny;
+        float stored = 0.0;
+        if (lin < n && lin < uint(heat.length())) {
+            stored = heat[lin];
+        }
+        float h = heat_of(stored, pc.look3.x);
+        // Intact (incl. NaN/zero VRAM) = one AABB. DDA only after melt/destroy.
+        if (!(stored < 0.0) && h < 1.75) {
+            hit = true;
+            smooth_hit = true;
+            hit_n = n_box;
+            hit_h = h;
+            hit_lin = lin;
+            t_best = t_box;
+        }
+    }
+
+    int i0 = 0;
+    int i1 = int(ny) - 1;
+    int istep = 1;
+    if (rd.y < 0.0) {
+        i0 = int(ny) - 1;
+        i1 = 0;
+        istep = -1;
+    }
+
+    for (int iy = i0; !smooth_hit && iy != i1 + istep; iy += istep) {
+        float s;
+        float cy;
+        float sp;
+        if (ny <= 1024u) {
+            s = sh_s[iy];
+            cy = sh_cy[iy];
+            sp = sh_sp[iy];
+        } else {
+            float base_y = (float(iy) - c0.y) * pitch;
+            s = (sep < 1e-5) ? 1.0 : (1.0 + pulse_open(base_y) * sep);
+            cy = base_y * s;
+            sp = pitch * s;
+        }
+
+        float y0 = cy - HALF;
+        float y1 = cy + HALF;
+        float t_lo;
+        float t_hi;
+        if (abs(rd.y) < 1e-7) {
+            if (ro.y < y0 || ro.y > y1) {
+                continue;
+            }
+            t_lo = t_vol0;
+            t_hi = t_vol1;
+        } else {
+            float ta = (y0 - ro.y) / rd.y;
+            float tb = (y1 - ro.y) / rd.y;
+            t_lo = min(ta, tb);
+            t_hi = max(ta, tb);
+            if (t_hi < t_vol0 || t_lo > t_vol1) {
+                continue;
+            }
+            t_lo = max(t_lo, t_vol0);
+            t_hi = min(t_hi, t_vol1);
+        }
+        if (t_hi < t_lo || t_lo >= t_best) {
+            continue;
+        }
+        t_hi = min(t_hi, t_best);
+
+        vec3 lmin = vec3((-c0.x) * sp - HALF, y0, (-c0.z) * sp - HALF);
+        vec3 lmax = vec3((float(nx - 1u) - c0.x) * sp + HALF, y1, (float(nz - 1u) - c0.z) * sp + HALF);
+        float lt0;
+        float lt1;
+        if (!ray_vol(ro, rd, lmin, lmax, lt0, lt1)) {
+            continue;
+        }
+        t_lo = max(t_lo, lt0);
+        t_hi = min(t_hi, lt1);
+        if (t_hi < t_lo || t_lo >= t_best) {
+            continue;
+        }
+
+        vec2 p = ro.xz + rd.xz * (t_lo + 1e-4);
+        int ix = int(floor(p.x / sp + c0.x + 0.5));
+        int iz = int(floor(p.y / sp + c0.z + 0.5));
+        ivec2 cell = ivec2(ix, iz);
+        ivec2 st = ivec2(rd.x >= 0.0 ? 1 : -1, rd.z >= 0.0 ? 1 : -1);
+        float bx = (float(cell.x) - c0.x + (st.x > 0 ? 0.5 : -0.5)) * sp;
+        float bz = (float(cell.y) - c0.z + (st.y > 0 ? 0.5 : -0.5)) * sp;
+        vec2 tMax;
+        tMax.x = abs(rd.x) < 1e-8 ? 1e30 : (bx - p.x) / rd.x;
+        tMax.y = abs(rd.z) < 1e-8 ? 1e30 : (bz - p.y) / rd.z;
+        vec2 tDel;
+        tDel.x = abs(rd.x) < 1e-8 ? 1e30 : abs(sp / rd.x);
+        tDel.y = abs(rd.z) < 1e-8 ? 1e30 : abs(sp / rd.z);
+
+        int maxk = int(nx) + int(nz) + 4;
+        float t_cur = t_lo;
+        uint plane = nx * ny;
+        for (int k = 0; k < maxk; k++) {
+            if (t_cur > t_hi) {
+                break;
+            }
+            if (cell.x >= 0 && cell.y >= 0 && cell.x < int(nx) && cell.y < int(nz)) {
+                uint lin = uint(cell.x) + uint(iy) * nx + uint(cell.y) * plane;
+                if (lin < n) {
+                    vec3 center = vec3(
+                        (float(cell.x) - c0.x) * sp,
+                        cy,
+                        (float(cell.y) - c0.z) * sp
+                    );
+                    float h = 0.0;
+                    if (lin < uint(heat.length())) {
+                        h = heat_of(heat[lin], pc.look3.x);
+                    }
+                    if (h < DESTROYED) {
+                        // Full AABB until h≈2 so the same cell keeps the ray.
+                        float melt = clamp((h - 1.75) / 0.25, 0.0, 1.0);
+                        float hs = HALF * (1.0 - melt * 0.90);
+                        vec3 c = center;
+                        c.y -= melt * 0.18;
+                        vec3 nrm;
+                        if (ray_aabb(ro, rd, c - vec3(hs), c + vec3(hs), t_best, nrm)) {
+                            hit = true;
+                            hit_n = nrm;
+                            hit_h = h;
+                            hit_lin = lin;
+                            t_hi = min(t_hi, t_best);
+                        }
+                    }
+                }
+            }
+            if (tMax.x < tMax.y) {
+                cell.x += st.x;
+                t_cur = t_lo + tMax.x;
+                tMax.x += tDel.x;
+            } else {
+                cell.y += st.y;
+                t_cur = t_lo + tMax.y;
+                tMax.y += tDel.y;
+            }
+        }
+    }
+
+    if (hit && hit_lin < n && hit_lin < uint(heat.length())) {
+        float now = pc.look3.x;
+        float h = heat_of(heat[hit_lin], now);
+        hit_h = h;
+        uint paint = uint(pc.brush.w + 0.5);
+        vec2 mpix = (pc.brush.xy * 0.5 + 0.5) * vec2(ext);
+        float rad = max(pc.view.w, 150.0);
+        float dist = length(vec2(pix) + 0.5 - mpix);
+        if (paint == 1u && dist < rad && h < DESTROYED) {
+            float dt = max(pc.brush.z, 1e-4);
+            float fall = 1.0 - dist / rad;
+            fall = mix(0.75, 1.0, fall);
+            float add = (h < 1.0 ? 14.0 : 22.0) * dt * fall;
+            h = min(h + add, DESTROYED);
+            heat_store(hit_lin, h, now);
+            hit_h = h;
+        }
+    }
+
+    vec3 col = vec3(0.78, 0.78, 0.80);
+    if (hit) {
+        vec3 L = normalize(pc.light_dir.xyz);
+        vec3 V = normalize(-rd);
+        float melt = clamp(hit_h - 1.0, 0.0, 1.0);
+        float heat_vis = min(hit_h, 1.0);
+        float used = smooth_hit ? 0.0 : 1.0;
+        vec3 N = normalize(hit_n);
+        float ndl = saturate(dot(N, L));
+        float spec = pow(saturate(dot(N, normalize(L + V))), mix(128.0, 32.0, used));
+        vec3 base = pc.base_color.rgb;
+        vec3 heat_col;
+        if (heat_vis < 0.15) {
+            heat_col = mix(vec3(0.65, 0.65, 0.68), vec3(1.0, 0.95, 0.4), heat_vis / 0.15);
+        } else if (heat_vis < 0.35) {
+            heat_col = mix(vec3(1.0, 0.95, 0.4), vec3(1.0, 0.55, 0.1), (heat_vis - 0.15) / 0.2);
+        } else if (heat_vis < 0.65) {
+            heat_col = mix(vec3(1.0, 0.55, 0.1), vec3(0.95, 0.2, 0.05), (heat_vis - 0.35) / 0.3);
+        } else {
+            heat_col = mix(vec3(0.95, 0.2, 0.05), vec3(1.0, 0.95, 0.7), (heat_vis - 0.65) / 0.35);
+        }
+        float heat_mix = clamp(heat_vis * 1.6 + melt * 0.5, 0.0, 1.0);
+        vec3 lit = base * (0.40 + ndl * 0.70) + vec3(0.90, 0.91, 0.93) * spec * mix(1.2, 0.55, used);
+        col = mix(lit, heat_col, heat_mix);
+        col *= mix(0.94 + 0.10 * ndl, 0.78 + 0.22 * ndl + heat_mix * 0.6, used);
+        col = pow(clamp(col, vec3(0.0), vec3(1.2)), vec3(mix(0.96, 0.92, used)));
+    }
+    imageStore(dst, pix, vec4(col, 1.0));
+}

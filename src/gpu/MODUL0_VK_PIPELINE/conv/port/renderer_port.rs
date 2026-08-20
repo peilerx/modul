@@ -10,6 +10,10 @@ use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::PipelineTriangleHandled;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::RenderPassTriangleHandled;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::ShadersLineAuto;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::assemble_soa_comp_pipeline;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::assemble_soa_descriptor_sets;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::assemble_soa_heat_pipeline;
+use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::assemble_soa_set_layout;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::handled::render_res_intsct_hld_asm::ShadersMeshSolidAuto;
 use crate::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_pkg::auto::render_lane_stp_at_asm::{
     PipelineTriangleStpAuto, RenderPassTriangleStpAuto,
@@ -177,9 +181,10 @@ impl RendererTransportable for RendererBfr {
             <ShadersTriangleRtPkg as ShadersMeshSolidAuto>::auto_assemble(device_extrl)?,
         );
 
-        // asm 5/9 · steel pipeline
+        // asm 5/9 · steel pipeline + SoA dispatch surface
         let steel = bfr.shaders_steel()?;
         let (steel_vert, steel_frag) = extract_shader_pair(&steel.shader_modules_extrl)?;
+        let soa_layout = assemble_soa_set_layout(device_extrl)?;
         bfr.pipeline_mesh_solid_rt_pkg = Some(
             <PipelineTriangleRtPkg as PipelineMeshSolidHandled>::handled_assemble(
                 device_extrl,
@@ -194,8 +199,22 @@ impl RendererTransportable for RendererBfr {
                 rp_rt_pass,
                 steel_vert,
                 steel_frag,
+                soa_layout.descriptor_set_layout_extrl,
             )?,
         );
+        bfr.pipeline_mesh_soa_comp_rt_pkg = Some(assemble_soa_comp_pipeline(
+            device_extrl,
+            soa_layout.descriptor_set_layout_extrl,
+        )?);
+        bfr.pipeline_soa_heat_comp_rt_pkg = Some(assemble_soa_heat_pipeline(
+            device_extrl,
+            soa_layout.descriptor_set_layout_extrl,
+        )?);
+        let (soa_pool, soa_sets) =
+            assemble_soa_descriptor_sets(device_extrl, soa_layout.descriptor_set_layout_extrl)?;
+        bfr.descriptor_set_layout_default_rt_pkg = Some(soa_layout);
+        bfr.descriptor_pool_default_rt_pkg = Some(soa_pool);
+        bfr.descriptor_sets_default_rt_pkg = Some(soa_sets);
 
         // asm 6/9 · line shaders
         bfr.shaders_line_rt_pkg = Some(
@@ -289,6 +308,7 @@ impl RendererTransportable for RendererBfr {
 
         let steel = bfr.shaders_steel()?;
         let (steel_vert, steel_frag) = extract_shader_pair(&steel.shader_modules_extrl)?;
+        let soa_layout = assemble_soa_set_layout(device_extrl)?;
         bfr.pipeline_mesh_solid_rt_pkg = Some(
             <PipelineTriangleRtPkg as PipelineMeshSolidHandled>::handled_assemble(
                 device_extrl,
@@ -302,8 +322,22 @@ impl RendererTransportable for RendererBfr {
                 rp_rt_pass,
                 steel_vert,
                 steel_frag,
+                soa_layout.descriptor_set_layout_extrl,
             )?,
         );
+        bfr.pipeline_mesh_soa_comp_rt_pkg = Some(assemble_soa_comp_pipeline(
+            device_extrl,
+            soa_layout.descriptor_set_layout_extrl,
+        )?);
+        bfr.pipeline_soa_heat_comp_rt_pkg = Some(assemble_soa_heat_pipeline(
+            device_extrl,
+            soa_layout.descriptor_set_layout_extrl,
+        )?);
+        let (soa_pool, soa_sets) =
+            assemble_soa_descriptor_sets(device_extrl, soa_layout.descriptor_set_layout_extrl)?;
+        bfr.descriptor_set_layout_default_rt_pkg = Some(soa_layout);
+        bfr.descriptor_pool_default_rt_pkg = Some(soa_pool);
+        bfr.descriptor_sets_default_rt_pkg = Some(soa_sets);
 
         bfr.shaders_line_rt_pkg = Some(
             <ShadersTriangleRtPkg as ShadersLineAuto>::auto_assemble(device_extrl)?,

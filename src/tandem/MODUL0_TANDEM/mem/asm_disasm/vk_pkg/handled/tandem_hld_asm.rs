@@ -30,6 +30,14 @@ impl TandemDefaultHandled for TandemBfr {
         unsafe {
             let _ = device.device_wait_idle();
         }
+        crate::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::destroy_soa_color_target(
+            device,
+            &mut bfr.display_rt,
+        );
+        crate::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::destroy_soa_heat_buffer(
+            device,
+            &mut bfr.display_rt,
+        );
         PresentationDefaultRtCrg::handled_disassemble(device, loader, &mut bfr.presentation_rt);
         MeshGpuDefaultRtPkg::handled_disassemble(device, &mut bfr.mesh_gpu_rt);
     }
@@ -53,6 +61,25 @@ impl TandemDefaultHandled for TandemBfr {
         )?;
 
         bfr.frame_rt.frame_sync_default_rt_pkg.current_frame_rt = 0;
+
+        let device = &swapchain_rt_crg.device_default_rt_pkg.device_extrl;
+        let inst = &swapchain_rt_crg.instance_default_rt.instance_extrl;
+        let phys = swapchain_rt_crg
+            .physical_device_default_rt_pkg
+            .physical_device_extrl;
+        let ext = bfr.presentation_rt.swapchain_default_rt_pkg.extent_rt;
+        crate::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::update_soa_color_target(
+            device,
+            inst,
+            phys,
+            ext,
+            &mut bfr.display_rt,
+        )?;
+        crate::gpu::MODUL0_VK_MESH::proc::processor::mesh_soa_bind::bind_soa_color_image(
+            device,
+            &bfr.renderer_rt,
+            &bfr.display_rt,
+        )?;
         Ok(())
     }
 }

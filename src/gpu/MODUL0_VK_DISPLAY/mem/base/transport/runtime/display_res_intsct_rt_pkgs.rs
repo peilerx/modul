@@ -43,6 +43,34 @@ pub struct DisplayDefaultRtCrg {
     pub display_render_default_rt: DisplayRenderDefaultRt,
     /// Runtime phase field `vulkan_display_default_rt`.
     pub vulkan_display_default_rt: VulkanDisplayDefaultRt,
+    /// Compute color target · STORAGE + TRANSFER_SRC · no cmdDraw.
+    pub soa_color_image_extrl: ash::vk::Image,
+    /// Device memory of `soa_color_image_extrl`.
+    pub soa_color_memory_extrl: ash::vk::DeviceMemory,
+    /// Image view of `soa_color_image_extrl`.
+    pub soa_color_view_extrl: ash::vk::ImageView,
+    /// Compute target extent (swapchain × SSAA).
+    pub soa_color_extent_rt: ash::vk::Extent2D,
+    /// Heat SoA `float[n]` · STORAGE + TRANSFER_DST.
+    pub soa_heat_buffer_extrl: ash::vk::Buffer,
+    /// Device memory of `soa_heat_buffer_extrl`.
+    pub soa_heat_memory_extrl: ash::vk::DeviceMemory,
+    /// Byte size of the heat buffer.
+    pub soa_heat_bytes_rt: u64,
+    /// First-frame fill done.
+    pub soa_heat_cleared_rt: bool,
+    /// Mouse NDC x for heat brush.
+    pub heat_mouse_x_rt: f32,
+    /// Mouse NDC y for heat brush.
+    pub heat_mouse_y_rt: f32,
+    /// Frame dt seconds.
+    pub heat_dt_rt: f32,
+    /// LMB hold seconds.
+    pub heat_hold_rt: f32,
+    /// 1 = paint this frame.
+    pub heat_paint_rt: u32,
+    /// 1 = run heat compute this frame (paint or cooling tail).
+    pub heat_run_rt: u32,
     /// Human-readable bag descriptor (`&'static str` protocol tag).
     pub desc: &'static str,
 }

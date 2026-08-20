@@ -15,10 +15,14 @@ pub struct MeshGpuDefaultRtPkg {
     pub vertex_memory_extrl: vk::DeviceMemory,
     /// External / raw Vulkan handle or host pointer field `index_memory_extrl` (`index_memory` peel).
     pub index_memory_extrl: vk::DeviceMemory,
-    /// Per-instance xyzw (stride 16) · binding 1 · VERTEX rate INSTANCE.
+    /// SoA rest `x[n]|y[n]|z[n]|lod[n]` · STORAGE · compute read.
     pub instance_buffer_extrl: vk::Buffer,
     /// External / raw Vulkan handle or host pointer field `instance_memory_extrl` (`instance_memory` peel).
     pub instance_memory_extrl: vk::DeviceMemory,
+    /// SoA world after `vkCmdDispatch` · STORAGE · vertex read.
+    pub soa_world_buffer_extrl: vk::Buffer,
+    /// Device memory of `soa_world_buffer_extrl`.
+    pub soa_world_memory_extrl: vk::DeviceMemory,
     /// Interleaved pos+nrm vertices uploaded.
     pub vertex_count_rt: u32,
     /// Runtime phase field `index_count_rt`.

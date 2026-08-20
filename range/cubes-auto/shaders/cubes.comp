@@ -1,0 +1,63 @@
+#version 450
+
+// SoA rest → packed xyzw instance stream for vertex fetch.
+// One thread = one instance. Pulse math only. Raster stays cmd_draw_indexed.
+
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+layout(std430, set = 0, binding = 0) readonly buffer RestSoa {
+    float rest[];
+};
+
+layout(std430, set = 0, binding = 1) buffer WorldAos {
+    vec4 world[];
+};
+
+layout(push_constant) uniform Pulse {
+    vec4 look3; // time, sep_max, y_half, period
+} pc;
+
+float saturate(float x) { return clamp(x, 0.0, 1.0); }
+float smooth01(float x) {
+    x = saturate(x);
+    return x * x * (3.0 - 2.0 * x);
+}
+
+void main() {
+    uint n = uint(rest.length()) / 4u;
+    uint i = gl_GlobalInvocationID.x;
+    if (i >= n) {
+        return;
+    }
+
+    vec3 base_inst = vec3(rest[i], rest[n + i], rest[2u * n + i]);
+    float lod = rest[3u * n + i];
+
+    float t = pc.look3.x;
+    float sep_max = pc.look3.y;
+    if (sep_max < 1e-5) {
+        sep_max = 1.6;
+    }
+    float y_half = max(pc.look3.z, 0.5);
+    float period = max(pc.look3.w, 0.5);
+
+    float y_n = saturate(0.5 + 0.5 * (base_inst.y / y_half));
+    float g = fract(t / period);
+    float open_g;
+    if (g < 0.40) {
+        open_g = g / 0.40;
+    } else if (g < 0.50) {
+        open_g = 1.0;
+    } else if (g < 0.90) {
+        open_g = 1.0 - (g - 0.50) / 0.40;
+    } else {
+        open_g = 0.0;
+    }
+
+    float stagger = 0.45;
+    float local = open_g * (1.0 + stagger) - (1.0 - y_n) * stagger;
+    float open = smooth01(local);
+    vec3 inst = base_inst * (1.0 + open * sep_max);
+
+    world[i] = vec4(inst, lod);
+}

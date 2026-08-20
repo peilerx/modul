@@ -9,8 +9,10 @@ use ash::vk;
 use modul::gpu::MODUL0_VK_DISPLAY::conv::port::{DisplayBfr, DisplayBfrAuto, DisplayTransportable};
 use modul::gpu::MODUL0_VK_FRAME::conv::port::{FrameBfr, FrameBfrAuto, FrameTransportable};
 use modul::gpu::MODUL0_VK_MESH::conv::port::{MeshGpuBfr, MeshGpuBfrAuto, MeshGpuTransportable};
-use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::MeshPushRt;
-use modul::cpu::MODUL0_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::MeshSoaRtBfr;
+use modul::cpu::MODUL0_MESH::proc::processor::unit_cuboid_lattice_meta;
+use modul::gpu::MODUL0_VK_MESH::proc::processor::{
+    mesh_gpu_center_rt, mesh_gpu_radius_rt, mesh_push_from_orbit,
+};
 use modul::gpu::MODUL0_VK_PIPELINE::conv::port::{
     RendererBfr, RendererBfrAuto, RendererTransportable,
 };
@@ -38,7 +40,7 @@ use modul::tandem::MODUL0_TANDEM::mem::asm_disasm::vk_pkg::auto::validation_samp
     validation_layers_stp_from_prt,
 };
 use modul::tandem::MODUL0_TANDEM::mem::asm_disasm::vk_pkg::auto::tandem_session_prt_at_asm::{
-    tandem_session_prt_to_stp, tandem_session_stp_with_ship_env,
+    tandem_session_prt_to_stp, tandem_session_stp_ship_env,
 };
 
 use crate::tandem::proc::session_log;
@@ -46,7 +48,7 @@ use crate::tandem::proc::session_log;
 /// Auto session boot · single linear method · Prt + auto_assemble + import_for_asm*.
 pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
     let session_stp =
-        tandem_session_stp_with_ship_env(tandem_session_prt_to_stp(TandemSessionPrt::SHIP_MAILBOX_AA4_NO_VALIDATION));
+        tandem_session_stp_ship_env(tandem_session_prt_to_stp(TandemSessionPrt::SHIP_MAILBOX_AA4_NO_VALIDATION));
 
     let size = window.inner_size();
     let w = size.width.max(1);
@@ -111,7 +113,8 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         extent_height_stp: h,
         surface_format_op,
         present_mode_op,
-        image_usage_op: vk::ImageUsageFlags::COLOR_ATTACHMENT,
+        image_usage_op: vk::ImageUsageFlags::COLOR_ATTACHMENT
+            | vk::ImageUsageFlags::TRANSFER_DST,
         composite_alpha_op: vk::CompositeAlphaFlagsKHR::OPAQUE,
         desc: khr_desc,
     };
@@ -148,6 +151,30 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         vk::api_version_major(props.api_version),
         vk::api_version_minor(props.api_version),
         vk::api_version_patch(props.api_version),
+    ));
+    if let Ok(listed) = unsafe { inst.enumerate_physical_devices() } {
+        for (i, dev) in listed.iter().enumerate() {
+            let p = unsafe { inst.get_physical_device_properties(*dev) };
+            let name = unsafe { CStr::from_ptr(p.device_name.as_ptr()) }.to_string_lossy();
+            let mark = if *dev == phys { "PICK" } else { "    " };
+            let kind = match p.device_type {
+                vk::PhysicalDeviceType::DISCRETE_GPU => "DISCRETE",
+                vk::PhysicalDeviceType::INTEGRATED_GPU => "INTEGRATED",
+                vk::PhysicalDeviceType::VIRTUAL_GPU => "VIRTUAL",
+                vk::PhysicalDeviceType::CPU => "CPU",
+                _ => "OTHER",
+            };
+            session_log::log(&format!(
+                "GPU[{i}] {mark} {kind} {name} type=0x{:x} vendor=0x{:x} device=0x{:x}",
+                p.device_type.as_raw(),
+                p.vendor_id,
+                p.device_id
+            ));
+        }
+    }
+    session_log::log(&format!(
+        "CUBES_COUNT · requested={} · override=CUBES_COUNT env or argv --count/-n/integer",
+        session_stp.cube_count_stp
     ));
 
     let sample_count = pick_sample_count_prefer(
@@ -248,14 +275,27 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         &swapchain_rt_crg.device_default_rt_pkg,
         &swapchain_rt_crg.swapchain_command_pool_default_rt_pkg,
     )?;
-    let display_rt = display_bfr
+    let mut display_rt = display_bfr
         .cargo_rt
         .take()
         .ok_or_else(|| "cubes: display cargo missing".to_string())?;
+    modul::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::update_soa_color_target(
+        &swapchain_rt_crg.device_default_rt_pkg.device_extrl,
+        inst,
+        phys,
+        presentation_rt.swapchain_default_rt_pkg.extent_rt,
+        &mut display_rt,
+    )?;
+    modul::gpu::MODUL0_VK_MESH::proc::processor::mesh_soa_bind::bind_soa_color_image(
+        &swapchain_rt_crg.device_default_rt_pkg.device_extrl,
+        &renderer_rt,
+        &display_rt,
+    )?;
+    session_log::log("soa-vulkan · heat-destroy cube · vkCmdDispatch · no cmdDraw · MAILBOX");
 
     // ── MESH ─────────────────────────────────────────────────────────────────
     let cube_count = session_stp.cube_count_stp.max(1);
-    let mesh = MeshSoaRtBfr::unit_cuboid_instanced_lattice(
+    let mesh = unit_cuboid_lattice_meta(
         cube_count,
         session_stp.lattice_spacing_stp,
     );
@@ -268,15 +308,45 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         phys,
         &mesh,
     )?;
-    let mesh_gpu_rt = mesh_gpu_bfr
+    let mut mesh_gpu_rt = mesh_gpu_bfr
         .mesh_gpu_default_rt_pkg
         .take()
         .ok_or_else(|| "cubes: mesh_gpu missing".to_string())?;
+    mesh_gpu_rt.base_r_rt = 0.11;
+    mesh_gpu_rt.base_g_rt = 0.11;
+    mesh_gpu_rt.base_b_rt = 0.14;
+    let heat_heap =
+        modul::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::update_soa_heat_buffer(
+            &swapchain_rt_crg.device_default_rt_pkg.device_extrl,
+            inst,
+            phys,
+            mesh_gpu_rt.instance_count_rt,
+            &mut display_rt,
+        )?;
+    modul::gpu::MODUL0_VK_DISPLAY::proc::display::soa_color_target::clear_soa_heat_buffer(
+        &swapchain_rt_crg.device_default_rt_pkg.device_extrl,
+        swapchain_rt_crg.device_default_rt_pkg.graphics_queue_extrl,
+        swapchain_rt_crg
+            .swapchain_command_pool_default_rt_pkg
+            .command_pool_extrl,
+        &mut display_rt,
+    )?;
+    modul::gpu::MODUL0_VK_MESH::proc::processor::mesh_soa_bind::bind_soa_color_image(
+        &swapchain_rt_crg.device_default_rt_pkg.device_extrl,
+        &renderer_rt,
+        &display_rt,
+    )?;
+    session_log::log(&format!(
+        "lattice n={} · heat {:.2} GiB · {} · cubes are indices not VRAM meshes",
+        mesh_gpu_rt.instance_count_rt,
+        display_rt.soa_heat_bytes_rt as f64 / (1024.0 * 1024.0 * 1024.0),
+        heat_heap
+    ));
 
     let aspect = w as f32 / h as f32;
-    let mesh_push_rt = MeshPushRt::from_orbit(
-        mesh_gpu_rt.center_rt(),
-        mesh_gpu_rt.radius_rt() * session_stp.camera_radius_scale_stp,
+    let mesh_push_rt = mesh_push_from_orbit(
+        mesh_gpu_center_rt(&mesh_gpu_rt),
+        mesh_gpu_radius_rt(&mesh_gpu_rt) * session_stp.camera_radius_scale_stp,
         session_stp.orbit_yaw_stp,
         session_stp.orbit_pitch_stp,
         aspect,
@@ -309,7 +379,11 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         orbit_pitch,
         zoom,
         dragging: false,
+        heat_painting: false,
         last_cursor: None,
+        cursor_px: (w as f32 * 0.5, h as f32 * 0.5),
+        heat_hold_rt: 0.0,
+        heat_decay_tail_rt: 0.0,
         fps: 0.0,
         fps_instant: 0.0,
         fps_sample_ready: false,
@@ -317,5 +391,6 @@ pub fn assemble_tandem_session(window: &Window) -> Result<TandemBfr, String> {
         fps_window_start: std::time::Instant::now(),
         last_frame_end: std::time::Instant::now(),
         pulse_t0: std::time::Instant::now(),
+        heat_diag_dumped: false,
     })
 }

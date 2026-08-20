@@ -9,6 +9,10 @@ use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::
 use crate::gpu::MODUL0_VK_MESH::mem::asm_disasm::vk::handled::buffer_hld_asm::{
     handled_upload_host_visible, BufferHostVisibleHandled,
 };
+use crate::cpu::MODUL0_MESH::proc::processor::{
+    instance_count, pack_instance_xyzw_bytes, world_bounds_from_local,
+};
+use crate::gpu::MODUL0_VK_MESH::mem::asm_disasm::vk_pkg::auto::mesh_gpu_default_rt_pkg_at_asm::MeshGpuDefaultRtAuto;
 use crate::gpu::MODUL0_VK_MESH::proc::processor::mesh_gpu_destroy::destroy_mesh_gpu_buffers;
 use crate::gpu::MODUL0_VK_MESH::proc::processor::mesh_upload_prep::prepare_mesh_upload;
 use crate::ModulResult;
@@ -69,8 +73,8 @@ impl MeshGpuDefaultHandled for MeshGpuDefaultRtPkg {
                     index_memory_extrl,
                     &prep.idx_bytes_extrl,
                 )?;
-                let inst_bytes = mesh_soa_rt_bfr.pack_instance_xyzw_bytes();
-                let instance_count_rt = mesh_soa_rt_bfr.instance_count() as u32;
+                let inst_bytes = pack_instance_xyzw_bytes(mesh_soa_rt_bfr);
+                let instance_count_rt = instance_count(mesh_soa_rt_bfr) as u32;
                 let size_inst_stp = inst_bytes.len() as vk::DeviceSize;
                 let (instance_buffer_extrl, instance_memory_extrl) =
                     <(vk::Buffer, vk::DeviceMemory) as BufferHostVisibleHandled>::handled_assemble(
@@ -81,8 +85,10 @@ impl MeshGpuDefaultHandled for MeshGpuDefaultRtPkg {
                         vk::BufferUsageFlags::VERTEX_BUFFER,
                     )?;
                 handled_upload_host_visible(device_extrl, instance_memory_extrl, &inst_bytes)?;
-                let (bounds_min_rt, bounds_max_rt) = mesh_soa_rt_bfr
-                    .world_bounds_from_local(prep.bounds_min_rt, prep.bounds_max_rt);
+                let (soa_world_buffer_extrl, soa_world_memory_extrl) =
+                    (vk::Buffer::null(), vk::DeviceMemory::null());
+                let (bounds_min_rt, bounds_max_rt) =
+                    world_bounds_from_local(mesh_soa_rt_bfr, prep.bounds_min_rt, prep.bounds_max_rt);
                 let triangle_count_rt = prep.triangle_count_rt.saturating_mul(instance_count_rt);
                 crate::common::trace_emit(
                     "VK_MESH",
@@ -102,6 +108,8 @@ impl MeshGpuDefaultHandled for MeshGpuDefaultRtPkg {
                     index_memory_extrl,
                     instance_buffer_extrl,
                     instance_memory_extrl,
+                    soa_world_buffer_extrl,
+                    soa_world_memory_extrl,
                     vertex_count_rt: prep.vertex_count_rt,
                     index_count_rt: prep.index_count_rt,
                     instance_count_rt,
@@ -117,7 +125,7 @@ impl MeshGpuDefaultHandled for MeshGpuDefaultRtPkg {
                     desc: "mesh_gpu_steel_solid",
                 })
             }
-            _ => Ok(Self::empty()),
+            _ => Ok(<Self as MeshGpuDefaultRtAuto>::auto_assemble()),
         }
     }
 

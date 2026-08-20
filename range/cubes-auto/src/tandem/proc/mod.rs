@@ -1,5 +1,6 @@
 //! Processing · winit shell · session assemble · pulse · ship log.
 
+pub mod heat_diag;
 pub mod run_tandem_pulse;
 pub mod session_log;
 pub mod shell;

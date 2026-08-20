@@ -17,6 +17,10 @@ pub fn destroy_line_gpu_buffers(
             device_extrl.destroy_buffer(line_gpu_default_rt_pkg.vertex_buffer_extrl, None);
             device_extrl.free_memory(line_gpu_default_rt_pkg.vertex_memory_extrl, None);
         }
-        *line_gpu_default_rt_pkg = LineGpuDefaultRtPkg::empty(line_gpu_default_rt_pkg.desc);
+        line_gpu_default_rt_pkg.vertex_buffer_extrl = vk::Buffer::null();
+        line_gpu_default_rt_pkg.vertex_memory_extrl = vk::DeviceMemory::null();
+        line_gpu_default_rt_pkg.vertex_count_rt = 0;
+        line_gpu_default_rt_pkg.line_count_rt = 0;
+        line_gpu_default_rt_pkg.ready_rt = false;
     }
 }

@@ -27,7 +27,11 @@ pub struct TandemBfr {
     pub orbit_pitch: f32,
     pub zoom: f32,
     pub dragging: bool,
+    pub heat_painting: bool,
     pub last_cursor: Option<(f64, f64)>,
+    pub cursor_px: (f32, f32),
+    pub heat_hold_rt: f32,
+    pub heat_decay_tail_rt: f32,
     pub fps: f32,
     pub fps_instant: f32,
     pub fps_sample_ready: bool,
@@ -35,4 +39,5 @@ pub struct TandemBfr {
     pub fps_window_start: Instant,
     pub last_frame_end: Instant,
     pub pulse_t0: Instant,
+    pub heat_diag_dumped: bool,
 }

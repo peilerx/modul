@@ -30,5 +30,25 @@ pub fn destroy_mesh_gpu_buffers(
             device_extrl.free_memory(mesh_gpu_default_rt_pkg.instance_memory_extrl, None);
         }
     }
-    *mesh_gpu_default_rt_pkg = MeshGpuDefaultRtPkg::empty();
+    if mesh_gpu_default_rt_pkg.soa_world_buffer_extrl != vk::Buffer::null() {
+        unsafe {
+            device_extrl.destroy_buffer(mesh_gpu_default_rt_pkg.soa_world_buffer_extrl, None);
+            device_extrl.free_memory(mesh_gpu_default_rt_pkg.soa_world_memory_extrl, None);
+        }
+    }
+    mesh_gpu_default_rt_pkg.vertex_buffer_extrl = vk::Buffer::null();
+    mesh_gpu_default_rt_pkg.index_buffer_extrl = vk::Buffer::null();
+    mesh_gpu_default_rt_pkg.vertex_memory_extrl = vk::DeviceMemory::null();
+    mesh_gpu_default_rt_pkg.index_memory_extrl = vk::DeviceMemory::null();
+    mesh_gpu_default_rt_pkg.instance_buffer_extrl = vk::Buffer::null();
+    mesh_gpu_default_rt_pkg.instance_memory_extrl = vk::DeviceMemory::null();
+    mesh_gpu_default_rt_pkg.soa_world_buffer_extrl = vk::Buffer::null();
+    mesh_gpu_default_rt_pkg.soa_world_memory_extrl = vk::DeviceMemory::null();
+    mesh_gpu_default_rt_pkg.vertex_count_rt = 0;
+    mesh_gpu_default_rt_pkg.index_count_rt = 0;
+    mesh_gpu_default_rt_pkg.instance_count_rt = 0;
+    mesh_gpu_default_rt_pkg.instance_capacity_rt = 0;
+    mesh_gpu_default_rt_pkg.triangle_count_rt = 0;
+    mesh_gpu_default_rt_pkg.mode_rt = 0;
+    mesh_gpu_default_rt_pkg.ready_rt = false;
 }

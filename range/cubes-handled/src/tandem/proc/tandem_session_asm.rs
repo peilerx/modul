@@ -16,9 +16,12 @@ use modul::gpu::MODUL0_VK_FRAME::mem::base::embedded::buffer::FrameBfr;
 use modul::gpu::MODUL0_VK_MESH::mem::asm_disasm::vk_pkg::handled::mesh_gpu_hld_asm::MeshGpuDefaultHandled;
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::prt::MeshDrawPrt;
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_rt_pkg::{
-    MeshGpuDefaultRtPkg, MeshPushRt,
+    MeshGpuDefaultRtPkg,
 };
-use modul::cpu::MODUL0_MESH::mem::base::transport::runtime::mesh_soa_rt_bfr::MeshSoaRtBfr;
+use modul::cpu::MODUL0_MESH::proc::processor::unit_cuboid_instanced_lattice;
+use modul::gpu::MODUL0_VK_MESH::proc::processor::{
+    mesh_gpu_center_rt, mesh_gpu_radius_rt, mesh_push_from_orbit,
+};
 use modul::gpu::MODUL0_VK_MESH::mem::base::transport::setup::mesh_draw_default_stp_pkg::MeshDrawDefaultStpPkg;
 use modul::gpu::MODUL0_VK_PIPELINE::conv::port::RendererTransportable;
 use modul::gpu::MODUL0_VK_PIPELINE::mem::asm_disasm::vk_bfr::handled::renderer_bfr_hld_asm::RendererBfrHandled;
@@ -423,7 +426,7 @@ pub fn assemble_tandem_session(
     // ══════════════════════════════════════════════════════════════════════════
     let cube_count = session_stp.cube_count_stp.max(1);
     let mesh_soa =
-        MeshSoaRtBfr::unit_cuboid_instanced_lattice(cube_count, session_stp.lattice_spacing_stp);
+        unit_cuboid_instanced_lattice(cube_count, session_stp.lattice_spacing_stp);
     // MeshDrawDefaultStpPkg mode_stp from MeshDrawPrt peel
     let mesh_draw_default_stp_pkg = MeshDrawDefaultStpPkg {
         mode_stp: mesh_draw_mode_stp(session_stp.mesh_draw_prt_op),
@@ -452,11 +455,16 @@ pub fn assemble_tandem_session(
         &mesh_soa,
         mesh_draw_prt,
     )?;
+    modul::gpu::MODUL0_VK_MESH::proc::processor::mesh_soa_bind::bind_soa_instance_sets(
+        &swapchain_rt_crg.device_default_rt_pkg.device_extrl,
+        &renderer_rt,
+        &mesh_gpu_rt,
+    )?;
 
     let aspect = w as f32 / h as f32;
-    let mesh_push_rt = MeshPushRt::from_orbit(
-        mesh_gpu_rt.center_rt(),
-        mesh_gpu_rt.radius_rt() * session_stp.camera_radius_scale_stp,
+    let mesh_push_rt = mesh_push_from_orbit(
+        mesh_gpu_center_rt(&mesh_gpu_rt),
+        mesh_gpu_radius_rt(&mesh_gpu_rt) * session_stp.camera_radius_scale_stp,
         session_stp.orbit_yaw_stp,
         session_stp.orbit_pitch_stp,
         aspect,
@@ -489,7 +497,11 @@ pub fn assemble_tandem_session(
         orbit_pitch,
         zoom,
         dragging: false,
+        heat_painting: false,
         last_cursor: None,
+        cursor_px: (0.0, 0.0),
+        heat_hold_rt: 0.0,
+        heat_decay_tail_rt: 0.0,
         fps: 0.0,
         fps_instant: 0.0,
         fps_sample_ready: false,
@@ -497,5 +509,6 @@ pub fn assemble_tandem_session(
         fps_window_start: std::time::Instant::now(),
         last_frame_end: std::time::Instant::now(),
         pulse_t0: std::time::Instant::now(),
+        heat_diag_dumped: false,
     })
 }

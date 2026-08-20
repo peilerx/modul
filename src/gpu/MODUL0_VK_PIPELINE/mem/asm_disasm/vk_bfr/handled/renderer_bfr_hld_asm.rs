@@ -30,6 +30,11 @@ impl RendererBfrHandled for RendererBfr {
             shaders_line_rt_pkg: None,
             pipeline_line_rt_pkg: None,
             pipeline_line_tris_rt_pkg: None,
+            pipeline_mesh_soa_comp_rt_pkg: None,
+            pipeline_soa_heat_comp_rt_pkg: None,
+            descriptor_set_layout_default_rt_pkg: None,
+            descriptor_pool_default_rt_pkg: None,
+            descriptor_sets_default_rt_pkg: None,
             cargo_rt: None,
         }
     }

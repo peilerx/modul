@@ -77,6 +77,7 @@ pub fn init() -> PathBuf {
     log(&format!("cwd={:?}", std::env::current_dir().ok()));
     for key in [
         "CUBES_COUNT",
+        "CUBES_GPU",
         "CUBES_VALIDATION",
         "WAYLAND_DISPLAY",
         "DISPLAY",

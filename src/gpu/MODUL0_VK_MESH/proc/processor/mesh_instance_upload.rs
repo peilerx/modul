@@ -21,14 +21,17 @@ pub fn upload_instance_xyz_lod(
         mesh.instance_count_rt = 0;
         return Ok(());
     }
-    // Pack up to capacity; missing lod_w entries default to 0.0 (full-detail solid).
+    // Pack SoA: x[n] | y[n] | z[n] | lod[n]
     let n = xyz.len().min(cap);
     let mut bytes = Vec::with_capacity(n * 16);
-    for (i, p) in xyz.iter().take(n).enumerate() {
-        let w = lod_w.get(i).copied().unwrap_or(0.0);
-        for f in [p[0], p[1], p[2], w] {
-            bytes.extend_from_slice(&f.to_ne_bytes());
+    for axis in 0..3 {
+        for p in xyz.iter().take(n) {
+            bytes.extend_from_slice(&p[axis].to_ne_bytes());
         }
+    }
+    for i in 0..n {
+        let w = lod_w.get(i).copied().unwrap_or(0.0);
+        bytes.extend_from_slice(&w.to_ne_bytes());
     }
     handled_upload_host_visible(device_extrl, mesh.instance_memory_extrl, &bytes)?;
     mesh.instance_count_rt = n as u32;

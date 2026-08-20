@@ -371,6 +371,7 @@ check_params = false
 paths = ["src/**/MODUL0_*/proc/**"]
 exclude_paths = ["**/proc/display/**", "**/proc/processor/**"]
 rules = [
+    "no-impl",
     "proc-runtime",
     "no-vk-create",
     "no-vk-default",
@@ -384,6 +385,7 @@ rules = [
 [package.metadata.modlin.preset.mcg-proc-processor]
 paths = ["src/**/MODUL0_*/proc/processor/**"]
 rules = [
+    "no-impl",
     "no-vk-create",
     "no-vk-default",
     "no-proc-materialize",
@@ -402,7 +404,14 @@ rules = ["proc-access", "prefix-hint"]
 
 [package.metadata.modlin.preset.mcg-display]
 paths = ["src/**/MODUL0_*/proc/display/**"]
-rules = ["trait-only", "proc-resource-bag", "no-vk-create", "proc-no-catalog-assemble", "prefix-proc"]
+rules = [
+    "no-impl",
+    "trait-only",
+    "proc-resource-bag",
+    "no-vk-create",
+    "proc-no-catalog-assemble",
+    "prefix-proc",
+]
 
 [lints.rust]
 unsafe_op_in_unsafe_fn = "warn"

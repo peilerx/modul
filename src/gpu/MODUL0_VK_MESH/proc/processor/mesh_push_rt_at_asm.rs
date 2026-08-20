@@ -5,15 +5,10 @@ use crate::gpu::MODUL0_VK_MESH::mem::base::transport::runtime::mesh_gpu_default_
 /// Byte size of the push-constant block (must match GLSL `cubes.*`).
 pub const MESH_PUSH_RT_SIZE: u32 = core::mem::size_of::<MeshPushRt>() as u32;
 
-
-impl MeshPushRt {
-    /// Byte size of the push-constant block (must match GLSL `cubes.*` and pipeline layout).
-    /// `identity_steel` — function (identity steel).
-    /// Public API entry for this module.
-    /// Belongs to: mesh upload / solid draw MCG.
-    #[must_use]
-    pub const fn identity_steel(base_rgb: [f32; 3]) -> Self {
-        Self {
+/// Identity steel look knobs (MVP identity).
+#[must_use]
+pub const fn mesh_push_identity_steel(base_rgb: [f32; 3]) -> MeshPushRt {
+        MeshPushRt {
             mvp: [
                 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
             ],
@@ -24,18 +19,18 @@ impl MeshPushRt {
             look2: [0.5, 1.1, 1.55, 1.08],
             look3: [0.0, 0.0, 0.0, 2.0],
         }
-    }
+}
 
-    /// Orbit camera around mesh AABB; perspective + Vulkan Y-flip.
-    #[must_use]
-    pub fn from_orbit(
+/// Orbit camera around mesh AABB; perspective + Vulkan Y-flip.
+#[must_use]
+pub fn mesh_push_from_orbit(
         center: [f32; 3],
         radius: f32,
         yaw: f32,
         pitch: f32,
         aspect: f32,
         base_rgb: [f32; 3],
-    ) -> Self {
+    ) -> MeshPushRt {
         let r = radius.max(0.25) * 2.6;
         let cy = yaw.cos();
         let sy = yaw.sin();
@@ -49,7 +44,7 @@ impl MeshPushRt {
         let view = look_at_rh(eye, center, [0.0, 1.0, 0.0]);
         let proj = perspective_vk(45.0_f32.to_radians(), aspect.max(0.1), 0.05, r * 8.0);
         let mvp = mat4_mul(proj, view);
-        Self {
+        MeshPushRt {
             mvp,
             light_dir: [0.55, 0.82, 0.42, 1.2],
             base_color: [base_rgb[0], base_rgb[1], base_rgb[2], 0.14],
@@ -58,11 +53,11 @@ impl MeshPushRt {
             look2: [0.55, 1.1, 0.0, 1.12],
             look3: [0.0, 0.0, 0.0, 2.0],
         }
-    }
+}
 
-    /// Overlay 3D View look knobs (keeps MVP / eye from orbit).
-    pub const fn apply_view3d_look(
-        &mut self,
+/// Overlay 3D View look knobs (keeps MVP / eye from orbit).
+pub const fn mesh_push_apply_view3d_look(
+        push: &mut MeshPushRt,
         metal_f0: f32,
         roughness: f32,
         specular: f32,
@@ -79,28 +74,27 @@ impl MeshPushRt {
         shadow_i: f32,
         shadow_soft: f32,
     ) {
-        self.light_dir[3] = key_intensity.clamp(0.0, 2.5);
-        self.base_color[3] = roughness.clamp(0.02, 0.9);
-        self.cam_pos[3] = exposure.clamp(0.5, 2.0);
-        self.look = [
+        push.light_dir[3] = key_intensity.clamp(0.0, 2.5);
+        push.base_color[3] = roughness.clamp(0.02, 0.9);
+        push.cam_pos[3] = exposure.clamp(0.5, 2.0);
+        push.look = [
             metal_f0.clamp(0.05, 1.0),
             specular.clamp(0.0, 2.5),
             env_intensity.clamp(0.0, 2.5),
             fill_intensity.clamp(0.0, 2.5),
         ];
-        self.look2 = [
+        push.look2 = [
             rim_intensity.clamp(0.0, 2.5),
             brush_amount.clamp(0.0, 2.5),
             film_amount.clamp(0.0, 2.5),
             contrast.clamp(0.5, 2.0),
         ];
-        self.look3 = [
+        push.look3 = [
             cavity_i.clamp(0.0, 2.0),
             ridge_i.clamp(0.0, 2.0),
             shadow_i.clamp(0.0, 2.0),
             shadow_soft.clamp(0.2, 8.0),
         ];
-    }
 }
 
 fn look_at_rh(eye: [f32; 3], center: [f32; 3], up: [f32; 3]) -> [f32; 16] {
